@@ -142,7 +142,7 @@ BEGIN
     ICON "", IDC_ABOUT_ICON, 7, 55, 21, 20
     LTEXT "", IDC_ABOUT_APPNAME, 35, 55, 200, 10
     LTEXT "", IDC_ABOUT_VERSION, 35, 65, 250, 10
-    LTEXT "Copyright 1998-", IDC_STATIC, 35, 75, 53, 10
+    LTEXT "Copyright 1996-", IDC_STATIC, 35, 75, 53, 10
     LTEXT COPYRIGHT_YEAR, IDC_STATIC, 88, 75, 17, 10
     LTEXT " ReactOS taldea\0", IDC_STATIC, 105, 75, 100, 10
     LTEXT "", IDC_ABOUT_OTHERSTUFF, 35, 90, 180, 20
@@ -243,10 +243,10 @@ BEGIN
     EDITTEXT 14015, 58, 128, 170, 10, ES_LEFT | ES_READONLY | NOT WS_BORDER | NOT WS_TABSTOP | ES_AUTOHSCROLL
     LTEXT "", -1, 8, 144, 221, 1, SS_ETCHEDHORZ | WS_CHILD | WS_VISIBLE
     LTEXT "Atributuak:", 14020, 8, 152, 46, 10
-    AUTOCHECKBOX "&Irakurtzeko soilik", 14021, 58, 151, 70, 10
-    AUTOCHECKBOX "&Ezkutukoa", 14022, 126, 151, 70, 10
-    AUTOCHECKBOX "Art&xiboa", 14023, 181, 151, 70, 10
-    PUSHBUTTON "Au&rreratua...", 14028, 158, 150, 70, 14, WS_CHILD | WS_VISIBLE | WS_TABSTOP
+    AUTOCHECKBOX "&Irakurtzeko soilik", 14021, 58, 151, 68, 10
+    AUTOCHECKBOX "&Ezkutukoa", 14022, 126, 151, 55, 10
+    AUTOCHECKBOX "Art&xiboa", 14023, 181, 151, 59, 10
+    PUSHBUTTON "Au&rreratua...", 14028, 158, 170, 70, 14, WS_CHILD | WS_VISIBLE | WS_TABSTOP
 END
 
 IDD_FILE_PROPERTIES DIALOGEX 0, 0, 240, 205
@@ -328,12 +328,12 @@ BEGIN
     LTEXT "Edukiera:", -1, 25, 103, 80, 10
     EDITTEXT 14007, 110, 103, 86, 10, ES_LEFT | ES_READONLY | NOT WS_BORDER | NOT WS_TABSTOP | ES_AUTOHSCROLL
     EDITTEXT 14008, 197, 103, 33, 10, ES_LEFT | ES_READONLY | NOT WS_BORDER | NOT WS_TABSTOP | ES_AUTOHSCROLL
-    CONTROL "", 14015, "Static", SS_OWNERDRAW, 70, 116, 100, 30
-    LTEXT "%c: unitatea", 14009, 100, 150, 70, 10
-    PUSHBUTTON "&Garbitu diskoa", 14010, 160, 154, 70, 15, WS_TABSTOP
-    LTEXT "", -1, 8, 171, 223, 1, SS_ETCHEDHORZ | WS_CHILD | WS_VISIBLE
-    CHECKBOX "&Konprimatu unitatea diskoan leku gehiago egiteko", 14011, 8, 191, 222, 10, WS_DISABLED
-    CHECKBOX "&Fitxategiak bizkor bilatzeko, eman baimena Indexatze-zerbitzuari disko hau indexatzeko", 14012, 8, 205, 222, 10, WS_DISABLED
+    CONTROL "", 14015, "Static", SS_OWNERDRAW, 70, 116, 100, 40
+    CTEXT "%c: unitatea", 14009, 95, 162, 50, 10
+    PUSHBUTTON "&Garbitu diskoa", 14010, 160, 159, 70, 15, WS_TABSTOP
+    LTEXT "", -1, 8, 176, 223, 1, SS_ETCHEDHORZ | WS_CHILD | WS_VISIBLE
+    CHECKBOX "&Konprimatu unitatea diskoan leku gehiago egiteko", 14011, 8, 200, 222, 10, WS_DISABLED
+    CHECKBOX "&Fitxategiak bizkor bilatzeko, eman baimena Indexatze-zerbitzuari disko hau indexatzeko", 14012, 8, 214, 222, 10, WS_DISABLED
 END
 
 IDD_DRIVE_TOOLS DIALOGEX 0, 0, 240, 230
@@ -343,15 +343,15 @@ FONT 8, "MS Shell Dlg", 0, 0, 0x0
 BEGIN
     GROUPBOX "Erroreak bilatzea", -1, 5, 5, 230, 60
     ICON IDI_SHELL_TOOLS_CHKDSK, IDC_STATIC, 13, 25, 21, 20
-    LTEXT "Aukera honekin erroreak bilatuko dira \nbolumenean.", -1, 40, 25, 160, 20
+    LTEXT "Aukera honekin erroreak bilatuko dira bolumenean.", -1, 40, 25, 160, 20
     PUSHBUTTON "&Bilatu orain...", 14000, 130, 45, 90, 15, WS_TABSTOP
     GROUPBOX "Desfragmentazioa", -1, 5, 65, 230, 60
     ICON IDI_SHELL_TOOLS_DEFRAG, IDC_STATIC, 13, 85, 21, 20
-    LTEXT "Aukera honekin bolumeneko fitxategiak \ndesfragmentatuko dira.", -1, 40, 85, 160, 20
+    LTEXT "Aukera honekin bolumeneko fitxategiak desfragmentatuko dira.", -1, 40, 85, 160, 20
     PUSHBUTTON "&Desfragmentatu orain...", 14001, 130, 105, 90, 15, WS_TABSTOP
     GROUPBOX "Babeskopia", -1, 5, 130, 230, 60
     ICON IDI_SHELL_TOOLS_BACKUP, IDC_STATIC, 13, 150, 21, 20
-    LTEXT "Aukera honekin bolumeneko fitxategien \nbabeskopia egingo da.", -1, 40, 150, 160, 20
+    LTEXT "Aukera honekin bolumeneko fitxategien babeskopia egingo da.", -1, 40, 150, 160, 20
     PUSHBUTTON "&Egin babeskopia orain...", 14002, 90, 170, 130, 15, WS_TABSTOP
 END
 
@@ -813,6 +813,8 @@ BEGIN
     IDS_MOVEERRORSUBFOLDER "Ezin da lekuz aldatu '%s': La carpeta de destino es un subdirectorio de la de origen."
     IDS_COPYERRORSUBFOLDER "Ezin da kopiatu '%s': La carpeta de destino es un subdirectorio de la de origen."
 
+    IDS_CREATEFILE_DENIED "Could not create file %1"
+    IDS_CREATEFILE_CAPTION "Error creating file"
     IDS_CREATEFOLDER_DENIED "Ezin da sortu '%1'"
     IDS_CREATEFOLDER_CAPTION "Ezin da sortu karpeta"
     IDS_DELETEITEM_CAPTION "Fitxategi ezabatzea baieztatu"
@@ -887,6 +889,7 @@ BEGIN
     IDS_NETWORKPLACE "Nire sarelekuak"
 
     IDS_NEWFOLDER "Karpeta berria"
+    IDS_NEWITEMFORMAT "New %s"
 
     IDS_DRIVE_FIXED "Disko lokala"
     IDS_DRIVE_CDROM "CD Unitatea"
@@ -903,7 +906,7 @@ BEGIN
 
     IDS_SHELL_ABOUT_AUTHORS "&Egileak"
     IDS_SHELL_ABOUT_BACK "< A&tzea"
-    FCIDM_SHVIEW_NEW "Berria"
+    FCIDM_SHVIEW_NEW "Ne&w" /* A menu item with an ampersand */
     FCIDM_SHVIEW_NEWFOLDER "Karpeta &berria"
     FCIDM_SHVIEW_NEWLINK "&Lasterbide berria"
     IDS_FOLDER_OPTIONS "Karpeta aukera"
@@ -984,6 +987,11 @@ BEGIN
     IDS_MENU_EMPTY "(Hutz)"
     IDS_OBJECTS "%d elementuak"
     IDS_OBJECTS_SELECTED "%d elementu hautatuak"
+
+    IDS_TITLE_MYCOMP "Ordenagailua"
+    IDS_TITLE_MYNET "Nire sarelekuak"
+    IDS_TITLE_BIN_1 "Zakarrontzia (betea)"
+    IDS_TITLE_BIN_0 "Zakarrontzia (hutsik)"
 
     IDS_ADVANCED_FOLDER "Fitxategiak eta karpetak"
     IDS_ADVANCED_NET_CRAWLER "Bilatu sareko karpetak eta inprimagailuak automatikoki"

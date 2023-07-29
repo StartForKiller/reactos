@@ -121,7 +121,8 @@ CreateShortcut(
     LPCWSTR pszCommand,
     LPCWSTR pszDescription,
     INT iIconNr,
-    LPCWSTR pszWorkingDir)
+    LPCWSTR pszWorkingDir,
+    LPCWSTR pszArgs)
 {
     DWORD dwLen;
     LPWSTR Ptr;
@@ -170,7 +171,7 @@ CreateShortcut(
     /* Create the shortcut */
     return SUCCEEDED(CreateShellLink(szPath,
                                      pszCommand,
-                                     L"",
+                                     pszArgs,
                                      pszWorkingDir,
                                      /* Special value to indicate no icon */
                                      (iIconNr != -1 ? pszCommand : NULL),
@@ -188,6 +189,7 @@ static BOOL CreateShortcutsFromSection(HINF hinf, LPWSTR pszSection, LPCWSTR psz
     WCHAR szName[MAX_PATH];
     WCHAR szDescription[MAX_PATH];
     WCHAR szDirectory[MAX_PATH];
+    WCHAR szArgs[MAX_PATH];
 
     if (!SetupFindFirstLine(hinf, pszSection, NULL, &Context))
         return FALSE;
@@ -213,9 +215,12 @@ static BOOL CreateShortcutsFromSection(HINF hinf, LPWSTR pszSection, LPCWSTR psz
         if (dwFieldCount < 5 || !SetupGetStringFieldW(&Context, 5, szDirectory, ARRAYSIZE(szDirectory), NULL))
             szDirectory[0] = L'\0';
 
+        if (dwFieldCount < 6 || !SetupGetStringFieldW(&Context, 6, szArgs, ARRAYSIZE(szArgs), NULL))
+            szArgs[0] = L'\0';
+
         wcscat(szName, L".lnk");
 
-        CreateShortcut(pszFolder, szName, szCommand, szDescription, iIconNr, szDirectory);
+        CreateShortcut(pszFolder, szName, szCommand, szDescription, iIconNr, szDirectory, szArgs);
 
     } while (SetupFindNextLine(&Context, &Context));
 
@@ -565,6 +570,70 @@ cleanup:
     return bRet;
 }
 
+static VOID
+AdjustStatusMessageWindow(HWND hwndDlg, PDLG_DATA pDlgData)
+{
+    INT xOld, yOld, cxOld, cyOld;
+    INT xNew, yNew, cxNew, cyNew;
+    INT cxLabel, cyLabel, dyLabel;
+    RECT rc, rcBar, rcLabel, rcWnd;
+    BITMAP bmLogo, bmBar;
+    DWORD style, exstyle;
+    HWND hwndLogo = GetDlgItem(hwndDlg, IDC_ROSLOGO);
+    HWND hwndBar = GetDlgItem(hwndDlg, IDC_BAR);
+    HWND hwndLabel = GetDlgItem(hwndDlg, IDC_STATUSLABEL);
+
+    /* This adjustment is for CJK only */
+    switch (PRIMARYLANGID(GetUserDefaultLangID()))
+    {
+        case LANG_CHINESE:
+        case LANG_JAPANESE:
+        case LANG_KOREAN:
+            break;
+
+        default:
+            return;
+    }
+
+    if (!GetObjectW(pDlgData->hLogoBitmap, sizeof(BITMAP), &bmLogo) ||
+        !GetObjectW(pDlgData->hBarBitmap, sizeof(BITMAP), &bmBar))
+    {
+        return;
+    }
+
+    GetWindowRect(hwndBar, &rcBar);
+    MapWindowPoints(NULL, hwndDlg, (LPPOINT)&rcBar, 2);
+    dyLabel = bmLogo.bmHeight - rcBar.top;
+
+    GetWindowRect(hwndLabel, &rcLabel);
+    MapWindowPoints(NULL, hwndDlg, (LPPOINT)&rcLabel, 2);
+    cxLabel = rcLabel.right - rcLabel.left;
+    cyLabel = rcLabel.bottom - rcLabel.top;
+
+    MoveWindow(hwndLogo, 0, 0, bmLogo.bmWidth, bmLogo.bmHeight, TRUE);
+    MoveWindow(hwndBar, 0, bmLogo.bmHeight, bmLogo.bmWidth, bmBar.bmHeight, TRUE);
+    MoveWindow(hwndLabel, rcLabel.left, rcLabel.top + dyLabel, cxLabel, cyLabel, TRUE);
+
+    GetWindowRect(hwndDlg, &rcWnd);
+    xOld = rcWnd.left;
+    yOld = rcWnd.top;
+    cxOld = rcWnd.right - rcWnd.left;
+    cyOld = rcWnd.bottom - rcWnd.top;
+
+    GetClientRect(hwndDlg, &rc);
+    SetRect(&rc, 0, 0, bmLogo.bmWidth, rc.bottom - rc.top); /* new client size */
+
+    style = (DWORD)GetWindowLongPtrW(hwndDlg, GWL_STYLE);
+    exstyle = (DWORD)GetWindowLongPtrW(hwndDlg, GWL_EXSTYLE);
+    AdjustWindowRectEx(&rc, style, FALSE, exstyle);
+
+    cxNew = rc.right - rc.left;
+    cyNew = (rc.bottom - rc.top) + dyLabel;
+    xNew = xOld - (cxNew - cxOld) / 2;
+    yNew = yOld - (cyNew - cyOld) / 2;
+    MoveWindow(hwndDlg, xNew, yNew, cxNew, cyNew, TRUE);
+}
+
 static INT_PTR CALLBACK
 StatusMessageWindowProc(
     IN HWND hwndDlg,
@@ -622,6 +691,7 @@ StatusMessageWindowProc(
                 return FALSE;
             SetDlgItemTextW(hwndDlg, IDC_STATUSLABEL, szMsg);
 
+            AdjustStatusMessageWindow(hwndDlg, pDlgData);
             return TRUE;
         }
 

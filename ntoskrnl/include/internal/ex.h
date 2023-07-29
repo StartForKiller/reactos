@@ -16,6 +16,7 @@ extern POBJECT_TYPE ExEventPairObjectType;
 extern POBJECT_TYPE _ExEventObjectType, _ExSemaphoreObjectType;
 extern FAST_MUTEX ExpEnvironmentLock;
 extern ERESOURCE ExpFirmwareTableResource;
+extern ERESOURCE ExpTimeRefreshLock;
 extern LIST_ENTRY ExpFirmwareTableProviderListHead;
 extern BOOLEAN ExpIsWinPEMode;
 extern LIST_ENTRY ExpSystemResourcesList;
@@ -1536,6 +1537,14 @@ XIPInit(
 
 #define InterlockedCompareExchangeSizeT(Destination, Exchange, Comperand) \
    (SIZE_T)InterlockedCompareExchangePointer((PVOID*)(Destination), (PVOID)(SIZE_T)(Exchange), (PVOID)(SIZE_T)(Comperand))
+
+#ifdef _WIN64
+#define InterlockedExchangeSizeT(Target, Value) \
+    (SIZE_T)InterlockedExchange64((PLONG64)Target, (LONG64)Value)
+#else
+#define InterlockedExchangeSizeT(Target, Value) \
+    (SIZE_T)InterlockedExchange((PLONG)Target, (LONG)Value)
+#endif
 
 #define ExfInterlockedCompareExchange64UL(Destination, Exchange, Comperand) \
    (ULONGLONG)ExfInterlockedCompareExchange64((PLONGLONG)(Destination), (PLONGLONG)(Exchange), (PLONGLONG)(Comperand))

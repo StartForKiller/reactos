@@ -51,8 +51,10 @@ VOID __cdecl BootMain(IN PCCH CmdLine)
 
     TRACE("BootMain() called.\n");
 
+#ifndef UEFIBOOT
     /* Check if the CPU is new enough */
     FrLdrCheckCpuCompatibility(); // FIXME: Should be done inside MachInit!
+#endif
 
     /* UI pre-initialization */
     if (!UiInitialize(FALSE))
@@ -97,4 +99,30 @@ int __cdecl mbtowc(wchar_t *wchar, const char *mbchar, size_t count)
 int __cdecl iswctype(wint_t wc, wctype_t wctypeFlags)
 {
     return _isctype((char)wc, wctypeFlags);
+}
+
+#ifdef _MSC_VER
+#pragma warning(disable:4164)
+#pragma function(pow)
+#pragma function(log)
+#pragma function(log10)
+#endif
+
+// Stubs to avoid pulling in data from CRT
+double pow(double x, double y)
+{
+    __debugbreak();
+    return 0.0;
+}
+
+double log(double x)
+{
+    __debugbreak();
+    return 0.0;
+}
+
+double log10(double x)
+{
+    __debugbreak();
+    return 0.0;
 }

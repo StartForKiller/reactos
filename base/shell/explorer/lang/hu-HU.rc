@@ -1,3 +1,10 @@
+/*
+ * PROJECT:     ReactOS Explorer
+ * LICENSE:     LGPL-2.1-or-later (https://spdx.org/licenses/LGPL-2.1-or-later)
+ * PURPOSE:     Hungarian resource file
+ * TRANSLATOR:  Copyright 2020 Tibor Lajos Füzi <tibor.fuzi@gmail.com>
+ */
+
 LANGUAGE LANG_HUNGARIAN, SUBLANG_DEFAULT
 
 IDM_TRAYWND MENU
@@ -195,4 +202,6 @@ STRINGTABLE
 BEGIN
     IDS_TASKBAR_STARTMENU_PROP_CAPTION "Tálca és Start menü"
     IDS_RESTORE_ALL "&Megnyitott ablakok megjelenítése"
+    IDS_TRAYWND_UNDO_CASCADE "&Undo Cascade"
+    IDS_TRAYWND_UNDO_TILE "&Undo Tile"
 END

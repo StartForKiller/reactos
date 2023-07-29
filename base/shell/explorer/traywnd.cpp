@@ -2,7 +2,7 @@
  * ReactOS Explorer
  *
  * Copyright 2006 - 2007 Thomas Weidenmueller <w3seek@reactos.org>
- * Copyright 2018 Katayama Hirofumi MZ <katayama.hirofumi.mz@gmail.com>
+ * Copyright 2018-2022 Katayama Hirofumi MZ <katayama.hirofumi.mz@gmail.com>
  *
  * this library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -58,6 +58,61 @@ void appbar_notify_all(HMONITOR hMon, UINT uMsg, HWND hwndExclude, LPARAM lParam
 
 static const WCHAR szTrayWndClass[] = L"Shell_TrayWnd";
 
+enum { NONE, TILED, CASCADED } g_Arrangement = NONE;
+
+struct WINDOWPOSBACKUPDATA
+{
+    HWND hwnd;
+    WINDOWPLACEMENT wplt;
+};
+CSimpleArray<WINDOWPOSBACKUPDATA> g_WindowPosBackup;
+
+static BOOL CALLBACK BackupWindowsPosProc(HWND hwnd, LPARAM lParam)
+{
+    WINDOWPOSBACKUPDATA wposdata;
+    HWND hDesk = GetDesktopWindow();
+    if (IsWindowVisible(hwnd) && !IsIconic(hwnd) && (hwnd != hDesk))
+    {
+        wposdata.hwnd = hwnd;
+        wposdata.wplt.length = sizeof(wposdata.wplt);
+        GetWindowPlacement(hwnd, &(wposdata.wplt));
+        g_WindowPosBackup.Add(wposdata);
+    }
+
+    return TRUE;
+}
+
+VOID BackupWindowPos()
+{
+    EnumWindows(BackupWindowsPosProc, NULL);
+}
+
+VOID RestoreWindowPos()
+{
+    g_Arrangement = NONE;
+
+    for (INT i = g_WindowPosBackup.GetSize() - 1; i >= 0; --i)
+    {
+        SetWindowPlacement(g_WindowPosBackup[i].hwnd, &(g_WindowPosBackup[i].wplt));
+    }
+
+    g_WindowPosBackup.RemoveAll();
+}
+
+BOOL CanBeMinimized(HWND hwnd)
+{
+    if (::IsWindowVisible(hwnd) && !::IsIconic(hwnd) && ::IsWindowEnabled(hwnd))
+    {
+        if (::GetClassLongPtrW(hwnd, GCW_ATOM) == (ULONG_PTR)WC_DIALOG)
+            return TRUE;
+
+        DWORD exstyle = (DWORD)::GetWindowLongPtrW(hwnd, GWL_EXSTYLE);
+        if (!(exstyle & WS_EX_TOPMOST))
+            return TRUE;
+    }
+    return FALSE;
+}
+
 struct EFFECTIVE_INFO
 {
     HWND hwndFound;
@@ -72,7 +127,7 @@ FindEffectiveProc(HWND hwnd, LPARAM lParam)
 {
     EFFECTIVE_INFO *pei = (EFFECTIVE_INFO *)lParam;
 
-    if (!IsWindowVisible(hwnd) || IsIconic(hwnd))
+    if (!CanBeMinimized(hwnd))
         return TRUE;    // continue
 
     if (pei->hTrayWnd == hwnd || pei->hwndDesktop == hwnd ||
@@ -118,17 +173,16 @@ IsThereAnyEffectiveWindow(BOOL bMustBeInMonitor)
     ei.bMustBeInMonitor = bMustBeInMonitor;
 
     EnumWindows(FindEffectiveProc, (LPARAM)&ei);
-    if (ei.hwndFound && FALSE)
-    {
-        WCHAR szClass[64], szText[64];
-        GetClassNameW(ei.hwndFound, szClass, _countof(szClass));
-        GetWindowTextW(ei.hwndFound, szText, _countof(szText));
-        MessageBoxW(NULL, szText, szClass, 0);
-    }
     return ei.hwndFound != NULL;
 }
 
-CSimpleArray<HWND>  g_MinimizedAll;
+/* Minimized window position info */
+struct MINWNDPOS
+{
+    HWND hwnd;
+    WINDOWPLACEMENT wndpl;
+};
+CSimpleArray<MINWNDPOS>  g_MinimizedAll;
 
 /*
  * ITrayWindow
@@ -200,8 +254,10 @@ public:
 
     VOID Initialize()
     {
-        // HACK & FIXME: CORE-17505
-        SubclassWindow(m_hWnd);
+        // HACK & FIXME: CORE-18016
+        HWND hWnd = m_hWnd;
+        m_hWnd = NULL;
+        SubclassWindow(hWnd);
 
         SetWindowTheme(m_hWnd, L"Start", NULL);
 
@@ -216,8 +272,6 @@ public:
         UpdateSize();
     }
 
-    // Hack:
-    // Use DECLARE_WND_SUPERCLASS instead!
     HWND Create(HWND hwndParent)
     {
         WCHAR szStartCaption[32];
@@ -231,6 +285,7 @@ public:
 
         DWORD dwStyle = WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | BS_PUSHBUTTON | BS_LEFT | BS_VCENTER;
 
+        // HACK & FIXME: CORE-18016
         m_hWnd = CreateWindowEx(
             0,
             WC_BUTTON,
@@ -263,6 +318,202 @@ public:
 
 };
 
+// This window class name is CONFIRMED on Win10 by WinHier.
+static const WCHAR szTrayShowDesktopButton[] = L"TrayShowDesktopButtonWClass";
+
+// The 'Show Desktop' button at edge of taskbar
+class CTrayShowDesktopButton :
+    public CWindowImpl<CTrayShowDesktopButton, CWindow, CControlWinTraits>
+{
+    LONG m_nClickedTime;
+    BOOL m_bHovering;
+    HTHEME m_hTheme;
+
+public:
+    DECLARE_WND_CLASS_EX(szTrayShowDesktopButton, CS_HREDRAW | CS_VREDRAW, COLOR_3DFACE)
+
+    CTrayShowDesktopButton() : m_nClickedTime(0), m_bHovering(FALSE)
+    {
+    }
+
+    INT WidthOrHeight() const
+    {
+#define SHOW_DESKTOP_MINIMUM_WIDTH 3
+        INT cxy = 2 * ::GetSystemMetrics(SM_CXEDGE);
+        return max(cxy, SHOW_DESKTOP_MINIMUM_WIDTH);
+    }
+
+    HRESULT DoCreate(HWND hwndParent)
+    {
+        DWORD style = WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS;
+        Create(hwndParent, NULL, NULL, style);
+        if (!m_hWnd)
+            return E_FAIL;
+
+        ::SetWindowTheme(m_hWnd, L"TaskBar", NULL);
+        return S_OK;
+    }
+
+    LRESULT OnClick(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled)
+    {
+        // The actual action can be delayed as an expected behaviour.
+        // But a too late action is an unexpected behaviour.
+        LONG nTime0 = m_nClickedTime;
+        LONG nTime1 = ::GetMessageTime();
+        if (nTime1 - nTime0 >= 600) // Ignore after 0.6 sec
+            return 0;
+
+        // Show/Hide Desktop
+        GetParent().SendMessage(WM_COMMAND, TRAYCMD_TOGGLE_DESKTOP, 0);
+        return 0;
+    }
+
+#define TSDB_CLICK (WM_USER + 100)
+
+    // This function is called from OnLButtonDown and parent.
+    VOID Click()
+    {
+        // The actual action can be delayed as an expected behaviour.
+        m_nClickedTime = ::GetMessageTime();
+        PostMessage(TSDB_CLICK, 0, 0);
+    }
+
+    LRESULT OnLButtonUp(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled)
+    {
+        Click(); // Left-click
+        return 0;
+    }
+
+    LRESULT OnSettingChanged(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled)
+    {
+        if (m_hTheme)
+            ::CloseThemeData(m_hTheme);
+
+        m_hTheme = ::OpenThemeData(m_hWnd, L"TaskBar");
+        InvalidateRect(NULL, TRUE);
+        return 0;
+    }
+
+    // This function is called from OnPaint and parent.
+    VOID OnDraw(HDC hdc, LPRECT prc);
+
+    LRESULT OnPaint(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled)
+    {
+        RECT rc;
+        GetClientRect(&rc);
+
+        PAINTSTRUCT ps;
+        HDC hdc = BeginPaint(&ps);
+        OnDraw(hdc, &rc);
+        EndPaint(&ps);
+        return 0;
+    }
+
+    BOOL PtInButton(POINT pt)
+    {
+        if (!IsWindow())
+            return FALSE;
+        RECT rc;
+        GetWindowRect(&rc);
+        INT cxEdge = ::GetSystemMetrics(SM_CXEDGE), cyEdge = ::GetSystemMetrics(SM_CYEDGE);
+        ::InflateRect(&rc, max(cxEdge, 1), max(cyEdge, 1));
+        return ::PtInRect(&rc, pt);
+    }
+
+#define SHOW_DESKTOP_TIMER_ID 999
+#define SHOW_DESKTOP_TIMER_INTERVAL 200
+
+    VOID StartHovering()
+    {
+        if (m_bHovering)
+            return;
+
+        m_bHovering = TRUE;
+        SetTimer(SHOW_DESKTOP_TIMER_ID, SHOW_DESKTOP_TIMER_INTERVAL, NULL);
+        InvalidateRect(NULL, TRUE);
+        GetParent().PostMessage(WM_NCPAINT, 0, 0);
+    }
+
+    LRESULT OnMouseMove(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled)
+    {
+        StartHovering();
+        return 0;
+    }
+
+    LRESULT OnTimer(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled)
+    {
+        if (wParam != SHOW_DESKTOP_TIMER_ID || !m_bHovering)
+            return 0;
+
+        POINT pt;
+        ::GetCursorPos(&pt);
+        if (!PtInButton(pt)) // The end of hovering?
+        {
+            m_bHovering = FALSE;
+            KillTimer(SHOW_DESKTOP_TIMER_ID);
+            InvalidateRect(NULL, TRUE);
+            GetParent().PostMessage(WM_NCPAINT, 0, 0);
+        }
+
+        return 0;
+    }
+
+    LRESULT OnDestroy(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled)
+    {
+        if (m_hTheme)
+        {
+            CloseThemeData(m_hTheme);
+            m_hTheme = NULL;
+        }
+        return 0;
+    }
+
+    BEGIN_MSG_MAP(CTrayShowDesktopButton)
+        MESSAGE_HANDLER(WM_LBUTTONUP, OnLButtonUp)
+        MESSAGE_HANDLER(WM_SETTINGCHANGE, OnSettingChanged)
+        MESSAGE_HANDLER(WM_THEMECHANGED, OnSettingChanged)
+        MESSAGE_HANDLER(WM_PAINT, OnPaint)
+        MESSAGE_HANDLER(WM_TIMER, OnTimer)
+        MESSAGE_HANDLER(WM_MOUSEMOVE, OnMouseMove)
+        MESSAGE_HANDLER(WM_DESTROY, OnDestroy)
+        MESSAGE_HANDLER(TSDB_CLICK, OnClick)
+    END_MSG_MAP()
+};
+
+VOID CTrayShowDesktopButton::OnDraw(HDC hdc, LPRECT prc)
+{
+    if (m_hTheme)
+    {
+        if (m_bHovering) // Draw a hot button
+        {
+            HTHEME hButtonTheme = ::OpenThemeData(m_hWnd, L"Button");
+            ::DrawThemeBackground(hButtonTheme, hdc, BP_PUSHBUTTON, PBS_NORMAL, prc, prc);
+            ::CloseThemeData(hButtonTheme);
+        }
+        else // Draw a taskbar background
+        {
+            ::DrawThemeBackground(m_hTheme, hdc, TBP_BACKGROUNDTOP, 0, prc, prc);
+        }
+    }
+    else
+    {
+        RECT rc = *prc;
+        if (m_bHovering) // Draw a hot button
+        {
+            ::DrawFrameControl(hdc, &rc, DFC_BUTTON, DFCS_BUTTONPUSH | DFCS_ADJUSTRECT);
+            HBRUSH hbrHot = ::CreateSolidBrush(RGB(255, 255, 191));
+            ::FillRect(hdc, &rc, hbrHot);
+            ::DeleteObject(hbrHot);
+        }
+        else // Draw a flattish button
+        {
+            ::DrawFrameControl(hdc, &rc, DFC_BUTTON, DFCS_BUTTONPUSH);
+            ::InflateRect(&rc, -1, -1);
+            ::FillRect(hdc, &rc, ::GetSysColorBrush(COLOR_3DFACE));
+        }
+    }
+}
+
 class CTrayWindow :
     public CComCoClass<CTrayWindow>,
     public CComObjectRootEx<CComMultiThreadModelNoCS>,
@@ -273,6 +524,7 @@ class CTrayWindow :
     public IContextMenu
 {
     CStartButton m_StartButton;
+    CTrayShowDesktopButton m_ShowDesktopButton;
 
     CComPtr<IMenuBand>  m_StartMenuBand;
     CComPtr<IMenuPopup> m_StartMenuPopup;
@@ -320,12 +572,14 @@ public:
             DWORD InSizeMove : 1;
             DWORD IsDragging : 1;
             DWORD NewPosSize : 1;
+            DWORD IgnorePulse : 1;
         };
     };
 
 public:
     CTrayWindow() :
         m_StartButton(),
+        m_ShowDesktopButton(),
         m_Theme(NULL),
         m_Font(NULL),
         m_DesktopWnd(NULL),
@@ -347,6 +601,7 @@ public:
         ZeroMemory(&m_TraySize, sizeof(m_TraySize));
         ZeroMemory(&m_AutoHideOffset, sizeof(m_AutoHideOffset));
         ZeroMemory(&m_MouseTrackingInfo, sizeof(m_MouseTrackingInfo));
+        IgnorePulse = TRUE;
     }
 
     virtual ~CTrayWindow()
@@ -595,10 +850,7 @@ public:
             break;
 
         case ID_LOCKTASKBAR:
-            if (SHRestricted(REST_CLASSICSHELL) == 0)
-            {
-                Lock(!g_TaskbarSettings.bLock);
-            }
+            HandleCommand(TRAYCMD_LOCK_TASKBAR);
             break;
 
         case ID_SHELL_CMD_OPEN_TASKMGR:
@@ -606,6 +858,7 @@ public:
             break;
 
         case ID_SHELL_CMD_UNDO_ACTION:
+            RestoreWindowPos();
             break;
 
         case ID_SHELL_CMD_SHOW_DESKTOP:
@@ -614,20 +867,35 @@ public:
 
         case ID_SHELL_CMD_TILE_WND_H:
             appbar_notify_all(NULL, ABN_WINDOWARRANGE, NULL, TRUE);
+            if (g_Arrangement == NONE)
+            {
+                BackupWindowPos();
+            }
             TileWindows(NULL, MDITILE_HORIZONTAL, NULL, 0, NULL);
             appbar_notify_all(NULL, ABN_WINDOWARRANGE, NULL, FALSE);
+            g_Arrangement = TILED;
             break;
 
         case ID_SHELL_CMD_TILE_WND_V:
             appbar_notify_all(NULL, ABN_WINDOWARRANGE, NULL, TRUE);
+            if (g_Arrangement == NONE)
+            {
+                BackupWindowPos();
+            }
             TileWindows(NULL, MDITILE_VERTICAL, NULL, 0, NULL);
             appbar_notify_all(NULL, ABN_WINDOWARRANGE, NULL, FALSE);
+            g_Arrangement = TILED;
             break;
 
         case ID_SHELL_CMD_CASCADE_WND:
             appbar_notify_all(NULL, ABN_WINDOWARRANGE, NULL, TRUE);
+            if (g_Arrangement == NONE)
+            {
+                BackupWindowPos();
+            }
             CascadeWindows(NULL, MDITILE_SKIPDISABLED, NULL, 0, NULL);
             appbar_notify_all(NULL, ABN_WINDOWARRANGE, NULL, FALSE);
+            g_Arrangement = CASCADED;
             break;
 
         case ID_SHELL_CMD_CUST_NOTIF:
@@ -651,11 +919,17 @@ public:
         return TRUE;
     }
 
+    VOID HideStartMenu()
+    {
+        m_StartMenuPopup->OnSelect(MPOS_CANCELLEVEL);
+    }
+
     LRESULT HandleHotKey(DWORD id)
     {
         switch (id)
         {
         case IDHK_RUN:
+            HideStartMenu();
             DisplayRunFileDlg();
             break;
         case IDHK_HELP:
@@ -704,6 +978,7 @@ public:
                 // TODO:
                 break;
             case TRAYCMD_RUN_DIALOG:
+                HideStartMenu();
                 DisplayRunFileDlg();
                 break;
             case TRAYCMD_LOGOFF_DIALOG:
@@ -745,6 +1020,7 @@ public:
                 if (SHRestricted(REST_CLASSICSHELL) == 0)
                 {
                     Lock(!g_TaskbarSettings.bLock);
+                    g_TaskbarSettings.Save();
                 }
                 break;
             case TRAYCMD_HELP_AND_SUPPORT:
@@ -1338,6 +1614,8 @@ GetPrimaryScreenRect:
 
             m_Monitor = m_DraggingMonitor;
             m_Position = m_DraggingPosition;
+            g_TaskbarSettings.sr.Position = m_Position;
+            g_TaskbarSettings.Save();
             IsDragging = FALSE;
 
             m_TrayRects[m_Position] = rcTray;
@@ -1616,7 +1894,7 @@ ChangePos:
 
         /* We're about to resize/move the start button, the rebar control and
            the tray notification control */
-        dwp = BeginDeferWindowPos(3);
+        dwp = BeginDeferWindowPos(4);
         if (dwp == NULL)
         {
             ERR("BeginDeferWindowPos failed. lastErr=%d\n", GetLastError());
@@ -1652,6 +1930,35 @@ ChangePos:
                 ERR("DeferWindowPos for start button failed. lastErr=%d\n", GetLastError());
                 return;
             }
+        }
+
+        if (m_ShowDesktopButton.m_hWnd)
+        {
+            // Get rectangle from rcClient
+            RECT rc = rcClient;
+            INT cxyShowDesktop = m_ShowDesktopButton.WidthOrHeight();
+            if (Horizontal)
+            {
+                rc.left = rc.right - cxyShowDesktop;
+                rc.right += 5; // excessive
+            }
+            else
+            {
+                rc.top = rc.bottom - cxyShowDesktop;
+                rc.bottom += 5; // excessive
+            }
+
+            /* Resize and reposition the button */
+            dwp = m_ShowDesktopButton.DeferWindowPos(dwp, NULL,
+                                                     rc.left, rc.top,
+                                                     rc.right - rc.left, rc.bottom - rc.top,
+                                                     SWP_NOZORDER | SWP_NOACTIVATE);
+
+            // Adjust rcClient
+            if (Horizontal)
+                rcClient.right -= cxyShowDesktop + ::GetSystemMetrics(SM_CXEDGE);
+            else
+                rcClient.bottom -= cxyShowDesktop + ::GetSystemMetrics(SM_CYEDGE);
         }
 
         /* Determine the size that the tray notification window needs */
@@ -2168,6 +2475,22 @@ ChangePos:
         return bPrevLock;
     }
 
+    /* The task window is visible and non-WS_EX_TOOLWINDOW and
+       { has WS_EX_APPWINDOW style or has no owner } and is none of explorer's
+       special windows (such as the desktop or the tray window) */
+    BOOL STDMETHODCALLTYPE IsTaskWnd(HWND hWnd)
+    {
+        if (::IsWindow(hWnd) && ::IsWindowVisible(hWnd) && !IsSpecialHWND(hWnd))
+        {
+            DWORD exStyle = (DWORD)::GetWindowLongPtr(hWnd, GWL_EXSTYLE);
+            if (((exStyle & WS_EX_APPWINDOW) || ::GetWindow(hWnd, GW_OWNER) == NULL) &&
+                !(exStyle & WS_EX_TOOLWINDOW))
+            {
+                return TRUE;
+            }
+        }
+        return FALSE;
+    }
 
     /*
      *  IContextMenu
@@ -2208,6 +2531,15 @@ ChangePos:
         return m_ContextMenu->GetCommandString(idCmd, uType, pwReserved, pszName, cchMax);
     }
 
+    BOOL IsShowDesktopButtonNeeded() // Read the registry value
+    {
+        return SHRegGetBoolUSValueW(
+            L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced",
+            L"TaskbarSd",
+            FALSE,
+            TRUE);
+    }
+
     /**********************************************************
      *    ##### message handling #####
      */
@@ -2222,6 +2554,10 @@ ChangePos:
 
         /* Create the Start button */
         m_StartButton.Create(m_hWnd);
+
+        /* Create the 'Show Desktop' button if necessary */
+        if (IsShowDesktopButtonNeeded())
+            m_ShowDesktopButton.DoCreate(m_hWnd);
 
         /* Load the saved tray window settings */
         RegLoadSettings();
@@ -2291,6 +2627,15 @@ ChangePos:
         return TRUE;
     }
 
+#define TIMER_ID_IGNOREPULSERESET 888
+#define TIMER_IGNOREPULSERESET_TIMEOUT 200
+
+    LRESULT OnDestroy(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled)
+    {
+        KillTimer(TIMER_ID_IGNOREPULSERESET);
+        return 0;
+    }
+
     LRESULT OnThemeChanged(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled)
     {
         if (m_Theme)
@@ -2351,7 +2696,7 @@ ChangePos:
 
     LRESULT OnCopyData(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled)
     {
-        COPYDATASTRUCT *pCopyData = reinterpret_cast<COPYDATASTRUCT *>(lParam);
+        COPYDATASTRUCT *pCopyData = (COPYDATASTRUCT *)lParam;
         switch (pCopyData->dwData)
         {
             case TABDMC_APPBAR:
@@ -2363,19 +2708,36 @@ ChangePos:
         return FALSE;
     }
 
+    // We have to draw non-client area because the 'Show Desktop' button is beyond client area.
+    void DrawShowDesktopButton()
+    {
+        if (!m_ShowDesktopButton.IsWindow())
+            return;
+        // Get the rectangle in window coordinates
+        RECT rcButton, rcWnd;
+        GetWindowRect(&rcWnd);
+        m_ShowDesktopButton.GetWindowRect(&rcButton);
+        ::OffsetRect(&rcButton, -rcWnd.left, -rcWnd.top);
+
+        HDC hdc = GetDCEx(NULL, DCX_WINDOW | DCX_CACHE);
+        m_ShowDesktopButton.OnDraw(hdc, &rcButton); // Draw the button
+        ReleaseDC(hdc);
+    }
+
     LRESULT OnNcPaint(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled)
     {
-        if (!m_Theme)
+        DefWindowProc(uMsg, wParam, lParam);
+        bHandled = TRUE;
+
+        if (!m_Theme || g_TaskbarSettings.bLock)
         {
-            bHandled = FALSE;
-            return 0;
-        }
-        else if (g_TaskbarSettings.bLock)
-        {
+            DrawShowDesktopButton(); // We have to draw non-client area
             return 0;
         }
 
-        return DrawSizerWithTheme((HRGN) wParam);
+        DrawSizerWithTheme((HRGN) wParam);
+        DrawShowDesktopButton(); // We have to draw non-client area
+        return 0;
     }
 
     LRESULT OnCtlColorBtn(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled)
@@ -2600,11 +2962,12 @@ ChangePos:
 
         POINT pt = {GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam)};
         WINDOWINFO wi = {sizeof(WINDOWINFO)};
-        RECT rcStartBtn;
 
         bHandled = FALSE;
 
+        RECT rcStartBtn;
         m_StartButton.GetWindowRect(&rcStartBtn);
+
         GetWindowInfo(m_hWnd, &wi);
 
         switch (m_Position)
@@ -2631,9 +2994,7 @@ ChangePos:
             case ABE_BOTTOM:
             {
                 if (pt.x > rcStartBtn.right || pt.y < rcStartBtn.top)
-                {
                     return 0;
-                }
 
                 if (rcStartBtn.bottom + (int)wi.cyWindowBorders * 2 + 1 < wi.rcWindow.bottom &&
                     pt.y > rcStartBtn.bottom)
@@ -2762,6 +3123,19 @@ HandleTrayContextMenu:
         return Ret;
     }
 
+    BOOL CheckShowDesktopButtonClick(LPARAM lParam, BOOL& bHandled)
+    {
+        POINT pt = {GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam)};
+        if (m_ShowDesktopButton.PtInButton(pt)) // Did you click the button?
+        {
+            m_ShowDesktopButton.Click();
+            bHandled = TRUE;
+            return TRUE;
+        }
+
+        return FALSE;
+    }
+
     LRESULT OnNcLButtonDblClick(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled)
     {
         /* Let the clock handle the double click */
@@ -2770,6 +3144,12 @@ HandleTrayContextMenu:
         /* We "handle" this message so users can't cause a weird maximize/restore
         window animation when double-clicking the tray window! */
         return TRUE;
+    }
+
+    LRESULT OnNcLButtonUp(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled)
+    {
+        CheckShowDesktopButtonClick(lParam, bHandled);
+        return FALSE;
     }
 
     LRESULT OnAppTrayDestroy(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled)
@@ -2786,13 +3166,9 @@ HandleTrayContextMenu:
             return FALSE;
 
         if (::IsWindowVisible(hwndStartMenu))
-        {
-            m_StartMenuPopup->OnSelect(MPOS_CANCELLEVEL);
-        }
+            HideStartMenu();
         else
-        {
             PopupStartMenu();
-        }
 
         return TRUE;
     }
@@ -2824,6 +3200,39 @@ HandleTrayContextMenu:
         return (LRESULT)m_TaskSwitch;
     }
 
+    void RestoreMinimizedNonTaskWnds(BOOL bDestroyed, HWND hwndActive)
+    {
+        for (INT i = g_MinimizedAll.GetSize() - 1; i >= 0; --i)
+        {
+            HWND hwnd = g_MinimizedAll[i].hwnd;
+            if (!hwnd || hwndActive == hwnd)
+                continue;
+
+            if (::IsWindowVisible(hwnd) && ::IsIconic(hwnd) &&
+                (!IsTaskWnd(hwnd) || !::IsWindowEnabled(hwnd)))
+            {
+                ::SetWindowPlacement(hwnd, &g_MinimizedAll[i].wndpl); // Restore
+            }
+        }
+
+        g_MinimizedAll.RemoveAll();
+
+        if (!bDestroyed)
+            ::SetForegroundWindow(hwndActive);
+    }
+
+    LRESULT OnPulse(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled)
+    {
+        if (IgnorePulse)
+            return 0;
+
+        KillTimer(TIMER_ID_IGNOREPULSERESET);
+        IgnorePulse = TRUE;
+        RestoreMinimizedNonTaskWnds((BOOL)wParam, (HWND)lParam);
+        SetTimer(TIMER_ID_IGNOREPULSERESET, TIMER_IGNOREPULSERESET_TIMEOUT, NULL);
+        return 0;
+    }
+
     LRESULT OnHotkey(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled)
     {
         return HandleHotKey(wParam);
@@ -2834,8 +3243,7 @@ HandleTrayContextMenu:
         HWND hwndDesktop;
         HWND hTrayWnd;
         HWND hwndProgman;
-        BOOL bRet;
-        CSimpleArray<HWND> *pMinimizedAll;
+        CSimpleArray<MINWNDPOS> *pMinimizedAll;
         BOOL bShowDesktop;
     };
 
@@ -2849,11 +3257,9 @@ HandleTrayContextMenu:
     static BOOL CALLBACK MinimizeWindowsProc(HWND hwnd, LPARAM lParam)
     {
         MINIMIZE_INFO *info = (MINIMIZE_INFO *)lParam;
-        if (hwnd == info->hwndDesktop || hwnd == info->hTrayWnd ||
-            hwnd == info->hwndProgman)
-        {
-            return TRUE;
-        }
+        if (hwnd == info->hwndDesktop || hwnd == info->hTrayWnd || hwnd == info->hwndProgman)
+            return TRUE; // Ignore special windows
+
         if (!info->bShowDesktop)
         {
             if (!::IsWindowEnabled(hwnd) || IsDialog(hwnd))
@@ -2862,35 +3268,36 @@ HandleTrayContextMenu:
             if (hwndOwner && !::IsWindowEnabled(hwndOwner))
                 return TRUE;
         }
-        if (::IsWindowVisible(hwnd) && !::IsIconic(hwnd))
+
+        if (CanBeMinimized(hwnd))
         {
-            ::ShowWindowAsync(hwnd, SW_MINIMIZE);
-            info->bRet = TRUE;
-            info->pMinimizedAll->Add(hwnd);
+            MINWNDPOS mwp = { hwnd, { sizeof(mwp.wndpl) } };
+            if (::GetWindowPlacement(hwnd, &mwp.wndpl) && // Save the position and status
+                ::ShowWindowAsync(hwnd, SW_SHOWMINNOACTIVE)) // Minimize
+            {
+                info->pMinimizedAll->Add(mwp);
+            }
         }
+
         return TRUE;
     }
 
     VOID MinimizeAll(BOOL bShowDesktop = FALSE)
     {
+        IgnorePulse = TRUE;
+        KillTimer(TIMER_ID_IGNOREPULSERESET);
+
         MINIMIZE_INFO info;
         info.hwndDesktop = GetDesktopWindow();;
         info.hTrayWnd = FindWindowW(L"Shell_TrayWnd", NULL);
         info.hwndProgman = FindWindowW(L"Progman", NULL);
-        info.bRet = FALSE;
         info.pMinimizedAll = &g_MinimizedAll;
         info.bShowDesktop = bShowDesktop;
         EnumWindows(MinimizeWindowsProc, (LPARAM)&info);
 
-        // invalid handles should be cleared to avoid mismatch of handles
-        for (INT i = 0; i < g_MinimizedAll.GetSize(); ++i)
-        {
-            if (!::IsWindow(g_MinimizedAll[i]))
-                g_MinimizedAll[i] = NULL;
-        }
-
         ::SetForegroundWindow(m_DesktopWnd);
         ::SetFocus(m_DesktopWnd);
+        SetTimer(TIMER_ID_IGNOREPULSERESET, TIMER_IGNOREPULSERESET_TIMEOUT, NULL);
     }
 
     VOID ShowDesktop()
@@ -2900,15 +3307,18 @@ HandleTrayContextMenu:
 
     VOID RestoreAll()
     {
+        IgnorePulse = TRUE;
+        KillTimer(TIMER_ID_IGNOREPULSERESET);
+
         for (INT i = g_MinimizedAll.GetSize() - 1; i >= 0; --i)
         {
-            HWND hwnd = g_MinimizedAll[i];
+            HWND hwnd = g_MinimizedAll[i].hwnd;
             if (::IsWindowVisible(hwnd) && ::IsIconic(hwnd))
-            {
-                ::ShowWindowAsync(hwnd, SW_RESTORE);
-            }
+                ::SetWindowPlacement(hwnd, &g_MinimizedAll[i].wndpl);
         }
+
         g_MinimizedAll.RemoveAll();
+        SetTimer(TIMER_ID_IGNOREPULSERESET, TIMER_IGNOREPULSERESET_TIMEOUT, NULL);
     }
 
     LRESULT OnCommand(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled)
@@ -2929,6 +3339,11 @@ HandleTrayContextMenu:
 
     LRESULT OnMouseMove(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled)
     {
+        POINT pt;
+        ::GetCursorPos(&pt);
+        if (m_ShowDesktopButton.PtInButton(pt))
+            m_ShowDesktopButton.StartHovering();
+
         if (g_TaskbarSettings.sr.AutoHide)
         {
             SetTimer(TIMER_ID_MOUSETRACK, MOUSETRACK_INTERVAL, NULL);
@@ -2947,9 +3362,20 @@ HandleTrayContextMenu:
         {
             ProcessAutoHide();
         }
+        else if (wParam == TIMER_ID_IGNOREPULSERESET)
+        {
+            KillTimer(TIMER_ID_IGNOREPULSERESET);
+            IgnorePulse = FALSE;
+        }
+        return 0;
+    }
 
-        bHandled = FALSE;
-        return TRUE;
+    LRESULT OnNcActivate(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled)
+    {
+        LRESULT ret = DefWindowProc(uMsg, wParam, lParam);
+        DrawShowDesktopButton(); // We have to draw non-client area
+        bHandled = TRUE;
+        return ret;
     }
 
     LRESULT OnNcCalcSize(INT code, WPARAM wParam, LPARAM lParam, BOOL& bHandled)
@@ -2989,12 +3415,30 @@ HandleTrayContextMenu:
             ::EnableMenuItem(hMenu, ID_SHELL_CMD_CASCADE_WND, MF_BYCOMMAND | MF_ENABLED);
             ::EnableMenuItem(hMenu, ID_SHELL_CMD_TILE_WND_H, MF_BYCOMMAND | MF_ENABLED);
             ::EnableMenuItem(hMenu, ID_SHELL_CMD_TILE_WND_V, MF_BYCOMMAND | MF_ENABLED);
+            if (g_Arrangement != NONE)
+            {
+                CStringW strCaption((g_Arrangement == TILED) ? MAKEINTRESOURCEW(IDS_TRAYWND_UNDO_TILE)
+                                                             : MAKEINTRESOURCEW(IDS_TRAYWND_UNDO_CASCADE));
+                MENUITEMINFOW mii = { sizeof(mii) };
+                ::GetMenuItemInfoW(hMenu, ID_SHELL_CMD_UNDO_ACTION, FALSE, &mii);
+                mii.fMask = MIIM_TYPE;
+                mii.fType = MFT_STRING;
+                mii.dwTypeData = const_cast<LPWSTR>(&strCaption[0]);
+                ::SetMenuItemInfoW(hMenu, ID_SHELL_CMD_UNDO_ACTION, FALSE, &mii);
+            }
+            else
+            {
+                ::DeleteMenu(hMenu, ID_SHELL_CMD_UNDO_ACTION, MF_BYCOMMAND);
+            }
         }
         else
         {
             ::EnableMenuItem(hMenu, ID_SHELL_CMD_CASCADE_WND, MF_BYCOMMAND | MF_GRAYED);
             ::EnableMenuItem(hMenu, ID_SHELL_CMD_TILE_WND_H, MF_BYCOMMAND | MF_GRAYED);
             ::EnableMenuItem(hMenu, ID_SHELL_CMD_TILE_WND_V, MF_BYCOMMAND | MF_GRAYED);
+            ::DeleteMenu(hMenu, ID_SHELL_CMD_UNDO_ACTION, MF_BYCOMMAND);
+            g_Arrangement = NONE;
+            g_WindowPosBackup.RemoveAll();
         }
         return 0;
     }
@@ -3112,7 +3556,7 @@ HandleTrayContextMenu:
         MESSAGE_HANDLER(WM_ERASEBKGND, OnEraseBackground)
         MESSAGE_HANDLER(WM_SIZE, OnSize)
         MESSAGE_HANDLER(WM_CREATE, OnCreate)
-        /*MESSAGE_HANDLER(WM_DESTROY, OnDestroy)*/
+        MESSAGE_HANDLER(WM_DESTROY, OnDestroy)
         MESSAGE_HANDLER(WM_NCHITTEST, OnNcHitTest)
         MESSAGE_HANDLER(WM_COMMAND, OnCommand)
         MESSAGE_HANDLER(WM_SYSCOMMAND, OnSysCommand)
@@ -3122,6 +3566,7 @@ HandleTrayContextMenu:
         MESSAGE_HANDLER(WM_DISPLAYCHANGE, OnDisplayChange)
         MESSAGE_HANDLER(WM_COPYDATA, OnCopyData)
         MESSAGE_HANDLER(WM_NCPAINT, OnNcPaint)
+        MESSAGE_HANDLER(WM_NCACTIVATE, OnNcActivate)
         MESSAGE_HANDLER(WM_CTLCOLORBTN, OnCtlColorBtn)
         MESSAGE_HANDLER(WM_MOVING, OnMoving)
         MESSAGE_HANDLER(WM_SIZING, OnSizing)
@@ -3132,6 +3577,7 @@ HandleTrayContextMenu:
         MESSAGE_HANDLER(WM_SYSCHAR, OnSysChar)
         MESSAGE_HANDLER(WM_NCRBUTTONUP, OnNcRButtonUp)
         MESSAGE_HANDLER(WM_NCLBUTTONDBLCLK, OnNcLButtonDblClick)
+        MESSAGE_HANDLER(WM_NCLBUTTONUP, OnNcLButtonUp)
         MESSAGE_HANDLER(WM_MOUSEMOVE, OnMouseMove)
         MESSAGE_HANDLER(WM_NCMOUSEMOVE, OnMouseMove)
         MESSAGE_HANDLER(WM_APP_TRAYDESTROY, OnAppTrayDestroy)
@@ -3143,6 +3589,7 @@ HandleTrayContextMenu:
         MESSAGE_HANDLER(TWM_OPENSTARTMENU, OnOpenStartMenu)
         MESSAGE_HANDLER(TWM_DOEXITWINDOWS, OnDoExitWindows)
         MESSAGE_HANDLER(TWM_GETTASKSWITCH, OnGetTaskSwitch)
+        MESSAGE_HANDLER(TWM_PULSE, OnPulse)
     ALT_MSG_MAP(1)
     END_MSG_MAP()
 
@@ -3327,6 +3774,7 @@ public:
 
         if (TrayWnd->m_TrayBandSite != NULL)
         {
+            pcm.Release();
             if (FAILED(TrayWnd->m_TrayBandSite->AddContextMenus(
                 hPopup,
                 indexMenu,
@@ -3336,7 +3784,7 @@ public:
                 &pcm)))
             {
                 WARN("AddContextMenus failed.\n");
-                pcm = NULL;
+                pcm.Release();
             }
         }
 

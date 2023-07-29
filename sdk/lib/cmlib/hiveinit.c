@@ -306,7 +306,7 @@ HvpInitializeMemoryHive(
         BlockIndex += Bin->Size / HBLOCK_SIZE;
     }
 
-    if (HvpCreateHiveFreeCellList(Hive))
+    if (!NT_SUCCESS(HvpCreateHiveFreeCellList(Hive)))
     {
         HvpFreeHiveBins(Hive);
         Hive->Free(Hive->BaseBlock, Hive->BaseBlockAlloc);
@@ -561,6 +561,11 @@ HvInitialize(
     Hive->Log = (FileType == HFILE_TYPE_LOG);
 #endif
     Hive->HiveFlags = HiveFlags & ~HIVE_NOLAZYFLUSH;
+
+    // TODO: The CellRoutines point to different callbacks
+    // depending on the OperationType.
+    Hive->GetCellRoutine = HvpGetCellData;
+    Hive->ReleaseCellRoutine = NULL;
 
     switch (OperationType)
     {

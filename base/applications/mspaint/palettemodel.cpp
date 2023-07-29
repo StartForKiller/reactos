@@ -1,15 +1,14 @@
 /*
- * PROJECT:     PAINT for ReactOS
- * LICENSE:     LGPL
- * FILE:        base/applications/mspaint/palettemodel.cpp
- * PURPOSE:     Keep track of palette data, notify listeners
- * PROGRAMMERS: Benedikt Freisen
- *              Katayama Hirofumi MZ
+ * PROJECT:    PAINT for ReactOS
+ * LICENSE:    LGPL-2.0-or-later (https://spdx.org/licenses/LGPL-2.0-or-later)
+ * PURPOSE:    Keep track of palette data, notify listeners
+ * COPYRIGHT:  Copyright 2015 Benedikt Freisen <b.freisen@gmx.net>
+ *             Copyright 2021 Katayama Hirofumi MZ <katayama.hirofumi.mz@gmail.com>
  */
 
-/* INCLUDES *********************************************************/
-
 #include "precomp.h"
+
+PaletteModel paletteModel;
 
 /* FUNCTIONS ********************************************************/
 
@@ -95,11 +94,16 @@ void PaletteModel::SetBgColor(COLORREF newColor)
 
 void PaletteModel::NotifyColorChanged()
 {
-    paletteWindow.SendMessage(WM_PALETTEMODELCOLORCHANGED);
-    selectionWindow.SendMessage(WM_PALETTEMODELCOLORCHANGED);
+    if (paletteWindow.IsWindow())
+        paletteWindow.SendMessage(WM_PALETTEMODELCOLORCHANGED);
+    if (canvasWindow.IsWindow())
+        canvasWindow.SendMessage(WM_PALETTEMODELCOLORCHANGED);
+    if (textEditWindow.IsWindow())
+        textEditWindow.SendMessage(WM_PALETTEMODELCOLORCHANGED);
 }
 
 void PaletteModel::NotifyPaletteChanged()
 {
-    paletteWindow.SendMessage(WM_PALETTEMODELPALETTECHANGED);
+    if (paletteWindow.IsWindow())
+        paletteWindow.Invalidate(FALSE);
 }

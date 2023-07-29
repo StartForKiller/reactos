@@ -9,10 +9,8 @@ include_directories(
     ${REACTOS_SOURCE_DIR}/sdk/include/reactos/drivers)
 
 add_definitions(
-    -D__NTOSKRNL__
     -D_NTOSKRNL_
     -D_NTSYSTEM_
-    -D_IN_KERNEL_
     -DNTDDI_VERSION=0x05020400)
 
 if(NOT DEFINED NEWCC)
@@ -124,6 +122,7 @@ list(APPEND SOURCE
     ${REACTOS_SOURCE_DIR}/ntoskrnl/fstub/fstubex.c
     ${REACTOS_SOURCE_DIR}/ntoskrnl/fstub/halstub.c
     ${REACTOS_SOURCE_DIR}/ntoskrnl/fstub/translate.c
+    ${REACTOS_SOURCE_DIR}/ntoskrnl/inbv/bootanim.c
     ${REACTOS_SOURCE_DIR}/ntoskrnl/inbv/inbv.c
     ${REACTOS_SOURCE_DIR}/ntoskrnl/inbv/inbvport.c
     ${REACTOS_SOURCE_DIR}/ntoskrnl/io/iomgr/adapter.c
@@ -151,13 +150,14 @@ list(APPEND SOURCE
     ${REACTOS_SOURCE_DIR}/ntoskrnl/io/iomgr/symlink.c
     ${REACTOS_SOURCE_DIR}/ntoskrnl/io/iomgr/util.c
     ${REACTOS_SOURCE_DIR}/ntoskrnl/io/iomgr/volume.c
-    ${REACTOS_SOURCE_DIR}/ntoskrnl/io/pnpmgr/arbs.c
+    ${REACTOS_SOURCE_DIR}/ntoskrnl/io/pnpmgr/arbiters.c
     ${REACTOS_SOURCE_DIR}/ntoskrnl/io/pnpmgr/devaction.c
     ${REACTOS_SOURCE_DIR}/ntoskrnl/io/pnpmgr/devnode.c
     ${REACTOS_SOURCE_DIR}/ntoskrnl/io/pnpmgr/plugplay.c
     ${REACTOS_SOURCE_DIR}/ntoskrnl/io/pnpmgr/pnpdma.c
     ${REACTOS_SOURCE_DIR}/ntoskrnl/io/pnpmgr/pnpinit.c
     ${REACTOS_SOURCE_DIR}/ntoskrnl/io/pnpmgr/pnpirp.c
+    ${REACTOS_SOURCE_DIR}/ntoskrnl/io/pnpmgr/pnpmap.c
     ${REACTOS_SOURCE_DIR}/ntoskrnl/io/pnpmgr/pnpmgr.c
     ${REACTOS_SOURCE_DIR}/ntoskrnl/io/pnpmgr/pnpnotify.c
     ${REACTOS_SOURCE_DIR}/ntoskrnl/io/pnpmgr/pnpreport.c
@@ -276,18 +276,28 @@ list(APPEND SOURCE
     ${REACTOS_SOURCE_DIR}/ntoskrnl/se/accesschk.c
     ${REACTOS_SOURCE_DIR}/ntoskrnl/se/acl.c
     ${REACTOS_SOURCE_DIR}/ntoskrnl/se/audit.c
+    ${REACTOS_SOURCE_DIR}/ntoskrnl/se/client.c
+    ${REACTOS_SOURCE_DIR}/ntoskrnl/se/objtype.c
     ${REACTOS_SOURCE_DIR}/ntoskrnl/se/priv.c
     ${REACTOS_SOURCE_DIR}/ntoskrnl/se/sd.c
     ${REACTOS_SOURCE_DIR}/ntoskrnl/se/semgr.c
     ${REACTOS_SOURCE_DIR}/ntoskrnl/se/sid.c
     ${REACTOS_SOURCE_DIR}/ntoskrnl/se/sqos.c
     ${REACTOS_SOURCE_DIR}/ntoskrnl/se/srm.c
+    ${REACTOS_SOURCE_DIR}/ntoskrnl/se/subject.c
     ${REACTOS_SOURCE_DIR}/ntoskrnl/se/token.c
+    ${REACTOS_SOURCE_DIR}/ntoskrnl/se/tokenadj.c
+    ${REACTOS_SOURCE_DIR}/ntoskrnl/se/tokencls.c
+    ${REACTOS_SOURCE_DIR}/ntoskrnl/se/tokenlif.c
     ${REACTOS_SOURCE_DIR}/ntoskrnl/vf/driver.c
     ${REACTOS_SOURCE_DIR}/ntoskrnl/wmi/guidobj.c
     ${REACTOS_SOURCE_DIR}/ntoskrnl/wmi/smbios.c
     ${REACTOS_SOURCE_DIR}/ntoskrnl/wmi/wmi.c
     ${REACTOS_SOURCE_DIR}/ntoskrnl/wmi/wmidrv.c)
+
+if(DBG)
+    list(APPEND SOURCE ${REACTOS_SOURCE_DIR}/ntoskrnl/se/debug.c)
+endif()
 
 list(APPEND ASM_SOURCE ${REACTOS_SOURCE_DIR}/ntoskrnl/ex/zw.S)
 
@@ -357,7 +367,6 @@ elseif(ARCH STREQUAL "arm")
         ${REACTOS_SOURCE_DIR}/ntoskrnl/ke/arm/trap.s)
     list(APPEND SOURCE
         ${REACTOS_SOURCE_DIR}/ntoskrnl/config/arm/cmhardwr.c
-        ${REACTOS_SOURCE_DIR}/ntoskrnl/kd/arm/kdbg.c
         ${REACTOS_SOURCE_DIR}/ntoskrnl/kd64/arm/kdarm.c
         ${REACTOS_SOURCE_DIR}/ntoskrnl/ke/arm/cpu.c
         ${REACTOS_SOURCE_DIR}/ntoskrnl/ke/arm/exp.c
@@ -373,37 +382,44 @@ elseif(ARCH STREQUAL "arm")
 endif()
 
 if(NOT _WINKD_)
+    if(KDBG)
+        add_definitions(-DKDBG)
+    endif()
+
     if(ARCH STREQUAL "i386")
-        list(APPEND SOURCE
-            ${REACTOS_SOURCE_DIR}/ntoskrnl/kd/i386/kdbg.c)
+        list(APPEND SOURCE ${REACTOS_SOURCE_DIR}/ntoskrnl/kd/i386/kdserial.c)
         if(KDBG)
             list(APPEND ASM_SOURCE ${REACTOS_SOURCE_DIR}/ntoskrnl/kdbg/i386/kdb_help.S)
             list(APPEND SOURCE ${REACTOS_SOURCE_DIR}/ntoskrnl/kdbg/i386/i386-dis.c)
         endif()
     elseif(ARCH STREQUAL "amd64")
-        list(APPEND SOURCE
-            ${REACTOS_SOURCE_DIR}/ntoskrnl/kd/i386/kdbg.c)
+        list(APPEND SOURCE ${REACTOS_SOURCE_DIR}/ntoskrnl/kd/i386/kdserial.c)
         if(KDBG)
             list(APPEND ASM_SOURCE ${REACTOS_SOURCE_DIR}/ntoskrnl/kdbg/amd64/kdb_help.S)
             list(APPEND SOURCE ${REACTOS_SOURCE_DIR}/ntoskrnl/kdbg/i386/i386-dis.c)
         endif()
     elseif(ARCH STREQUAL "arm")
-        list(APPEND SOURCE ${REACTOS_SOURCE_DIR}/ntoskrnl/kd/arm/kdbg.c)
+        list(APPEND SOURCE ${REACTOS_SOURCE_DIR}/ntoskrnl/kd/arm/kdserial.c)
     endif()
 
     if(KDBG)
         list(APPEND SOURCE
             ${REACTOS_SOURCE_DIR}/ntoskrnl/kdbg/kdb.c
             ${REACTOS_SOURCE_DIR}/ntoskrnl/kdbg/kdb_cli.c
+            ${REACTOS_SOURCE_DIR}/ntoskrnl/kdbg/kdb_cmdhist.c
             ${REACTOS_SOURCE_DIR}/ntoskrnl/kdbg/kdb_expr.c
-            ${REACTOS_SOURCE_DIR}/ntoskrnl/kdbg/kdb_keyboard.c
-            ${REACTOS_SOURCE_DIR}/ntoskrnl/kdbg/kdb_serial.c
+            ${REACTOS_SOURCE_DIR}/ntoskrnl/kdbg/kdb_print.c
             ${REACTOS_SOURCE_DIR}/ntoskrnl/kdbg/kdb_symbols.c)
     endif()
 
     list(APPEND SOURCE
-        ${REACTOS_SOURCE_DIR}/ntoskrnl/kd/wrappers/kdbg.c
         ${REACTOS_SOURCE_DIR}/ntoskrnl/kd/kdio.c
-        ${REACTOS_SOURCE_DIR}/ntoskrnl/kd/kdmain.c)
+        ${REACTOS_SOURCE_DIR}/ntoskrnl/kd/kdmain.c
+        ${REACTOS_SOURCE_DIR}/ntoskrnl/kd/kdprompt.c
+        ${REACTOS_SOURCE_DIR}/ntoskrnl/kd/kdps2kbd.c
+        ${REACTOS_SOURCE_DIR}/ntoskrnl/kd/kdserial.c
+        ${REACTOS_SOURCE_DIR}/ntoskrnl/kd/kdterminal.c)
 
+else()
+    add_definitions(-D_WINKD_)
 endif()

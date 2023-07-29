@@ -1,24 +1,9 @@
 /*
- *  ReactOS Task Manager
- *
- * taskmgr.c : Defines the entry point for the application.
- *
- *  Copyright (C) 1999 - 2001  Brian Palmer  <brianp@reactos.org>
- *                2005         Klemens Friedl <frik85@reactos.at>
- *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2.1 of the License, or (at your option) any later version.
- *
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+ * PROJECT:     ReactOS Task Manager
+ * LICENSE:     LGPL-2.1-or-later (https://spdx.org/licenses/LGPL-2.1-or-later)
+ * PURPOSE:     Application Entry-point.
+ * COPYRIGHT:   Copyright 1999-2001 Brian Palmer <brianp@reactos.org>
+ *              Copyright 2005 Klemens Friedl <frik85@reactos.at>
  */
 
 #include "precomp.h"
@@ -324,6 +309,12 @@ TaskManagerWndProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
         case ID_PROCESS_PAGE_SETPRIORITY_LOW:
             DoSetPriority(IDLE_PRIORITY_CLASS);
             break;
+        case ID_PROCESS_PAGE_PROPERTIES:
+            ProcessPage_OnProperties();
+            break;
+        case ID_PROCESS_PAGE_OPENFILELOCATION:
+            ProcessPage_OnOpenFileLocation();
+            break;
 
 /* ShutDown items */
         case ID_SHUTDOWN_STANDBY:
@@ -427,21 +418,7 @@ TaskManagerWndProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
             }
         }
         break;
-#if 0
-    case WM_NCPAINT:
-        hdc = GetDC(hDlg);
-        GetClientRect(hDlg, &rc);
-        Draw3dRect(hdc, rc.left, rc.top, rc.right, rc.top + 2, GetSysColor(COLOR_3DSHADOW), GetSysColor(COLOR_3DHILIGHT));
-        ReleaseDC(hDlg, hdc);
-        break;
 
-    case WM_PAINT:
-        hdc = BeginPaint(hDlg, &ps);
-        GetClientRect(hDlg, &rc);
-        Draw3dRect(hdc, rc.left, rc.top, rc.right, rc.top + 2, GetSysColor(COLOR_3DSHADOW), GetSysColor(COLOR_3DHILIGHT));
-        EndPaint(hDlg, &ps);
-        break;
-#endif
     case WM_SIZING:
         /* Make sure the user is sizing the dialog */
         /* in an acceptable range */
@@ -479,7 +456,7 @@ TaskManagerWndProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 
     case WM_DESTROY:
         ShowWindow(hDlg, SW_HIDE);
-        TrayIcon_ShellRemoveTrayIcon();
+        TrayIcon_RemoveIcon();
         wp.length = sizeof(WINDOWPLACEMENT);
         GetWindowPlacement(hDlg, &wp);
         TaskManagerSettings.Left = wp.rcNormalPosition.left;
@@ -502,7 +479,7 @@ TaskManagerWndProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
         RefreshApplicationPage();
         RefreshProcessPage();
         RefreshPerformancePage();
-        TrayIcon_ShellUpdateTrayIcon();
+        TrayIcon_UpdateIcon();
         break;
 
     case WM_ENTERMENULOOP:
@@ -531,38 +508,12 @@ void FillSolidRect(HDC hDC, LPCRECT lpRect, COLORREF clr)
     ExtTextOutW(hDC, 0, 0, ETO_OPAQUE, lpRect, NULL, 0, NULL);
 }
 
-void FillSolidRect2(HDC hDC, int x, int y, int cx, int cy, COLORREF clr)
-{
-    RECT rect;
-
-    SetBkColor(hDC, clr);
-    rect.left = x;
-    rect.top = y;
-    rect.right = x + cx;
-    rect.bottom = y + cy;
-    ExtTextOutW(hDC, 0, 0, ETO_OPAQUE, &rect, NULL, 0, NULL);
-}
-
-void Draw3dRect(HDC hDC, int x, int y, int cx, int cy, COLORREF clrTopLeft, COLORREF clrBottomRight)
-{
-    FillSolidRect2(hDC, x, y, cx - 1, 1, clrTopLeft);
-    FillSolidRect2(hDC, x, y, 1, cy - 1, clrTopLeft);
-    FillSolidRect2(hDC, x + cx, y, -1, cy, clrBottomRight);
-    FillSolidRect2(hDC, x, y + cy, cx, -1, clrBottomRight);
-}
-
-void Draw3dRect2(HDC hDC, LPRECT lpRect, COLORREF clrTopLeft, COLORREF clrBottomRight)
-{
-    Draw3dRect(hDC, lpRect->left, lpRect->top, lpRect->right - lpRect->left,
-        lpRect->bottom - lpRect->top, clrTopLeft, clrBottomRight);
-}
-
 static void SetUpdateSpeed(HWND hWnd)
 {
     /* Setup update speed (pause=fall down) */
     switch (TaskManagerSettings.UpdateSpeed) {
     case ID_VIEW_UPDATESPEED_HIGH:
-        SetTimer(hWnd, 1, 1000, NULL);
+        SetTimer(hWnd, 1, 500, NULL);
         break;
     case ID_VIEW_UPDATESPEED_NORMAL:
         SetTimer(hWnd, 1, 2000, NULL);
@@ -767,7 +718,7 @@ BOOL OnCreate(HWND hWnd)
     RefreshProcessPage();
     RefreshPerformancePage();
 
-    TrayIcon_ShellAddTrayIcon();
+    TrayIcon_AddIcon();
 
     return TRUE;
 }

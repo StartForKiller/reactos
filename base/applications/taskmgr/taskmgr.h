@@ -1,23 +1,8 @@
 /*
- *  ReactOS Task Manager
- *
- *  taskmgr.h
- *
- *  Copyright (C) 1999 - 2001  Brian Palmer  <brianp@reactos.org>
- *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2.1 of the License, or (at your option) any later version.
- *
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+ * PROJECT:     ReactOS Task Manager
+ * LICENSE:     LGPL-2.1-or-later (https://spdx.org/licenses/LGPL-2.1-or-later)
+ * PURPOSE:     Main Header.
+ * COPYRIGHT:   Copyright 1999-2001 Brian Palmer <brianp@reactos.org>
  */
 
 #pragma once
@@ -106,9 +91,6 @@ BOOL OnCreate(HWND hWnd);
 void OnSize(WPARAM nType, int cx, int cy);
 void OnMove(WPARAM nType, int cx, int cy);
 void FillSolidRect(HDC hDC, LPCRECT lpRect, COLORREF clr);
-void FillSolidRect2(HDC hDC, int x, int y, int cx, int cy, COLORREF clr);
-void Draw3dRect(HDC hDC, int x, int y, int cx, int cy, COLORREF clrTopLeft, COLORREF clrBottomRight);
-void Draw3dRect2(HDC hDC, LPRECT lpRect, COLORREF clrTopLeft, COLORREF clrBottomRight);
 void LoadSettings(void);
 void SaveSettings(void);
 void TaskManager_OnRestoreMainWindow(void);

@@ -11,6 +11,8 @@
 
 #include <ntoskrnl.h>
 #include <reactos/buildno.h>
+#include "inbv/logo.h"
+
 #define NDEBUG
 #include <debug.h>
 
@@ -647,6 +649,7 @@ ExpInitSystemPhase0(VOID)
     /* Initialize the Firmware Table resource and listhead */
     InitializeListHead(&ExpFirmwareTableProviderListHead);
     ExInitializeResourceLite(&ExpFirmwareTableResource);
+    ExInitializeResourceLite(&ExpTimeRefreshLock);
 
     /* Set the suite mask to maximum and return */
     ExSuiteMask = 0xFFFFFFFF;

@@ -2,6 +2,7 @@
 list(APPEND SOURCE
     AttachThreadInput.c
     ../include/msgtrace.c
+    CharFuncs.c
     CloseWindow.c
     CreateDialog.c
     CreateIconFromResourceEx.c
@@ -14,15 +15,18 @@ list(APPEND SOURCE
     desktop.c
     EmptyClipboard.c
     EnumDisplaySettings.c
+    GetClassInfo.c
     GetDCEx.c
     GetIconInfo.c
     GetKeyState.c
     GetMessageTime.c
     GetPeekMessage.c
+    GetSetWindowInt.c
     GetSystemMetrics.c
     GetUserObjectInformation.c
     GetWindowPlacement.c
     InitializeLpkHooks.c
+    KbdLayout.c
     keybd_event.c
     LoadImage.c
     LookupIconIdFromDirectoryEx.c
@@ -48,6 +52,7 @@ list(APPEND SOURCE
     SwitchToThisWindow.c
     SystemParametersInfo.c
     TrackMouseEvent.c
+    VirtualKey.c
     WndProc.c
     wsprintf.c)
 
@@ -61,7 +66,7 @@ add_executable(user32_apitest
 
 target_link_libraries(user32_apitest wine ${PSEH_LIB})
 set_module_type(user32_apitest win32cui)
-add_importlibs(user32_apitest advapi32 gdi32 user32 msvcrt kernel32 ntdll)
+add_importlibs(user32_apitest advapi32 imm32 gdi32 user32 msvcrt kernel32 ntdll)
 add_pch(user32_apitest precomp.h "${PCH_SKIP_SOURCE}")
 add_rostests_file(TARGET user32_apitest)
 

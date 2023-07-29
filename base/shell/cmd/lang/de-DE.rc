@@ -112,7 +112,7 @@ device."
 DATE [/T][Datum]\n\n\
   /T           nur Datum anzeigen\n\n\
 Der Befehl DATE ohne Parameter zeigt das aktuelle Datum an und fragt nach\n\
-einem neuen. Drücken Sie die EINGABETASTE, um das bisherige Datum zu behalten."
+einem neuen. Drücken Sie ENTER, um das bisherige Datum zu behalten."
     STRING_DEL_HELP1 "Löscht eine oder mehrere Dateien.\n\n\
 DEL [/N /P /T /Q /W /Y /Z] Dateinamen ...\n\
 DELETE [/N /P /T /Q /W /Y /Z] Dateinamen ...\n\
@@ -170,10 +170,10 @@ Optionen können in der Umgebungsvariablen DIRCMD voreingestellt werden.\n\
     STRING_DIR_HELP2 " Datenträger in Laufwerk %c ist %s\n"
     STRING_DIR_HELP3 " Datenträger in Laufwerk %c hat keine Bezeichnung\n"
     STRING_DIR_HELP4 " Volumeseriennummer: %04X-%04X\n"
-    STRING_DIR_HELP5 "\n     Anzahl der angezeigten Dateien:\n%16i Datei(en)% 15s Bytes\n"
-    STRING_DIR_HELP6 "%16i Verzeichnis(se), % 15s Bytes frei\n"
+    STRING_DIR_HELP5 "\n     Anzahl der angezeigten Dateien:\n%16i Datei(en)        %14s Bytes\n"
+    STRING_DIR_HELP6 "%16i Verzeichnis(se), %14s Bytes frei\n"
     STRING_DIR_HELP7 "\n Verzeichnis von %s\n\n"
-    STRING_DIR_HELP8 "%16i Datei(en)% 14s Bytes\n"
+    STRING_DIR_HELP8 "%16i Datei(en)        %14s Bytes\n"
     STRING_DIRSTACK_HELP1 "Speichert das aktuelle Verzeichnis für den POPD-Befehl und\n\
 wechselt dann in das festgelegte Verzeichnis.\n\n\
 PUSHD [path | ..]\n\n\
@@ -393,7 +393,7 @@ TITLE [Zeichenfolge]\n\n\
 TIME [/T][Zeit]\n\n\
   /T    nur anzeigen\n\n\
 TIME ohne Parameter zeigt die aktuelle Systemzeit an und fragt nach der neuen\n\
-Uhrzeit. Drücken Sie die EINGABETASTE, um die bisherige Zeit beizubehalten."
+Uhrzeit. Drücken Sie ENTER, um die bisherige Zeit beizubehalten."
     STRING_TIME_HELP2 "Geben Sie eine neue Zeit ein: "
     STRING_TIMER_HELP1 "Verstrichene %d Millisekunden\n"
     STRING_TIMER_HELP2 "Verstrichene %02d%c%02d%c%02d%c%02d\n"
@@ -441,7 +441,7 @@ VER [/C][/R][/W]\n\n\
  (nach eigenem Belieben) jeder höheren Version veröffentlicht, verändern."
     STRING_VERSION_HELP5 "\nSenden Sie Fehlerberichte an <ros-dev@reactos.org>.\n\
 Updates sind auf der offiziellen ReactOS-Webseite verfügbar:\n\
-http://www.reactos.org"
+https://reactos.org"
     STRING_VERSION_HELP6 "\nFreeDOS-Version programmiert von:\n"
     STRING_VERSION_HELP7 "\nReactOS-Version programmiert von:\n"
     STRING_VOL_HELP1 " Datenträger im Laufwerk %c ist %s\n"

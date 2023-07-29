@@ -74,6 +74,7 @@ list(APPEND KMTEST_DRV_SOURCE
     ntos_ke/KeDevQueue.c
     ntos_ke/KeDpc.c
     ntos_ke/KeEvent.c
+    ntos_ke/KeFloatPointState.c
     ntos_ke/KeGuardedMutex.c
     ntos_ke/KeIrql.c
     ntos_ke/KeMutex.c
@@ -87,6 +88,7 @@ list(APPEND KMTEST_DRV_SOURCE
     ntos_mm/ZwCreateSection.c
     ntos_mm/ZwMapViewOfSection.c
     ntos_ob/ObHandle.c
+    ntos_ob/ObQuery.c
     ntos_ob/ObReference.c
     ntos_ob/ObSecurity.c
     ntos_ob/ObSymbolicLink.c
@@ -94,6 +96,7 @@ list(APPEND KMTEST_DRV_SOURCE
     ntos_ob/ObTypes.c
     ntos_ob/ObWait.c
     ntos_ps/PsNotify.c
+    ntos_ps/PsQuota.c
     ntos_se/SeHelpers.c
     ntos_se/SeInheritance.c
     ntos_se/SeLogonSession.c

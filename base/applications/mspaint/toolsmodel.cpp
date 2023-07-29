@@ -1,14 +1,13 @@
 /*
- * PROJECT:     PAINT for ReactOS
- * LICENSE:     LGPL
- * FILE:        base/applications/mspaint/toolsmodel.cpp
- * PURPOSE:     Keep track of tool parameters, notify listeners
- * PROGRAMMERS: Benedikt Freisen
+ * PROJECT:    PAINT for ReactOS
+ * LICENSE:    LGPL-2.0-or-later (https://spdx.org/licenses/LGPL-2.0-or-later)
+ * PURPOSE:    Keep track of tool parameters, notify listeners
+ * COPYRIGHT:  Copyright 2015 Benedikt Freisen <b.freisen@gmx.net>
  */
 
-/* INCLUDES *********************************************************/
-
 #include "precomp.h"
+
+ToolsModel toolsModel;
 
 /* FUNCTIONS ********************************************************/
 
@@ -28,7 +27,7 @@ ToolsModel::ToolsModel()
 
 ToolsModel::~ToolsModel()
 {
-    for (size_t i = 0; i < TOOL_MAX + 1; ++i)
+    for (size_t i = 0; i < _countof(m_tools); ++i)
         delete m_tools[i];
 }
 
@@ -38,6 +37,11 @@ ToolBase *ToolsModel::GetOrCreateTool(TOOLTYPE nTool)
         m_tools[nTool] = ToolBase::createToolObject(nTool);
 
     return m_tools[nTool];
+}
+
+BOOL ToolsModel::IsSelection() const
+{
+    return (GetActiveTool() == TOOL_RECTSEL || GetActiveTool() == TOOL_FREESEL);
 }
 
 int ToolsModel::GetLineWidth() const
@@ -85,6 +89,8 @@ TOOLTYPE ToolsModel::GetOldActiveTool() const
 
 void ToolsModel::SetActiveTool(TOOLTYPE nActiveTool)
 {
+    OnFinishDraw();
+
     switch (m_activeTool)
     {
         case TOOL_FREESEL:
@@ -94,6 +100,7 @@ void ToolsModel::SetActiveTool(TOOLTYPE nActiveTool)
         case TOOL_ZOOM:
         case TOOL_TEXT:
             break;
+
         default:
             m_oldActiveTool = m_activeTool;
             break;
@@ -135,6 +142,7 @@ void ToolsModel::SetBackgroundTransparent(BOOL bTransparent)
 {
     m_transpBg = bTransparent;
     NotifyToolSettingsChanged();
+    imageModel.NotifyImageChanged();
 }
 
 int ToolsModel::GetZoom() const
@@ -150,20 +158,32 @@ void ToolsModel::SetZoom(int nZoom)
 
 void ToolsModel::NotifyToolChanged()
 {
-    toolBoxContainer.SendMessage(WM_TOOLSMODELTOOLCHANGED, m_activeTool);
-    toolSettingsWindow.SendMessage(WM_TOOLSMODELTOOLCHANGED, m_activeTool);
-    textEditWindow.SendMessage(WM_TOOLSMODELTOOLCHANGED, m_activeTool);
+    if (toolBoxContainer.IsWindow())
+        toolBoxContainer.SendMessage(WM_TOOLSMODELTOOLCHANGED, m_activeTool);
+    if (toolSettingsWindow.IsWindow())
+        toolSettingsWindow.SendMessage(WM_TOOLSMODELTOOLCHANGED, m_activeTool);
+    if (fontsDialog.IsWindow())
+        fontsDialog.SendMessage(WM_TOOLSMODELTOOLCHANGED, m_activeTool);
+    if (textEditWindow.IsWindow())
+        textEditWindow.SendMessage(WM_TOOLSMODELTOOLCHANGED, m_activeTool);
 }
 
 void ToolsModel::NotifyToolSettingsChanged()
 {
-    toolSettingsWindow.SendMessage(WM_TOOLSMODELSETTINGSCHANGED);
-    selectionWindow.SendMessage(WM_TOOLSMODELSETTINGSCHANGED);
+    if (toolSettingsWindow.IsWindow())
+        toolSettingsWindow.SendMessage(WM_TOOLSMODELSETTINGSCHANGED);
+    if (textEditWindow.IsWindow())
+        textEditWindow.SendMessage(WM_TOOLSMODELSETTINGSCHANGED);
 }
 
 void ToolsModel::NotifyZoomChanged()
 {
-    toolSettingsWindow.SendMessage(WM_TOOLSMODELZOOMCHANGED);
+    if (toolSettingsWindow.IsWindow())
+        toolSettingsWindow.SendMessage(WM_TOOLSMODELZOOMCHANGED);
+    if (textEditWindow.IsWindow())
+        textEditWindow.SendMessage(WM_TOOLSMODELZOOMCHANGED);
+    if (canvasWindow.IsWindow())
+        canvasWindow.SendMessage(WM_TOOLSMODELZOOMCHANGED);
 }
 
 void ToolsModel::OnButtonDown(BOOL bLeftButton, LONG x, LONG y, BOOL bDoubleClick)
@@ -192,9 +212,28 @@ void ToolsModel::OnButtonUp(BOOL bLeftButton, LONG x, LONG y)
 
 void ToolsModel::OnCancelDraw()
 {
+    ATLTRACE("ToolsModel::OnCancelDraw()\n");
     m_pToolObject->beginEvent();
     m_pToolObject->OnCancelDraw();
     m_pToolObject->endEvent();
+}
+
+void ToolsModel::OnFinishDraw()
+{
+    ATLTRACE("ToolsModel::OnFinishDraw()\n");
+    m_pToolObject->beginEvent();
+    m_pToolObject->OnFinishDraw();
+    m_pToolObject->endEvent();
+}
+
+void ToolsModel::OnDrawOverlayOnImage(HDC hdc)
+{
+    m_pToolObject->OnDrawOverlayOnImage(hdc);
+}
+
+void ToolsModel::OnDrawOverlayOnCanvas(HDC hdc)
+{
+    m_pToolObject->OnDrawOverlayOnCanvas(hdc);
 }
 
 void ToolsModel::resetTool()

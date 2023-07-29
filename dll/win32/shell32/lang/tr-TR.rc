@@ -238,10 +238,10 @@ BEGIN
     EDITTEXT 14015, 58, 128, 170, 10, ES_LEFT | ES_READONLY | NOT WS_BORDER | NOT WS_TABSTOP | ES_AUTOHSCROLL
     LTEXT "", -1, 8, 144, 221, 1, SS_ETCHEDHORZ | WS_CHILD | WS_VISIBLE
     LTEXT "Öznitelikler:", 14020, 8, 152, 46, 10
-    AUTOCHECKBOX "&Salt Okunur", 14021, 58, 151, 70, 10
-    AUTOCHECKBOX "&Gizli", 14022, 126, 151, 70, 10
-    AUTOCHECKBOX "&Arşiv", 14023, 181, 151, 70, 10
-    PUSHBUTTON "G&elişmiş...", 14028, 158, 150, 70, 14, WS_CHILD | WS_VISIBLE | WS_TABSTOP
+    AUTOCHECKBOX "&Salt Okunur", 14021, 58, 151, 68, 10
+    AUTOCHECKBOX "&Gizli", 14022, 126, 151, 55, 10
+    AUTOCHECKBOX "&Arşiv", 14023, 181, 151, 59, 10
+    PUSHBUTTON "G&elişmiş...", 14028, 158, 170, 70, 14, WS_CHILD | WS_VISIBLE | WS_TABSTOP
 END
 
 IDD_FILE_PROPERTIES DIALOGEX 0, 0, 240, 205
@@ -323,12 +323,12 @@ BEGIN
     LTEXT "Kapasite:", -1, 25, 103, 80, 10
     EDITTEXT 14007, 110, 103, 86, 10, ES_LEFT | ES_READONLY | NOT WS_BORDER | NOT WS_TABSTOP | ES_AUTOHSCROLL
     EDITTEXT 14008, 197, 103, 33, 10, ES_LEFT | ES_READONLY | NOT WS_BORDER | NOT WS_TABSTOP | ES_AUTOHSCROLL
-    CONTROL "", 14015, "Static", SS_OWNERDRAW, 70, 116, 100, 30
-    LTEXT "Sürücü %c", 14009, 100, 150, 70, 10
-    PUSHBUTTON "&Disk Temizleme", 14010, 160, 154, 70, 15, WS_TABSTOP
-    LTEXT "", -1, 8, 171, 223, 1, SS_ETCHEDHORZ | WS_CHILD | WS_VISIBLE
-    CHECKBOX "Di&sk alanını arttırmak için sürücüyü sıkıştır", 14011, 8, 191, 222, 10, WS_DISABLED
-    CHECKBOX "&Hızlı dosya araması için, Dizinleme Hizmeti'ni etkinleştir.", 14012, 8, 205, 222, 25, WS_DISABLED
+    CONTROL "", 14015, "Static", SS_OWNERDRAW, 70, 116, 100, 40
+    CTEXT "Sürücü %c", 14009, 95, 162, 50, 10
+    PUSHBUTTON "&Disk Temizleme", 14010, 160, 159, 70, 15, WS_TABSTOP
+    LTEXT "", -1, 8, 176, 223, 1, SS_ETCHEDHORZ | WS_CHILD | WS_VISIBLE
+    CHECKBOX "Di&sk alanını arttırmak için sürücüyü sıkıştır", 14011, 8, 200, 222, 10, WS_DISABLED
+    CHECKBOX "&Hızlı dosya araması için, Dizinleme Hizmeti'ni etkinleştir.", 14012, 8, 214, 222, 25, WS_DISABLED
 END
 
 IDD_DRIVE_TOOLS DIALOGEX 0, 0, 240, 230
@@ -810,6 +810,8 @@ BEGIN
     IDS_MOVEERROR "Cannot move '%s': %s"
     IDS_COPYERROR "Cannot copy '%s': %s"
 
+    IDS_CREATEFILE_DENIED "Could not create file %1"
+    IDS_CREATEFILE_CAPTION "Error creating file"
     IDS_CREATEFOLDER_DENIED """%1"" dizini oluşturulamıyor."
     IDS_CREATEFOLDER_CAPTION "Dizin Oluşturulamıyor"
     IDS_DELETEITEM_CAPTION "Dosya Silmeyi Onayla"
@@ -884,6 +886,7 @@ BEGIN
     IDS_NETWORKPLACE "Ağ Bağlantılarım"
 
     IDS_NEWFOLDER "Yeni Dizin"
+    IDS_NEWITEMFORMAT "New %s"
 
     IDS_DRIVE_FIXED "Yerel Disk"
     IDS_DRIVE_CDROM "CD-ROM"
@@ -900,7 +903,7 @@ BEGIN
 
     IDS_SHELL_ABOUT_AUTHORS "&Yazarlar"
     IDS_SHELL_ABOUT_BACK "< &Geri"
-    FCIDM_SHVIEW_NEW "Yeni"
+    FCIDM_SHVIEW_NEW "Ne&w" /* A menu item with an ampersand */
     FCIDM_SHVIEW_NEWFOLDER "Yeni &Dizin"
     FCIDM_SHVIEW_NEWLINK "Yeni &Kısayol"
     IDS_FOLDER_OPTIONS "Dizin Seçenekleri"
@@ -981,6 +984,11 @@ BEGIN
     IDS_MENU_EMPTY "(Boş)"
     IDS_OBJECTS "%d Nesne"
     IDS_OBJECTS_SELECTED "%d Nesne Seçili"
+
+    IDS_TITLE_MYCOMP "Bilgisayarım"
+    IDS_TITLE_MYNET "Ağ Bağlantılarım"
+    IDS_TITLE_BIN_1 "Recycle Bin (full)"
+    IDS_TITLE_BIN_0 "Recycle Bin (empty)"
 
     IDS_ADVANCED_FOLDER "Dosyalar ve Dizinler"
     IDS_ADVANCED_NET_CRAWLER "Ağ dizinlerini ve yazıcıları otomatik ara"

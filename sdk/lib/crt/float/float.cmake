@@ -23,14 +23,15 @@ if(ARCH STREQUAL "i386")
     )
 elseif(ARCH STREQUAL "amd64")
     list(APPEND CRT_FLOAT_SOURCE
-        float/i386/cntrlfp.c
-        float/i386/statfp.c
+        float/amd64/_clearfp.c
+        float/amd64/_control87.c
+        float/amd64/_controlfp.c
+        float/amd64/_fpreset.c
+        float/amd64/_statusfp.c
+        float/amd64/machfpcw.c
     )
     list(APPEND CRT_FLOAT_ASM_SOURCE
-        float/amd64/clearfp.S
         float/amd64/getsetfpcw.S
-        float/amd64/fpreset.S
-        float/amd64/logb.S
     )
 elseif(ARCH STREQUAL "arm")
     list(APPEND CRT_FLOAT_SOURCE
@@ -39,7 +40,14 @@ elseif(ARCH STREQUAL "arm")
         float/arm/_fpreset.c
         float/arm/_statusfp.c
     )
+    list(APPEND LIBCNTPR_FLOAT_SOURCE
+        float/arm/_controlfp.c
+    )
     list(APPEND CRT_FLOAT_ASM_SOURCE
+        float/arm/__getfp.s
+        float/arm/__setfp.s
+    )
+    list(APPEND LIBCNTPR_FLOAT_ASM_SOURCE
         float/arm/__getfp.s
         float/arm/__setfp.s
     )

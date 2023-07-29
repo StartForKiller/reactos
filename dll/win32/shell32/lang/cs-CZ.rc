@@ -141,7 +141,7 @@ BEGIN
     ICON "", IDC_ABOUT_ICON, 7, 55, 21, 20
     LTEXT "", IDC_ABOUT_APPNAME, 35, 55, 200, 10, SS_NOPREFIX
     LTEXT "", IDC_ABOUT_VERSION, 35, 65, 250, 10, SS_NOPREFIX
-    LTEXT "Copyright 1998-", IDC_STATIC, 35, 75, 53, 10
+    LTEXT "Copyright 1996-", IDC_STATIC, 35, 75, 53, 10
     LTEXT COPYRIGHT_YEAR, IDC_STATIC, 88, 75, 17, 10
     LTEXT " ReactOS Team\0", IDC_STATIC, 105, 75, 53, 10
     LTEXT "", IDC_ABOUT_OTHERSTUFF, 35, 90, 180, 20, SS_NOPREFIX
@@ -242,10 +242,10 @@ BEGIN
     EDITTEXT 14015, 58, 128, 170, 10, ES_LEFT | ES_READONLY | NOT WS_BORDER | NOT WS_TABSTOP | ES_AUTOHSCROLL
     LTEXT "", -1, 8, 144, 221, 1, SS_ETCHEDHORZ | WS_CHILD | WS_VISIBLE
     LTEXT "Atributy:", 14020, 8, 152, 46, 10
-    AUTOCHECKBOX "&Jen pro čtení", 14021, 58, 151, 70, 10
-    AUTOCHECKBOX "&Skrytý", 14022, 126, 151, 70, 10
-    AUTOCHECKBOX "&Archivovat", 14023, 181, 151, 70, 10
-    PUSHBUTTON "&Rozšířené...", 14028, 158, 150, 70, 14, WS_CHILD | WS_VISIBLE | WS_TABSTOP
+    AUTOCHECKBOX "&Jen pro čtení", 14021, 58, 151, 68, 10
+    AUTOCHECKBOX "&Skrytý", 14022, 126, 151, 55, 10
+    AUTOCHECKBOX "&Archivovat", 14023, 181, 151, 59, 10
+    PUSHBUTTON "&Rozšířené...", 14028, 158, 170, 70, 14, WS_CHILD | WS_VISIBLE | WS_TABSTOP
 END
 
 IDD_FILE_PROPERTIES DIALOGEX 0, 0, 240, 205
@@ -327,12 +327,12 @@ BEGIN
     LTEXT "Kapacita:", -1, 25, 103, 80, 10
     EDITTEXT 14007, 110, 103, 86, 10, ES_LEFT | ES_READONLY | NOT WS_BORDER | NOT WS_TABSTOP | ES_AUTOHSCROLL
     EDITTEXT 14008, 197, 103, 33, 10, ES_LEFT | ES_READONLY | NOT WS_BORDER | NOT WS_TABSTOP | ES_AUTOHSCROLL
-    CONTROL "", 14015, "Static", SS_OWNERDRAW, 70, 116, 100, 30
-    LTEXT "Disk %c", 14009, 100, 150, 70, 10
-    PUSHBUTTON "Vyčištění &disku", 14010, 160, 154, 70, 15, WS_TABSTOP
-    LTEXT "", -1, 8, 171, 223, 1, SS_ETCHEDHORZ | WS_CHILD | WS_VISIBLE
-    CHECKBOX "Šetřit místo na disku jeho kompresí", 14011, 8, 191, 222, 10, WS_DISABLED
-    CHECKBOX "Povolit indexování disku pro rychlejší vyhledávání", 14012, 8, 205, 222, 10, WS_DISABLED
+    CONTROL "", 14015, "Static", SS_OWNERDRAW, 70, 116, 100, 40
+    CTEXT "Disk %c", 14009, 95, 162, 50, 10
+    PUSHBUTTON "Vyčištění &disku", 14010, 160, 159, 70, 15, WS_TABSTOP
+    LTEXT "", -1, 8, 176, 223, 1, SS_ETCHEDHORZ | WS_CHILD | WS_VISIBLE
+    CHECKBOX "Šetřit místo na disku jeho kompresí", 14011, 8, 200, 222, 10, WS_DISABLED
+    CHECKBOX "Povolit indexování disku pro rychlejší vyhledávání", 14012, 8, 214, 222, 10, WS_DISABLED
 END
 
 IDD_DRIVE_TOOLS DIALOGEX 0, 0, 240, 230
@@ -440,7 +440,7 @@ FONT 8, "MS Shell Dlg", 0, 0, 0x0
 BEGIN
     GROUPBOX "Zobrazení složky", -1, 7, 10, 249, 60
     ICON IDI_SHELL_PROGRAMS_FOLDER2, IDC_STATIC, 20, 20, 21, 20
-    LTEXT "Zobrazení použité pro tuto složku (jako třeba Podrobnosti nebo Miniatury)\n lze použít pro všechny složky.", -1, 60, 20, 180, 20
+    LTEXT "Zobrazení použité pro tuto složku (jako třeba Podrobnosti nebo Miniatury) lze použít pro všechny složky.", -1, 60, 20, 180, 20
     PUSHBUTTON "&Použít pro všechny složky", IDC_VIEW_APPLY_TO_ALL, 60, 50, 80, 14, WS_TABSTOP
     PUSHBUTTON "Ob&novit všechny složky", IDC_VIEW_RESET_ALL, 150, 50, 80, 14, WS_TABSTOP
     LTEXT "Pokročilá nastavení:", -1, 7, 80, 100, 10
@@ -814,6 +814,8 @@ BEGIN
     IDS_MOVEERROR "Cannot move '%s': %s"
     IDS_COPYERROR "Cannot copy '%s': %s"
 
+    IDS_CREATEFILE_DENIED "Could not create file %1"
+    IDS_CREATEFILE_CAPTION "Error creating file"
     IDS_CREATEFOLDER_DENIED "Složku '%1' nebylo možné vytvořit"
     IDS_CREATEFOLDER_CAPTION "Složku nebylo možné vytvořit"
     IDS_DELETEITEM_CAPTION "Potvrdit odstranění souboru"
@@ -888,6 +890,7 @@ BEGIN
     IDS_NETWORKPLACE "Místa v síti"
 
     IDS_NEWFOLDER "Nová složka"
+    IDS_NEWITEMFORMAT "New %s"
 
     IDS_DRIVE_FIXED "Místní disk"
     IDS_DRIVE_CDROM "Jednotka CD"
@@ -904,7 +907,7 @@ BEGIN
 
     IDS_SHELL_ABOUT_AUTHORS "&Autoři"
     IDS_SHELL_ABOUT_BACK "< &Zpět"
-    FCIDM_SHVIEW_NEW "&Nový"
+    FCIDM_SHVIEW_NEW "&Nový" /* A menu item with an ampersand */
     FCIDM_SHVIEW_NEWFOLDER "Nová &složka"
     FCIDM_SHVIEW_NEWLINK "Nový &zástupce"
     IDS_FOLDER_OPTIONS "Možnosti složky"
@@ -985,6 +988,11 @@ BEGIN
     IDS_MENU_EMPTY "(Prázdné)"
     IDS_OBJECTS "Položek: %d"
     IDS_OBJECTS_SELECTED "Položek vybráno: %d"
+
+    IDS_TITLE_MYCOMP "Tento počítač"
+    IDS_TITLE_MYNET "Místa v síti"
+    IDS_TITLE_BIN_1 "Koš (plný)"
+    IDS_TITLE_BIN_0 "Koš (prázdný)"
 
     IDS_ADVANCED_FOLDER "Files and Folders"
     IDS_ADVANCED_NET_CRAWLER "Automatically search for network folders and printers"

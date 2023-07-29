@@ -46,17 +46,17 @@ BEGIN
         MENUITEM "&Trapsgewijs", ID_WINDOWS_CASCADE
         MENUITEM "Naar &voorgrond", ID_WINDOWS_BRINGTOFRONT
     END
-    POPUP "Sh&ut Down"
+    POPUP "Afsl&uiten"
     BEGIN
-        MENUITEM "Stand &By",                  ID_SHUTDOWN_STANDBY
-        MENUITEM "&Hibernate",                 ID_SHUTDOWN_HIBERNATE
-        MENUITEM "T&urn Off",                  ID_SHUTDOWN_POWEROFF
-        MENUITEM "&Restart",                   ID_SHUTDOWN_REBOOT
-        MENUITEM "&Log Off %s",                ID_SHUTDOWN_LOGOFF
-        MENUITEM "&Switch User\tWinKey+L",     ID_SHUTDOWN_SWITCHUSER, GRAYED
-        MENUITEM "Loc&k Computer\tWinKey+L",   ID_SHUTDOWN_LOCKCOMPUTER
-        MENUITEM "&Disconnect",                ID_SHUTDOWN_DISCONNECT, GRAYED
-        MENUITEM "&Eject Computer",            ID_SHUTDOWN_EJECT_COMPUTER, GRAYED
+        MENUITEM "Stand &By",                           ID_SHUTDOWN_STANDBY
+        MENUITEM "&Hibernate",                          ID_SHUTDOWN_HIBERNATE
+        MENUITEM "&Uitzetten",                          ID_SHUTDOWN_POWEROFF
+        MENUITEM "&Opnieuw Opstarten",                  ID_SHUTDOWN_REBOOT
+        MENUITEM "%s &afmelden",                        ID_SHUTDOWN_LOGOFF
+        MENUITEM "&Verander van gebruiker\tWinKey+L",   ID_SHUTDOWN_SWITCHUSER, GRAYED
+        MENUITEM "Loc&k Computer\tWinKey+L",            ID_SHUTDOWN_LOCKCOMPUTER
+        MENUITEM "&Disconnect",                         ID_SHUTDOWN_DISCONNECT, GRAYED
+        MENUITEM "&Eject Computer",                     ID_SHUTDOWN_EJECT_COMPUTER, GRAYED
     END
     POPUP "&Help"
     BEGIN
@@ -135,6 +135,9 @@ BEGIN
             MENUITEM "&Laag", ID_PROCESS_PAGE_SETPRIORITY_LOW
         END
         MENUITEM "&Affiniteit instellen...", ID_PROCESS_PAGE_SETAFFINITY
+        MENUITEM SEPARATOR
+        MENUITEM "&Properties", ID_PROCESS_PAGE_PROPERTIES
+        MENUITEM "&Open File Location", ID_PROCESS_PAGE_OPENFILELOCATION
     END
 END
 
@@ -156,22 +159,22 @@ IDD_APPLICATION_PAGE DIALOGEX 0, 0, 247, 210
 STYLE DS_SHELLFONT | DS_CONTROL | WS_CHILD | WS_CLIPCHILDREN
 FONT 8, "MS Shell Dlg"
 BEGIN
-    CONTROL "List2", IDC_APPLIST, "SysListView32", LVS_REPORT | LVS_SHOWSELALWAYS |
-            WS_BORDER | WS_TABSTOP, 7, 7, 233, 177
-    PUSHBUTTON "&Nieuwe Taak...", IDC_NEWTASK, 172, 188, 68, 14
-    PUSHBUTTON "&Activeren", IDC_SWITCHTO, 100, 188, 68, 14, WS_DISABLED
+    CONTROL "List1", IDC_APPLIST, "SysListView32", LVS_REPORT | LVS_SHOWSELALWAYS |
+            WS_BORDER | WS_TABSTOP, 5, 7, 235, 177
     PUSHBUTTON "Taa&k beëindigen", IDC_ENDTASK, 28, 188, 68, 14, WS_DISABLED
+    PUSHBUTTON "&Activeren", IDC_SWITCHTO, 100, 188, 68, 14, WS_DISABLED
+    PUSHBUTTON "&Nieuwe Taak...", IDC_NEWTASK, 172, 188, 68, 14
 END
 
 IDD_PROCESS_PAGE DIALOGEX 0, 0, 247, 210
 STYLE DS_SHELLFONT | DS_CONTROL | WS_CHILD | WS_CLIPCHILDREN
 FONT 8, "MS Shell Dlg"
 BEGIN
-    CONTROL "List2", IDC_PROCESSLIST, "SysListView32", LVS_REPORT | LVS_SINGLESEL |
-            LVS_SHOWSELALWAYS | WS_BORDER | WS_TABSTOP, 7, 7, 233, 177
-    PUSHBUTTON "&Proces beëindigen", IDC_ENDPROCESS, 171, 189, 69, 14
+    CONTROL "List1", IDC_PROCESSLIST, "SysListView32", LVS_REPORT | LVS_SINGLESEL |
+            LVS_SHOWSELALWAYS | WS_BORDER | WS_TABSTOP, 5, 7, 235, 177
     CONTROL "Processen van &alle gebruikers weergeven", IDC_SHOWALLPROCESSES, "Button",
-            BS_AUTOCHECKBOX | WS_TABSTOP, 7, 191, 151, 10
+            BS_AUTOCHECKBOX | WS_TABSTOP, 5, 191, 151, 10
+    PUSHBUTTON "&Proces beëindigen", IDC_ENDPROCESS, 171, 189, 69, 14
 END
 
 /* IDD_PERFORMANCE_PAGE DIALOGEX 0, 0, 247, 210 */
@@ -234,7 +237,7 @@ STYLE DS_SHELLFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Debug kanalen"
 FONT 8, "MS Shell Dlg"
 BEGIN
-    CONTROL "List2", IDC_DEBUG_CHANNELS_LIST, "SysListView32", LVS_REPORT | LVS_SINGLESEL |
+    CONTROL "List1", IDC_DEBUG_CHANNELS_LIST, "SysListView32", LVS_REPORT | LVS_SINGLESEL |
             LVS_SHOWSELALWAYS | WS_BORDER | WS_TABSTOP | LVS_SORTASCENDING, 7, 7, 233, 177
     PUSHBUTTON "Sluit", IDOK, 171, 189, 69, 14
 END
@@ -376,6 +379,8 @@ BEGIN
     ID_PROCESS_PAGE_SETPRIORITY_NORMAL "Het proces wordt ingesteld met de prioriteitsklasse NORMAAL"
     ID_PROCESS_PAGE_SETPRIORITY_BELOWNORMAL "Proces instellen op prioriteitsklasse LAGER DAN NORMAAL"
     ID_PROCESS_PAGE_SETPRIORITY_LOW "Het proces wordt ingesteld met de prioriteitsklasse LAAG"
+    ID_PROCESS_PAGE_PROPERTIES "Shows process file properties"
+    ID_PROCESS_PAGE_OPENFILELOCATION "Opens process file location"
 END
 
 STRINGTABLE

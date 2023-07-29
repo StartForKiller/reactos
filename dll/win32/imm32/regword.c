@@ -14,6 +14,7 @@ typedef struct ENUM_WORD_A2W
     REGISTERWORDENUMPROCW lpfnEnumProc;
     LPVOID lpData;
     UINT ret;
+    UINT uCodePage;
 } ENUM_WORD_A2W, *LPENUM_WORD_A2W;
 
 typedef struct ENUM_WORD_W2A
@@ -21,6 +22,7 @@ typedef struct ENUM_WORD_W2A
     REGISTERWORDENUMPROCA lpfnEnumProc;
     LPVOID lpData;
     UINT ret;
+    UINT uCodePage;
 } ENUM_WORD_W2A, *LPENUM_WORD_W2A;
 
 /*
@@ -35,15 +37,15 @@ Imm32EnumWordProcA2W(LPCSTR pszReadingA, DWORD dwStyle, LPCSTR pszRegisterA, LPV
 
     if (pszReadingA)
     {
-        pszReadingW = Imm32WideFromAnsi(pszReadingA);
-        if (pszReadingW == NULL)
+        pszReadingW = Imm32WideFromAnsi(lpEnumData->uCodePage, pszReadingA);
+        if (IS_NULL_UNEXPECTEDLY(pszReadingW))
             goto Quit;
     }
 
     if (pszRegisterA)
     {
-        pszRegisterW = Imm32WideFromAnsi(pszRegisterA);
-        if (pszRegisterW == NULL)
+        pszRegisterW = Imm32WideFromAnsi(lpEnumData->uCodePage, pszRegisterA);
+        if (IS_NULL_UNEXPECTEDLY(pszRegisterW))
             goto Quit;
     }
 
@@ -51,8 +53,8 @@ Imm32EnumWordProcA2W(LPCSTR pszReadingA, DWORD dwStyle, LPCSTR pszRegisterA, LPV
     lpEnumData->ret = ret;
 
 Quit:
-    Imm32HeapFree(pszReadingW);
-    Imm32HeapFree(pszRegisterW);
+    ImmLocalFree(pszReadingW);
+    ImmLocalFree(pszRegisterW);
     return ret;
 }
 
@@ -65,15 +67,15 @@ Imm32EnumWordProcW2A(LPCWSTR pszReadingW, DWORD dwStyle, LPCWSTR pszRegisterW, L
 
     if (pszReadingW)
     {
-        pszReadingA = Imm32AnsiFromWide(pszReadingW);
-        if (pszReadingW == NULL)
+        pszReadingA = Imm32AnsiFromWide(lpEnumData->uCodePage, pszReadingW);
+        if (IS_NULL_UNEXPECTEDLY(pszReadingW))
             goto Quit;
     }
 
     if (pszRegisterW)
     {
-        pszRegisterA = Imm32AnsiFromWide(pszRegisterW);
-        if (pszRegisterA == NULL)
+        pszRegisterA = Imm32AnsiFromWide(lpEnumData->uCodePage, pszRegisterW);
+        if (IS_NULL_UNEXPECTEDLY(pszRegisterA))
             goto Quit;
     }
 
@@ -81,8 +83,8 @@ Imm32EnumWordProcW2A(LPCWSTR pszReadingW, DWORD dwStyle, LPCWSTR pszRegisterW, L
     lpEnumData->ret = ret;
 
 Quit:
-    Imm32HeapFree(pszReadingA);
-    Imm32HeapFree(pszRegisterA);
+    ImmLocalFree(pszReadingA);
+    ImmLocalFree(pszRegisterA);
     return ret;
 }
 
@@ -99,14 +101,14 @@ ImmEnumRegisterWordA(HKL hKL, REGISTERWORDENUMPROCA lpfnEnumProc,
     ENUM_WORD_W2A EnumDataW2A;
     PIMEDPI pImeDpi;
 
-    TRACE("(%p, %p, %s, 0x%lX, %s, %p)", hKL, lpfnEnumProc, debugstr_a(lpszReading),
+    TRACE("(%p, %p, %s, 0x%lX, %s, %p)\n", hKL, lpfnEnumProc, debugstr_a(lpszReading),
           dwStyle, debugstr_a(lpszRegister), lpData);
 
-    pImeDpi = ImmLockOrLoadImeDpi(hKL);
-    if (!pImeDpi)
+    pImeDpi = Imm32FindOrLoadImeDpi(hKL);
+    if (IS_NULL_UNEXPECTEDLY(pImeDpi))
         return 0;
 
-    if (!ImeDpi_IsUnicode(pImeDpi))
+    if (!ImeDpi_IsUnicode(pImeDpi)) /* No conversion needed */
     {
         ret = pImeDpi->ImeEnumRegisterWord(lpfnEnumProc, lpszReading, dwStyle,
                                            lpszRegister, lpData);
@@ -116,28 +118,29 @@ ImmEnumRegisterWordA(HKL hKL, REGISTERWORDENUMPROCA lpfnEnumProc,
 
     if (lpszReading)
     {
-        pszReadingW = Imm32WideFromAnsi(lpszReading);
-        if (pszReadingW == NULL)
+        pszReadingW = Imm32WideFromAnsi(pImeDpi->uCodePage, lpszReading);
+        if (IS_NULL_UNEXPECTEDLY(pszReadingW))
             goto Quit;
     }
 
     if (lpszRegister)
     {
-        pszRegisterW = Imm32WideFromAnsi(lpszRegister);
-        if (pszRegisterW == NULL)
+        pszRegisterW = Imm32WideFromAnsi(pImeDpi->uCodePage, lpszRegister);
+        if (IS_NULL_UNEXPECTEDLY(pszRegisterW))
             goto Quit;
     }
 
     EnumDataW2A.lpfnEnumProc = lpfnEnumProc;
     EnumDataW2A.lpData = lpData;
     EnumDataW2A.ret = 0;
+    EnumDataW2A.uCodePage = pImeDpi->uCodePage;
     pImeDpi->ImeEnumRegisterWord(Imm32EnumWordProcW2A, pszReadingW, dwStyle,
                                  pszRegisterW, &EnumDataW2A);
     ret = EnumDataW2A.ret;
 
 Quit:
-    Imm32HeapFree(pszReadingW);
-    Imm32HeapFree(pszRegisterW);
+    ImmLocalFree(pszReadingW);
+    ImmLocalFree(pszRegisterW);
     ImmUnlockImeDpi(pImeDpi);
     return ret;
 }
@@ -155,14 +158,14 @@ ImmEnumRegisterWordW(HKL hKL, REGISTERWORDENUMPROCW lpfnEnumProc,
     ENUM_WORD_A2W EnumDataA2W;
     PIMEDPI pImeDpi;
 
-    TRACE("(%p, %p, %s, 0x%lX, %s, %p)", hKL, lpfnEnumProc, debugstr_w(lpszReading),
+    TRACE("(%p, %p, %s, 0x%lX, %s, %p)\n", hKL, lpfnEnumProc, debugstr_w(lpszReading),
           dwStyle, debugstr_w(lpszRegister), lpData);
 
-    pImeDpi = ImmLockOrLoadImeDpi(hKL);
-    if (!pImeDpi)
+    pImeDpi = Imm32FindOrLoadImeDpi(hKL);
+    if (IS_NULL_UNEXPECTEDLY(pImeDpi))
         return 0;
 
-    if (ImeDpi_IsUnicode(pImeDpi))
+    if (ImeDpi_IsUnicode(pImeDpi)) /* No conversion needed */
     {
         ret = pImeDpi->ImeEnumRegisterWord(lpfnEnumProc, lpszReading, dwStyle,
                                            lpszRegister, lpData);
@@ -172,29 +175,31 @@ ImmEnumRegisterWordW(HKL hKL, REGISTERWORDENUMPROCW lpfnEnumProc,
 
     if (lpszReading)
     {
-        pszReadingA = Imm32AnsiFromWide(lpszReading);
-        if (pszReadingA == NULL)
+        pszReadingA = Imm32AnsiFromWide(pImeDpi->uCodePage, lpszReading);
+        if (IS_NULL_UNEXPECTEDLY(pszReadingA))
             goto Quit;
     }
 
     if (lpszRegister)
     {
-        pszRegisterA = Imm32AnsiFromWide(lpszRegister);
-        if (pszRegisterA == NULL)
+        pszRegisterA = Imm32AnsiFromWide(pImeDpi->uCodePage, lpszRegister);
+        if (IS_NULL_UNEXPECTEDLY(pszRegisterA))
             goto Quit;
     }
 
     EnumDataA2W.lpfnEnumProc = lpfnEnumProc;
     EnumDataA2W.lpData = lpData;
     EnumDataA2W.ret = 0;
+    EnumDataA2W.uCodePage = pImeDpi->uCodePage;
     pImeDpi->ImeEnumRegisterWord(Imm32EnumWordProcA2W, pszReadingA, dwStyle,
                                  pszRegisterA, &EnumDataA2W);
     ret = EnumDataA2W.ret;
 
 Quit:
-    Imm32HeapFree(pszReadingA);
-    Imm32HeapFree(pszRegisterA);
+    ImmLocalFree(pszReadingA);
+    ImmLocalFree(pszRegisterA);
     ImmUnlockImeDpi(pImeDpi);
+    TRACE("ret: %u\n", ret);
     return ret;
 }
 
@@ -212,11 +217,11 @@ UINT WINAPI ImmGetRegisterWordStyleA(HKL hKL, UINT nItem, LPSTYLEBUFA lpStyleBuf
 
     TRACE("(%p, %u, %p)\n", hKL, nItem, lpStyleBuf);
 
-    pImeDpi = ImmLockOrLoadImeDpi(hKL);
-    if (!pImeDpi)
+    pImeDpi = Imm32FindOrLoadImeDpi(hKL);
+    if (IS_NULL_UNEXPECTEDLY(pImeDpi))
         return 0;
 
-    if (!ImeDpi_IsUnicode(pImeDpi))
+    if (!ImeDpi_IsUnicode(pImeDpi)) /* No conversion needed */
     {
         ret = pImeDpi->ImeGetRegisterWordStyle(nItem, lpStyleBuf);
         goto Quit;
@@ -224,8 +229,8 @@ UINT WINAPI ImmGetRegisterWordStyleA(HKL hKL, UINT nItem, LPSTYLEBUFA lpStyleBuf
 
     if (nItem > 0)
     {
-        pNewStylesW = Imm32HeapAlloc(0, nItem * sizeof(STYLEBUFW));
-        if (!pNewStylesW)
+        pNewStylesW = ImmLocalAlloc(0, nItem * sizeof(STYLEBUFW));
+        if (IS_NULL_UNEXPECTEDLY(pNewStylesW))
             goto Quit;
     }
 
@@ -240,7 +245,7 @@ UINT WINAPI ImmGetRegisterWordStyleA(HKL hKL, UINT nItem, LPSTYLEBUFA lpStyleBuf
             pDestA = &lpStyleBuf[iItem];
             pDestA->dwStyle = pSrcW->dwStyle;
             StringCchLengthW(pSrcW->szDescription, _countof(pSrcW->szDescription), &cchW);
-            cchA = WideCharToMultiByte(CP_ACP, MB_PRECOMPOSED,
+            cchA = WideCharToMultiByte(pImeDpi->uCodePage, MB_PRECOMPOSED,
                                        pSrcW->szDescription, (INT)cchW,
                                        pDestA->szDescription, _countof(pDestA->szDescription),
                                        NULL, NULL);
@@ -251,8 +256,9 @@ UINT WINAPI ImmGetRegisterWordStyleA(HKL hKL, UINT nItem, LPSTYLEBUFA lpStyleBuf
     }
 
 Quit:
-    Imm32HeapFree(pNewStylesW);
+    ImmLocalFree(pNewStylesW);
     ImmUnlockImeDpi(pImeDpi);
+    TRACE("ret: %u\n", ret);
     return ret;
 }
 
@@ -270,11 +276,11 @@ UINT WINAPI ImmGetRegisterWordStyleW(HKL hKL, UINT nItem, LPSTYLEBUFW lpStyleBuf
 
     TRACE("(%p, %u, %p)\n", hKL, nItem, lpStyleBuf);
 
-    pImeDpi = ImmLockOrLoadImeDpi(hKL);
-    if (!pImeDpi)
+    pImeDpi = Imm32FindOrLoadImeDpi(hKL);
+    if (IS_NULL_UNEXPECTEDLY(pImeDpi))
         return 0;
 
-    if (ImeDpi_IsUnicode(pImeDpi))
+    if (ImeDpi_IsUnicode(pImeDpi)) /* No conversion needed */
     {
         ret = pImeDpi->ImeGetRegisterWordStyle(nItem, lpStyleBuf);
         goto Quit;
@@ -282,8 +288,8 @@ UINT WINAPI ImmGetRegisterWordStyleW(HKL hKL, UINT nItem, LPSTYLEBUFW lpStyleBuf
 
     if (nItem > 0)
     {
-        pNewStylesA = Imm32HeapAlloc(0, nItem * sizeof(STYLEBUFA));
-        if (!pNewStylesA)
+        pNewStylesA = ImmLocalAlloc(0, nItem * sizeof(STYLEBUFA));
+        if (IS_NULL_UNEXPECTEDLY(pNewStylesA))
             goto Quit;
     }
 
@@ -298,7 +304,7 @@ UINT WINAPI ImmGetRegisterWordStyleW(HKL hKL, UINT nItem, LPSTYLEBUFW lpStyleBuf
             pDestW = &lpStyleBuf[iItem];
             pDestW->dwStyle = pSrcA->dwStyle;
             StringCchLengthA(pSrcA->szDescription, _countof(pSrcA->szDescription), &cchA);
-            cchW = MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED,
+            cchW = MultiByteToWideChar(pImeDpi->uCodePage, MB_PRECOMPOSED,
                                        pSrcA->szDescription, (INT)cchA,
                                        pDestW->szDescription, _countof(pDestW->szDescription));
             if (cchW > _countof(pDestW->szDescription) - 1)
@@ -308,8 +314,9 @@ UINT WINAPI ImmGetRegisterWordStyleW(HKL hKL, UINT nItem, LPSTYLEBUFW lpStyleBuf
     }
 
 Quit:
-    Imm32HeapFree(pNewStylesA);
+    ImmLocalFree(pNewStylesA);
     ImmUnlockImeDpi(pImeDpi);
+    TRACE("ret: %u\n", ret);
     return ret;
 }
 
@@ -326,11 +333,11 @@ ImmRegisterWordA(HKL hKL, LPCSTR lpszReading, DWORD dwStyle, LPCSTR lpszRegister
     TRACE("(%p, %s, 0x%lX, %s)\n", hKL, debugstr_a(lpszReading), dwStyle,
           debugstr_a(lpszRegister));
 
-    pImeDpi = ImmLockOrLoadImeDpi(hKL);
-    if (!pImeDpi)
+    pImeDpi = Imm32FindOrLoadImeDpi(hKL);
+    if (IS_NULL_UNEXPECTEDLY(pImeDpi))
         return FALSE;
 
-    if (!ImeDpi_IsUnicode(pImeDpi))
+    if (!ImeDpi_IsUnicode(pImeDpi)) /* No conversion needed */
     {
         ret = pImeDpi->ImeRegisterWord(lpszReading, dwStyle, lpszRegister);
         ImmUnlockImeDpi(pImeDpi);
@@ -339,24 +346,25 @@ ImmRegisterWordA(HKL hKL, LPCSTR lpszReading, DWORD dwStyle, LPCSTR lpszRegister
 
     if (lpszReading)
     {
-        pszReadingW = Imm32WideFromAnsi(lpszReading);
-        if (pszReadingW == NULL)
+        pszReadingW = Imm32WideFromAnsi(pImeDpi->uCodePage, lpszReading);
+        if (IS_NULL_UNEXPECTEDLY(pszReadingW))
             goto Quit;
     }
 
     if (lpszRegister)
     {
-        pszRegisterW = Imm32WideFromAnsi(lpszRegister);
-        if (pszRegisterW == NULL)
+        pszRegisterW = Imm32WideFromAnsi(pImeDpi->uCodePage, lpszRegister);
+        if (IS_NULL_UNEXPECTEDLY(pszRegisterW))
             goto Quit;
     }
 
     ret = pImeDpi->ImeRegisterWord(pszReadingW, dwStyle, pszRegisterW);
 
 Quit:
-    Imm32HeapFree(pszReadingW);
-    Imm32HeapFree(pszRegisterW);
+    ImmLocalFree(pszReadingW);
+    ImmLocalFree(pszRegisterW);
     ImmUnlockImeDpi(pImeDpi);
+    TRACE("ret: %d\n", ret);
     return ret;
 }
 
@@ -373,11 +381,11 @@ ImmRegisterWordW(HKL hKL, LPCWSTR lpszReading, DWORD dwStyle, LPCWSTR lpszRegist
     TRACE("(%p, %s, 0x%lX, %s)\n", hKL, debugstr_w(lpszReading), dwStyle,
           debugstr_w(lpszRegister));
 
-    pImeDpi = ImmLockOrLoadImeDpi(hKL);
-    if (!pImeDpi)
+    pImeDpi = Imm32FindOrLoadImeDpi(hKL);
+    if (IS_NULL_UNEXPECTEDLY(pImeDpi))
         return FALSE;
 
-    if (ImeDpi_IsUnicode(pImeDpi))
+    if (ImeDpi_IsUnicode(pImeDpi)) /* No conversion needed */
     {
         ret = pImeDpi->ImeRegisterWord(lpszReading, dwStyle, lpszRegister);
         ImmUnlockImeDpi(pImeDpi);
@@ -386,24 +394,25 @@ ImmRegisterWordW(HKL hKL, LPCWSTR lpszReading, DWORD dwStyle, LPCWSTR lpszRegist
 
     if (lpszReading)
     {
-        pszReadingA = Imm32AnsiFromWide(lpszReading);
-        if (!pszReadingA)
+        pszReadingA = Imm32AnsiFromWide(pImeDpi->uCodePage, lpszReading);
+        if (IS_NULL_UNEXPECTEDLY(pszReadingA))
             goto Quit;
     }
 
     if (lpszRegister)
     {
-        pszRegisterA = Imm32AnsiFromWide(lpszRegister);
-        if (!pszRegisterA)
+        pszRegisterA = Imm32AnsiFromWide(pImeDpi->uCodePage, lpszRegister);
+        if (IS_NULL_UNEXPECTEDLY(pszRegisterA))
             goto Quit;
     }
 
     ret = pImeDpi->ImeRegisterWord(pszReadingA, dwStyle, pszRegisterA);
 
 Quit:
-    Imm32HeapFree(pszReadingA);
-    Imm32HeapFree(pszRegisterA);
+    ImmLocalFree(pszReadingA);
+    ImmLocalFree(pszRegisterA);
     ImmUnlockImeDpi(pImeDpi);
+    TRACE("ret: %d\n", ret);
     return ret;
 }
 
@@ -420,11 +429,11 @@ ImmUnregisterWordA(HKL hKL, LPCSTR lpszReading, DWORD dwStyle, LPCSTR lpszUnregi
     TRACE("(%p, %s, 0x%lX, %s)\n", hKL, debugstr_a(lpszReading), dwStyle,
           debugstr_a(lpszUnregister));
 
-    pImeDpi = ImmLockOrLoadImeDpi(hKL);
-    if (pImeDpi == NULL)
+    pImeDpi = Imm32FindOrLoadImeDpi(hKL);
+    if (IS_NULL_UNEXPECTEDLY(pImeDpi))
         return FALSE;
 
-    if (!ImeDpi_IsUnicode(pImeDpi))
+    if (!ImeDpi_IsUnicode(pImeDpi)) /* No conversion needed */
     {
         ret = pImeDpi->ImeUnregisterWord(lpszReading, dwStyle, lpszUnregister);
         ImmUnlockImeDpi(pImeDpi);
@@ -433,24 +442,25 @@ ImmUnregisterWordA(HKL hKL, LPCSTR lpszReading, DWORD dwStyle, LPCSTR lpszUnregi
 
     if (lpszReading)
     {
-        pszReadingW = Imm32WideFromAnsi(lpszReading);
-        if (pszReadingW == NULL)
+        pszReadingW = Imm32WideFromAnsi(pImeDpi->uCodePage, lpszReading);
+        if (IS_NULL_UNEXPECTEDLY(pszReadingW))
             goto Quit;
     }
 
     if (lpszUnregister)
     {
-        pszUnregisterW = Imm32WideFromAnsi(lpszUnregister);
-        if (pszUnregisterW == NULL)
+        pszUnregisterW = Imm32WideFromAnsi(pImeDpi->uCodePage, lpszUnregister);
+        if (IS_NULL_UNEXPECTEDLY(pszUnregisterW))
             goto Quit;
     }
 
     ret = pImeDpi->ImeUnregisterWord(pszReadingW, dwStyle, pszUnregisterW);
 
 Quit:
-    Imm32HeapFree(pszReadingW);
-    Imm32HeapFree(pszUnregisterW);
+    ImmLocalFree(pszReadingW);
+    ImmLocalFree(pszUnregisterW);
     ImmUnlockImeDpi(pImeDpi);
+    TRACE("ret: %d\n", ret);
     return ret;
 }
 
@@ -467,11 +477,11 @@ ImmUnregisterWordW(HKL hKL, LPCWSTR lpszReading, DWORD dwStyle, LPCWSTR lpszUnre
     TRACE("(%p, %s, 0x%lX, %s)\n", hKL, debugstr_w(lpszReading), dwStyle,
           debugstr_w(lpszUnregister));
 
-    pImeDpi = ImmLockOrLoadImeDpi(hKL);
-    if (!pImeDpi)
+    pImeDpi = Imm32FindOrLoadImeDpi(hKL);
+    if (IS_NULL_UNEXPECTEDLY(pImeDpi))
         return FALSE;
 
-    if (ImeDpi_IsUnicode(pImeDpi))
+    if (ImeDpi_IsUnicode(pImeDpi)) /* No conversion needed */
     {
         ret = pImeDpi->ImeUnregisterWord(lpszReading, dwStyle, lpszUnregister);
         ImmUnlockImeDpi(pImeDpi);
@@ -480,23 +490,24 @@ ImmUnregisterWordW(HKL hKL, LPCWSTR lpszReading, DWORD dwStyle, LPCWSTR lpszUnre
 
     if (lpszReading)
     {
-        pszReadingA = Imm32AnsiFromWide(lpszReading);
-        if (!pszReadingA)
+        pszReadingA = Imm32AnsiFromWide(pImeDpi->uCodePage, lpszReading);
+        if (IS_NULL_UNEXPECTEDLY(pszReadingA))
             goto Quit;
     }
 
     if (lpszUnregister)
     {
-        pszUnregisterA = Imm32AnsiFromWide(lpszUnregister);
-        if (!pszUnregisterA)
+        pszUnregisterA = Imm32AnsiFromWide(pImeDpi->uCodePage, lpszUnregister);
+        if (IS_NULL_UNEXPECTEDLY(pszUnregisterA))
             goto Quit;
     }
 
     ret = pImeDpi->ImeUnregisterWord(pszReadingA, dwStyle, pszUnregisterA);
 
 Quit:
-    Imm32HeapFree(pszReadingA);
-    Imm32HeapFree(pszUnregisterA);
+    ImmLocalFree(pszReadingA);
+    ImmLocalFree(pszUnregisterA);
     ImmUnlockImeDpi(pImeDpi);
+    TRACE("ret: %d\n", ret);
     return ret;
 }

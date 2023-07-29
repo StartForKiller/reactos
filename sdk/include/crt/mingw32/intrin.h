@@ -1,7 +1,7 @@
 /*
 	Compatibility <intrin.h> header for GCC -- GCC equivalents of intrinsic
 	Microsoft Visual C++ functions. Originally developed for the ReactOS
-	(<http://www.reactos.org/>) and TinyKrnl (<http://www.tinykrnl.org/>)
+	(<https://reactos.org/>) and TinyKrnl (<http://www.tinykrnl.org/>)
 	projects.
 
 	Copyright (c) 2006 KJK::Hyperion <hackbunny@reactos.com>
@@ -29,23 +29,6 @@
 #define KJK_INTRIN_H_
 
 #ifndef RC_INVOKED
-
-#ifndef __INTRIN_INLINE
-#  ifdef __clang__
-#    define __ATTRIBUTE_ARTIFICIAL
-#  else
-#    define __ATTRIBUTE_ARTIFICIAL __attribute__((artificial))
-#  endif
-#  define __INTRIN_INLINE extern __inline__ __attribute__((__always_inline__,__gnu_inline__)) __ATTRIBUTE_ARTIFICIAL
-#endif
-
-#ifndef HAS_BUILTIN
-#  ifdef __clang__
-#    define HAS_BUILTIN(x) __has_builtin(x)
-#  else
-#    define HAS_BUILTIN(x) 0
-#  endif
-#endif
 
 #ifndef _SIZE_T_DEFINED
 #define _SIZE_T_DEFINED

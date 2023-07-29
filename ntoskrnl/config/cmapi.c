@@ -180,7 +180,7 @@ CmpSetValueKeyNew(IN PHHIVE Hive,
 
     /* Get the actual data for it */
     CellData = HvGetCell(Hive, ValueCell);
-    if (!CellData) ASSERT(FALSE);
+    ASSERT(CellData);
 
     /* Now we can release it, make sure it's also dirty */
     HvReleaseCell(Hive, ValueCell);
@@ -355,7 +355,7 @@ CmpSetValueKeyExisting(IN PHHIVE Hive,
 
     /* Now get the actual data for our data cell */
     CellData = HvGetCell(Hive, NewCell);
-    if (!CellData) ASSERT(FALSE);
+    ASSERT(CellData);
 
     /* Release it immediately */
     HvReleaseCell(Hive, NewCell);
@@ -1378,7 +1378,7 @@ CmpQueryKeyDataFromCache(
 
 #if DBG
     /* Get the cell node */
-    Node = HvGetCell(KeyHive, KeyCell);
+    Node = (PCM_KEY_NODE)HvGetCell(KeyHive, KeyCell);
     if (Node != NULL)
     {
         ULONG SubKeyCount;
@@ -1457,7 +1457,7 @@ CmpQueryKeyDataFromCache(
         DPRINT1("Kcb cache incoherency detected, kcb = %p\n", Kcb);
 
         /* Get the cell node */
-        Node = HvGetCell(KeyHive, KeyCell);
+        Node = (PCM_KEY_NODE)HvGetCell(KeyHive, KeyCell);
         if (Node == NULL)
         {
             return STATUS_INSUFFICIENT_RESOURCES;
@@ -2121,17 +2121,23 @@ CmLoadKey(IN POBJECT_ATTRIBUTES TargetKey,
         /* Release the hive */
         CmHive->Hive.HiveFlags &= ~HIVE_IS_UNLOADING;
         CmHive->CreatorOwner = NULL;
-
-        /* Allow loads */
-        ExReleasePushLock(&CmpLoadHiveLock);
     }
     else
     {
         DPRINT1("CmpLinkHiveToMaster failed, Status %lx\n", Status);
-        /* FIXME: TODO */
-        // ASSERT(FALSE); see CORE-17263
-        ExReleasePushLock(&CmpLoadHiveLock);
+
+        /* We're touching this hive, set the loading flag */
+        CmHive->HiveIsLoading = TRUE;
+
+        /* Close associated file handles */
+        CmpCloseHiveFiles(CmHive);
+
+        /* Cleanup its resources */
+        CmpDestroyHive(CmHive);
     }
+
+    /* Allow loads */
+    ExReleasePushLock(&CmpLoadHiveLock);
 
     /* Is this first profile load? */
     if (!CmpProfileLoaded && !CmpWasSetupBoot)
@@ -2468,7 +2474,7 @@ CmpDeepCopyKeyInternal(IN PHHIVE SourceHive,
            DestKeyCell);
 
     /* Get the source cell node */
-    SrcNode = HvGetCell(SourceHive, SrcKeyCell);
+    SrcNode = (PCM_KEY_NODE)HvGetCell(SourceHive, SrcKeyCell);
     ASSERT(SrcNode);
 
     /* Sanity check */
@@ -2487,7 +2493,7 @@ CmpDeepCopyKeyInternal(IN PHHIVE SourceHive,
     }
 
     /* Get the destination cell node */
-    DestNode = HvGetCell(DestinationHive, NewKeyCell);
+    DestNode = (PCM_KEY_NODE)HvGetCell(DestinationHive, NewKeyCell);
     ASSERT(DestNode);
 
     /* Set the parent and copy the flags */

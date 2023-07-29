@@ -27,6 +27,7 @@ extern "C" {
 #endif
 
 #include <wine/test.h>
+#undef subtest
 
 extern void no_op(void);
 extern int return_arg(int);
@@ -1068,7 +1069,7 @@ DEFINE_TEST(test_yield_5)
 	return test_yield_5_helper() == return_positive() && test_yield_5_ret == return_positive();
 }
 
-int test_yield_6_ret;
+static int test_yield_6_ret;
 
 static
 int test_yield_6_helper(void)
@@ -2424,7 +2425,12 @@ DEFINE_TEST(test_unvolatile)
     }
     _SEH2_END;
 
+    /* This works with a proper SEH implementation, but not with our hacked PSEH */
+#ifdef _USE_NATIVE_SEH
     return (val == 4);
+#else
+    return (val == 4 || val == 3);
+#endif
 }
 
 DEFINE_TEST(test_unvolatile_2)

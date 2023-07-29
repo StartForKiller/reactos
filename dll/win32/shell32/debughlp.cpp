@@ -245,11 +245,10 @@ void _dbg_ILSimpleGetText (LPCITEMIDLIST pidl, LPSTR szOut, UINT uOutSize)
 
 
 
-void pdump (LPCITEMIDLIST pidl)
+static void pdump_impl (LPCITEMIDLIST pidl)
 {
     LPCITEMIDLIST pidltemp = pidl;
 
-    if (!TRACE_ON(pidl)) return;
 
     if (! pidltemp)
     {
@@ -309,6 +308,20 @@ void pdump (LPCITEMIDLIST pidl)
     }
 }
 
+void pdump(LPCITEMIDLIST pidl)
+{
+    if (!TRACE_ON(pidl)) return;
+
+    return pdump_impl(pidl);
+}
+
+
+void pdump_always(LPCITEMIDLIST pidl)
+{
+    pdump_impl(pidl);
+}
+
+
 static void dump_pidl_hex( LPCITEMIDLIST pidl )
 {
     const unsigned char *p = (const unsigned char *)pidl;
@@ -366,6 +379,7 @@ BOOL pcheck( LPCITEMIDLIST pidl )
                 case PT_YAGUID:
                 case PT_IESPECIAL2:
                 case PT_SHARE:
+                case 0x99:      /* Network Connection pidl type */
                     break;
                 default:
                     ERR("unknown IDLIST %p [%p] size=%u type=%x\n",

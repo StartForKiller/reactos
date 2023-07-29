@@ -223,8 +223,9 @@ PVOID apfnDispatch[USER32_CALLBACK_MAXIMUM + 1] =
     User32CallOBMFromKernel,
     User32CallLPKFromKernel,
     User32CallUMPDFromKernel,
+    User32CallImmProcessKeyFromKernel,
+    User32CallImmLoadLayoutFromKernel,
 };
-
 
 
 VOID
@@ -465,11 +466,13 @@ Cleanup(VOID)
     DeleteFrameBrushes();
 }
 
-INT WINAPI
+// UserClientDllInitialize
+BOOL
+WINAPI
 DllMain(
-   IN PVOID hInstanceDll,
-   IN ULONG dwReason,
-   IN PVOID reserved)
+    _In_ HANDLE hDll,
+    _In_ ULONG dwReason,
+    _In_opt_ PVOID pReserved)
 {
     switch (dwReason)
     {
@@ -494,7 +497,7 @@ DllMain(
             TRACE("user32::DllMain\n");
 
             /* Don't bother us for each thread */
-            DisableThreadLibraryCalls(hInstanceDll);
+            DisableThreadLibraryCalls(hDll);
 
             RtlZeroMemory(&ConnectInfo, sizeof(ConnectInfo));
 
@@ -535,7 +538,7 @@ DllMain(
 
 #endif
 
-            User32Instance = hInstanceDll;
+            User32Instance = hDll;
 
             /* Finish initialization */
             TRACE("Checkpoint (call Init)\n");
@@ -550,7 +553,7 @@ DllMain(
                 {
                     WCHAR szImmFile[MAX_PATH];
                     InitializeImmEntryTable();
-                    GetImmFileName(szImmFile, _countof(szImmFile));
+                    User32GetImmFileName(szImmFile, _countof(szImmFile));
                     hImm32 = GetModuleHandleW(szImmFile);
                 }
 
@@ -571,7 +574,7 @@ DllMain(
     }
 
     /* Finally, initialize GDI */
-    return GdiDllInitialize(hInstanceDll, dwReason, reserved);
+    return GdiDllInitialize(hDll, dwReason, pReserved);
 }
 
 NTSTATUS
@@ -711,4 +714,26 @@ NTSTATUS WINAPI User32CallUMPDFromKernel(PVOID Arguments, ULONG ArgumentLength)
        Status = STATUS_NO_MEMORY;   
     }
     return ZwCallbackReturn( pktOut, cbSize, Status );
+}
+
+NTSTATUS WINAPI
+User32CallImmProcessKeyFromKernel(PVOID Arguments, ULONG ArgumentLength)
+{
+    PIMMPROCESSKEY_CALLBACK_ARGUMENTS Common = Arguments;
+    DWORD Result = IMM_FN(ImmProcessKey)(Common->hWnd,
+                                         Common->hKL,
+                                         Common->vKey,
+                                         Common->lParam,
+                                         Common->dwHotKeyID);
+
+    return ZwCallbackReturn(&Result, sizeof(DWORD), STATUS_SUCCESS);
+}
+
+NTSTATUS WINAPI
+User32CallImmLoadLayoutFromKernel(PVOID Arguments, ULONG ArgumentLength)
+{
+    PIMMLOADLAYOUT_CALLBACK_ARGUMENTS Common = Arguments;
+    IMMLOADLAYOUT_CALLBACK_OUTPUT Result;
+    Result.ret = IMM_FN(ImmLoadLayout)(Common->hKL, &Result.iiex);
+    return ZwCallbackReturn(&Result, sizeof(Result), STATUS_SUCCESS);
 }

@@ -6,13 +6,15 @@ list(APPEND HAL_GENERIC_SOURCE
     generic/dma.c
     generic/drive.c
     generic/halinit.c
+    generic/kdpci.c
     generic/memory.c
     generic/misc.c
     generic/nmi.c
     generic/pic.c
     generic/reboot.c
     generic/sysinfo.c
-    generic/usage.c)
+    generic/usage.c
+    generic/x86bios.c)
 
 if(ARCH STREQUAL "i386")
     list(APPEND HAL_GENERIC_SOURCE

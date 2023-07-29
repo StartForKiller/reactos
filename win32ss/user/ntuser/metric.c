@@ -14,6 +14,26 @@ static BOOL Setup = FALSE;
 
 /* FUNCTIONS *****************************************************************/
 
+BOOL FASTCALL UserIsDBCSEnabled(VOID)
+{
+    return NLS_MB_CODE_PAGE_TAG;
+}
+
+BOOL FASTCALL UserIsIMMEnabled(VOID)
+{
+    static WCHAR s_szLoadIMM[] = L"LoadIMM";
+
+    if (NLS_MB_CODE_PAGE_TAG)
+        return TRUE;
+
+    return !!RegGetSectionDWORD(L"IMM", s_szLoadIMM, TRUE);
+}
+
+BOOL FASTCALL UserIsCiceroEnabled(VOID)
+{
+    return FALSE; /* FIXME: Cicero is not supported yet */
+}
+
 BOOL
 NTAPI
 InitMetrics(VOID)
@@ -33,16 +53,16 @@ InitMetrics(VOID)
         ZwClose(hKey);
     }
 
-    /* FIXME: HACK, due to missing PDEV on first init */
-    if (!gppdevPrimary)
+    /* FIXME: HACK, due to missing MDEV on first init */
+    if (!gpmdev)
     {
         Width = 640;
         Height = 480;
     }
     else
     {
-        Width = gppdevPrimary->gdiinfo.ulHorzRes;
-        Height = gppdevPrimary->gdiinfo.ulVertRes;
+        Width = gpmdev->ppdevGlobal->gdiinfo.ulHorzRes;
+        Height = gpmdev->ppdevGlobal->gdiinfo.ulVertRes;
     }
 
     /* Screen sizes */
@@ -150,12 +170,12 @@ InitMetrics(VOID)
     piSysMet[SM_NETWORK] = 3;
     piSysMet[SM_SLOWMACHINE] = 0;
     piSysMet[SM_SECURE] = 0;
-    piSysMet[SM_DBCSENABLED] = 0;
+    piSysMet[SM_DBCSENABLED] = NLS_MB_CODE_PAGE_TAG;
     piSysMet[SM_SHOWSOUNDS] = gspv.bShowSounds;
     piSysMet[SM_MIDEASTENABLED] = 0;
     piSysMet[SM_CMONITORS] = 1;
     piSysMet[SM_SAMEDISPLAYFORMAT] = 1;
-    piSysMet[SM_IMMENABLED] = 0;
+    piSysMet[SM_IMMENABLED] = NLS_MB_CODE_PAGE_TAG;
 
     /* Reserved */
     piSysMet[SM_RESERVED1] = 0;
@@ -169,7 +189,15 @@ InitMetrics(VOID)
     piSysMet[90] = 0;
 #endif
 
-    gpsi->dwSRVIFlags |= SRVINFO_CICERO_ENABLED;
+    if (UserIsDBCSEnabled())
+        gpsi->dwSRVIFlags |= SRVINFO_DBCSENABLED; /* DBCS Support */
+
+    if (UserIsIMMEnabled())
+        gpsi->dwSRVIFlags |= SRVINFO_IMM32; /* IME Support */
+
+    if (UserIsCiceroEnabled())
+        gpsi->dwSRVIFlags |= SRVINFO_CICERO_ENABLED; /* Cicero support */
+
     Setup = TRUE;
 
     return TRUE;
@@ -182,6 +210,12 @@ UserGetSystemMetrics(ULONG Index)
     ASSERT(gpsi);
     ASSERT(Setup);
     TRACE("UserGetSystemMetrics(%lu)\n", Index);
+
+    if (Index == SM_DBCSENABLED)
+        return !!(gpsi->dwSRVIFlags & SRVINFO_DBCSENABLED);
+
+    if (Index == SM_IMMENABLED)
+        return !!(gpsi->dwSRVIFlags & SRVINFO_IMM32);
 
     /* Get metrics from array */
     if (Index < SM_CMETRICS)
@@ -205,6 +239,5 @@ UserGetSystemMetrics(ULONG Index)
     ERR("UserGetSystemMetrics() called with invalid index %lu\n", Index);
     return 0;
 }
-
 
 /* EOF */

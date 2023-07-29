@@ -2,7 +2,7 @@
  * COPYRIGHT:       See COPYING in the top level directory
  * PROJECT:         ReactOS kernel
  * FILE:            ntoskrnl/mm/balance.c
- * PURPOSE:         kernel memory managment functions
+ * PURPOSE:         kernel memory management functions
  *
  * PROGRAMMERS:     David Welch (welch@cwcom.net)
  *                  Cameron Gutman (cameron.gutman@reactos.org)
@@ -33,6 +33,7 @@ static ULONG MiMinimumPagesPerRun;
 static CLIENT_ID MiBalancerThreadId;
 static HANDLE MiBalancerThreadHandle = NULL;
 static KEVENT MiBalancerEvent;
+static KEVENT MiBalancerDoneEvent;
 static KTIMER MiBalancerTimer;
 
 static LONG PageOutThreadActive;
@@ -81,6 +82,7 @@ MmReleasePageMemoryConsumer(ULONG Consumer, PFN_NUMBER Page)
     }
 
     (void)InterlockedDecrementUL(&MiMemoryConsumers[Consumer].PagesUsed);
+    UpdateTotalCommittedPages(-1);
 
     OldIrql = MiAcquirePfnLock();
 
@@ -137,14 +139,15 @@ MiTrimMemoryConsumer(ULONG Consumer, ULONG InitialTarget)
 NTSTATUS
 MmTrimUserMemory(ULONG Target, ULONG Priority, PULONG NrFreedPages)
 {
-    PFN_NUMBER CurrentPage;
+    PFN_NUMBER FirstPage, CurrentPage;
     NTSTATUS Status;
 
     (*NrFreedPages) = 0;
 
     DPRINT1("MM BALANCER: %s\n", Priority ? "Paging out!" : "Removing access bit!");
 
-    CurrentPage = MmGetLRUFirstUserPage();
+    FirstPage = MmGetLRUFirstUserPage();
+    CurrentPage = FirstPage;
     while (CurrentPage != 0 && Target > 0)
     {
         if (Priority)
@@ -155,6 +158,10 @@ MmTrimUserMemory(ULONG Target, ULONG Priority, PULONG NrFreedPages)
                 DPRINT("Succeeded\n");
                 Target--;
                 (*NrFreedPages)++;
+                if (CurrentPage == FirstPage)
+                {
+                    FirstPage = 0;
+                }
             }
         }
         else
@@ -244,8 +251,14 @@ MmTrimUserMemory(ULONG Target, ULONG Priority, PULONG NrFreedPages)
                 /* Nobody accessed this page since the last time we check. Time to clean up */
 
                 Status = MmPageOutPhysicalAddress(CurrentPage);
+                if (NT_SUCCESS(Status))
+                {
+                    if (CurrentPage == FirstPage)
+                    {
+                        FirstPage = 0;
+                    }
+                }
                 // DPRINT1("Paged-out one page: %s\n", NT_SUCCESS(Status) ? "Yes" : "No");
-                (void)Status;
             }
 
             /* Done for this page. */
@@ -253,6 +266,15 @@ MmTrimUserMemory(ULONG Target, ULONG Priority, PULONG NrFreedPages)
         }
 
         CurrentPage = MmGetLRUNextUserPage(CurrentPage, TRUE);
+        if (FirstPage == 0)
+        {
+            FirstPage = CurrentPage;
+        }
+        else if (CurrentPage == FirstPage)
+        {
+            DPRINT1("We are back at the start, abort!\n");
+            return STATUS_SUCCESS;
+        }
     }
 
     if (CurrentPage)
@@ -275,6 +297,19 @@ MmRebalanceMemoryConsumers(VOID)
     }
 }
 
+VOID
+NTAPI
+MmRebalanceMemoryConsumersAndWait(VOID)
+{
+    ASSERT(PsGetCurrentProcess()->AddressCreationLock.Owner != KeGetCurrentThread());
+    ASSERT(!MM_ANY_WS_LOCK_HELD(PsGetCurrentThread()));
+    ASSERT(KeGetCurrentIrql() < DISPATCH_LEVEL);
+
+    KeResetEvent(&MiBalancerDoneEvent);
+    MmRebalanceMemoryConsumers();
+    KeWaitForSingleObject(&MiBalancerDoneEvent, Executive, KernelMode, FALSE, NULL);
+}
+
 NTSTATUS
 NTAPI
 MmRequestPageMemoryConsumer(ULONG Consumer, BOOLEAN CanWait,
@@ -282,18 +317,20 @@ MmRequestPageMemoryConsumer(ULONG Consumer, BOOLEAN CanWait,
 {
     PFN_NUMBER Page;
 
-    /* Update the target */
-    InterlockedIncrementUL(&MiMemoryConsumers[Consumer].PagesUsed);
-
     /*
      * Actually allocate the page.
      */
     Page = MmAllocPage(Consumer);
     if (Page == 0)
     {
-        KeBugCheck(NO_PAGES_AVAILABLE);
+        *AllocatedPage = 0;
+        return STATUS_NO_MEMORY;
     }
     *AllocatedPage = Page;
+
+    /* Update the target */
+    InterlockedIncrementUL(&MiMemoryConsumers[Consumer].PagesUsed);
+    UpdateTotalCommittedPages(1);
 
     return(STATUS_SUCCESS);
 }
@@ -311,6 +348,7 @@ MiBalancerThread(PVOID Unused)
 
     while (1)
     {
+        KeSetEvent(&MiBalancerDoneEvent, IO_NO_INCREMENT, FALSE);
         Status = KeWaitForMultipleObjects(2,
                                           WaitObjects,
                                           WaitAny,
@@ -365,6 +403,7 @@ MiInitBalancerThread(VOID)
     LARGE_INTEGER Timeout;
 
     KeInitializeEvent(&MiBalancerEvent, SynchronizationEvent, FALSE);
+    KeInitializeEvent(&MiBalancerDoneEvent, SynchronizationEvent, FALSE);
     KeInitializeTimerEx(&MiBalancerTimer, SynchronizationTimer);
 
     Timeout.QuadPart = -20000000; /* 2 sec */

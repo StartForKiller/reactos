@@ -55,10 +55,12 @@ static const struct
     {"ReactOSSetup", EditCustomBootReactOSSetup, LoadReactOSSetup},
 
 #if defined(_M_IX86) || defined(_M_AMD64)
+#ifndef UEFIBOOT
     {"Drive"       , EditCustomBootDisk      , LoadAndBootDevice},
     {"Partition"   , EditCustomBootPartition , LoadAndBootDevice},
     {"BootSector"  , EditCustomBootSectorFile, LoadAndBootDevice},
     {"Linux"       , EditCustomBootLinux, LoadAndBootLinux  },
+#endif
 #endif
 #ifdef _M_IX86
     {"WindowsNT40" , EditCustomBootNTOS , LoadAndBootWindows},
@@ -194,8 +196,10 @@ VOID LoadOperatingSystem(IN OperatingSystemItem* OperatingSystem)
     ASSERT(*BootType);
 
 #ifdef _M_IX86
+#ifndef UEFIBOOT
     /* Install the drive mapper according to this section drive mappings */
     DriveMapMapDrivesInSection(SectionId);
+#endif
 #endif
 
     /* Find the suitable OS loader to start */
@@ -314,11 +318,13 @@ VOID RunLoader(VOID)
     }
 
 #ifdef _M_IX86
+#ifndef UEFIBOOT
     /* Load additional SCSI driver (if any) */
     if (LoadBootDeviceDriver() != ESUCCESS)
     {
         UiMessageBoxCritical("Unable to load additional boot device drivers.");
     }
+#endif
 #endif
 
     if (!IniFileInitialize())
@@ -401,6 +407,13 @@ VOID RunLoader(VOID)
 
         /* Load the chosen operating system */
         LoadOperatingSystem(&OperatingSystemList[SelectedOperatingSystem]);
+
+        /* If we get there, the OS loader failed. As it may have
+         * messed up the display, re-initialize the UI. */
+#ifndef _M_ARM
+        UiVtbl.UnInitialize();
+#endif
+        UiInitialize(TRUE);
     }
 
 Reboot:

@@ -635,7 +635,7 @@ NtUserGetAsyncKeyState(INT Key)
 
     TRACE("Enter NtUserGetAsyncKeyState\n");
 
-    if (Key >= 0x100)
+    if (Key >= 0x100 || Key < 0)
     {
         EngSetLastError(ERROR_INVALID_PARAMETER);
         ERR("Invalid parameter Key\n");
@@ -811,6 +811,19 @@ ProcessKeyEvent(WORD wVk, WORD wScanCode, DWORD dwFlags, BOOL bInjected, DWORD d
 
     /* Get virtual key without shifts (VK_(L|R)* -> VK_*) */
     wSimpleVk = IntSimplifyVk(wVk);
+
+    if (PRIMARYLANGID(gusLanguageID) == LANG_JAPANESE)
+    {
+        /* Japanese special! */
+        if (IS_KEY_DOWN(gafAsyncKeyState, VK_SHIFT))
+        {
+            if (wSimpleVk == VK_OEM_ATTN)
+                wSimpleVk = VK_CAPITAL;
+            else if (wSimpleVk == VK_OEM_COPY)
+                wSimpleVk = VK_OEM_FINISH;
+        }
+    }
+
     bWasSimpleDown = IS_KEY_DOWN(gafAsyncKeyState, wSimpleVk);
 
     /* Update key without shifts */
@@ -1161,9 +1174,18 @@ IntTranslateKbdMessage(LPMSG lpMsg,
 
     if (!pti->KeyboardLayout)
     {
-       pti->KeyboardLayout = W32kGetDefaultKeyLayout();
-       pti->pClientInfo->hKL = pti->KeyboardLayout ? pti->KeyboardLayout->hkl : NULL;
-       pKbdTbl = pti->KeyboardLayout ? pti->KeyboardLayout->spkf->pKbdTbl : NULL;
+        PKL pDefKL = W32kGetDefaultKeyLayout();
+        UserAssignmentLock((PVOID*)&(pti->KeyboardLayout), pDefKL);
+        if (pDefKL)
+        {
+            pti->pClientInfo->hKL = pDefKL->hkl;
+            pKbdTbl = pDefKL->spkf->pKbdTbl;
+        }
+        else
+        {
+            pti->pClientInfo->hKL = NULL;
+            pKbdTbl = NULL;
+        }
     }
     else
        pKbdTbl = pti->KeyboardLayout->spkf->pKbdTbl;

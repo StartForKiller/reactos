@@ -1,25 +1,10 @@
 /*
- *  ReactOS Task Manager
- *
- *  applpage.c
- *
- *  Copyright (C) 1999 - 2001  Brian Palmer  <brianp@reactos.org>
- *                2005         Klemens Friedl <frik85@reactos.at>
- *                2021 Katayama Hirofumi MZ <katayama.hirofumi.mz@gmail.com>
- *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2.1 of the License, or (at your option) any later version.
- *
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+ * PROJECT:     ReactOS Task Manager
+ * LICENSE:     LGPL-2.1-or-later (https://spdx.org/licenses/LGPL-2.1-or-later)
+ * PURPOSE:     Applications Page.
+ * COPYRIGHT:   Copyright 1999-2001 Brian Palmer <brianp@reactos.org>
+ *              Copyright 2005 Klemens Friedl <frik85@reactos.at>
+ *              Copyright 2021 Katayama Hirofumi MZ <katayama.hirofumi.mz@gmail.com>
  */
 
 #include "precomp.h"
@@ -512,15 +497,8 @@ void ApplicationPageUpdate(void)
     {
         EnableWindow(hApplicationPageEndTaskButton, FALSE);
     }
-    /* Enable "Switch To" button only if one app is selected */
-    if (ListView_GetSelectedCount(hApplicationPageListCtrl) == 1 )
-    {
-        EnableWindow(hApplicationPageSwitchToButton, TRUE);
-    }
-    else
-    {
-    EnableWindow(hApplicationPageSwitchToButton, FALSE);
-    }
+    /* Enable "Switch To" button only if only one app is selected */
+    EnableWindow(hApplicationPageSwitchToButton, (ListView_GetSelectedCount(hApplicationPageListCtrl) == 1));
 
     /* If we are on the applications tab the windows menu will be */
     /* present on the menu bar so enable & disable the menu items */
@@ -693,6 +671,7 @@ void ApplicationPageShowContextMenu2(void)
 
     if (ListView_GetSelectedCount(hApplicationPageListCtrl) == 1)
     {
+        EnableMenuItem(hSubMenu, ID_APPLICATION_PAGE_SWITCHTO, MF_BYCOMMAND|MF_ENABLED);
         EnableMenuItem(hSubMenu, ID_WINDOWS_TILEHORIZONTALLY, MF_BYCOMMAND|MF_DISABLED|MF_GRAYED);
         EnableMenuItem(hSubMenu, ID_WINDOWS_TILEVERTICALLY, MF_BYCOMMAND|MF_DISABLED|MF_GRAYED);
         EnableMenuItem(hSubMenu, ID_WINDOWS_MINIMIZE, MF_BYCOMMAND|MF_ENABLED);
@@ -702,6 +681,7 @@ void ApplicationPageShowContextMenu2(void)
     }
     else if (ListView_GetSelectedCount(hApplicationPageListCtrl) > 1)
     {
+        EnableMenuItem(hSubMenu, ID_APPLICATION_PAGE_SWITCHTO, MF_BYCOMMAND|MF_DISABLED|MF_GRAYED);
         EnableMenuItem(hSubMenu, ID_WINDOWS_TILEHORIZONTALLY, MF_BYCOMMAND|MF_ENABLED);
         EnableMenuItem(hSubMenu, ID_WINDOWS_TILEVERTICALLY, MF_BYCOMMAND|MF_ENABLED);
         EnableMenuItem(hSubMenu, ID_WINDOWS_MINIMIZE, MF_BYCOMMAND|MF_ENABLED);
@@ -711,6 +691,7 @@ void ApplicationPageShowContextMenu2(void)
     }
     else
     {
+        EnableMenuItem(hSubMenu, ID_APPLICATION_PAGE_SWITCHTO, MF_BYCOMMAND|MF_DISABLED|MF_GRAYED);
         EnableMenuItem(hSubMenu, ID_WINDOWS_TILEHORIZONTALLY, MF_BYCOMMAND|MF_DISABLED|MF_GRAYED);
         EnableMenuItem(hSubMenu, ID_WINDOWS_TILEVERTICALLY, MF_BYCOMMAND|MF_DISABLED|MF_GRAYED);
         EnableMenuItem(hSubMenu, ID_WINDOWS_MINIMIZE, MF_BYCOMMAND|MF_DISABLED|MF_GRAYED);

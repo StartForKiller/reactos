@@ -38,6 +38,7 @@ BOOLEAN VpNoVesa = FALSE;
 
 PKPROCESS CsrProcess = NULL;
 static ULONG VideoPortMaxObjectNumber = -1;
+BOOLEAN VideoPortUseNewKey = FALSE;
 KMUTEX VideoPortInt10Mutex;
 KSPIN_LOCK HwResetAdaptersLock;
 RTL_STATIC_LIST_HEAD(HwResetAdaptersList);
@@ -58,6 +59,7 @@ NTSTATUS
 IntVideoPortAddDeviceMapLink(
     PVIDEO_PORT_DEVICE_EXTENSION DeviceExtension)
 {
+    PUNICODE_STRING RegistryPath;
     WCHAR DeviceBuffer[20];
     UNICODE_STRING DeviceName;
     WCHAR SymlinkBuffer[20];
@@ -69,16 +71,21 @@ IntVideoPortAddDeviceMapLink(
     DeviceNumber = DeviceExtension->DeviceNumber;
     swprintf(DeviceBuffer, L"\\Device\\Video%lu", DeviceNumber);
 
+    if (VideoPortUseNewKey)
+        RegistryPath = &DeviceExtension->NewRegistryPath;
+    else
+        RegistryPath = &DeviceExtension->RegistryPath;
+
     /* Add entry to DEVICEMAP\VIDEO key in registry. */
     Status = RtlWriteRegistryValue(RTL_REGISTRY_DEVICEMAP,
                                    L"VIDEO",
                                    DeviceBuffer,
                                    REG_SZ,
-                                   DeviceExtension->NewRegistryPath.Buffer,
-                                   DeviceExtension->NewRegistryPath.Length + sizeof(UNICODE_NULL));
+                                   RegistryPath->Buffer,
+                                   RegistryPath->Length + sizeof(UNICODE_NULL));
     if (!NT_SUCCESS(Status))
     {
-        ERR_(VIDEOPRT, "Failed to create DEViCEMAP registry entry: 0x%X\n", Status);
+        ERR_(VIDEOPRT, "Failed to create DEVICEMAP registry entry: 0x%X\n", Status);
         return Status;
     }
 
@@ -237,9 +244,7 @@ IntVideoPortCreateAdapterDeviceObject(
     if (!NT_SUCCESS(Status))
     {
         WARN_(VIDEOPRT, "IntCreateRegistryPath() call failed with status 0x%08x\n", Status);
-        IoDeleteDevice(*DeviceObject);
-        *DeviceObject = NULL;
-        return Status;
+        goto Failure;
     }
 
     if (PhysicalDeviceObject != NULL)
@@ -307,14 +312,12 @@ IntVideoPortCreateAdapterDeviceObject(
     if (!NT_SUCCESS(Status))
     {
         ERR_(VIDEOPRT, "IntCreateNewRegistryPath() failed with status 0x%08x\n", Status);
-        IoDeleteDevice(*DeviceObject);
-        *DeviceObject = NULL;
-        return Status;
+        goto Failure;
     }
 
     IntSetupDeviceSettingsKey(DeviceExtension);
 
-    /* Remove the initailizing flag */
+    /* Remove the initializing flag */
     (*DeviceObject)->Flags &= ~DO_DEVICE_INITIALIZING;
 
     /* Set up the VIDEO/DEVICEMAP registry keys */
@@ -322,9 +325,7 @@ IntVideoPortCreateAdapterDeviceObject(
     if (!NT_SUCCESS(Status))
     {
         ERR_(VIDEOPRT, "IntVideoPortAddDeviceMapLink() failed with status 0x%08x\n", Status);
-        IoDeleteDevice(*DeviceObject);
-        *DeviceObject = NULL;
-        return Status;
+        goto Failure;
     }
 
     if (DisplayNumber == 0)
@@ -333,8 +334,80 @@ IntVideoPortCreateAdapterDeviceObject(
     }
 
     return STATUS_SUCCESS;
+
+Failure:
+    if (DeviceExtension->NextDeviceObject)
+        IoDetachDevice(DeviceExtension->NextDeviceObject);
+    IoDeleteDevice(*DeviceObject);
+    *DeviceObject = NULL;
+    return Status;
 }
 
+/**
+ * @brief
+ * A PIO_QUERY_DEVICE_ROUTINE callback for IoQueryDeviceDescription()
+ * to return success when an enumerated bus has been found.
+ **/
+static NTSTATUS
+NTAPI
+IntVideoPortEnumBusCallback(
+    _In_ PVOID Context,
+    _In_ PUNICODE_STRING PathName,
+    _In_ INTERFACE_TYPE BusType,
+    _In_ ULONG BusNumber,
+    _In_ PKEY_VALUE_FULL_INFORMATION* BusInformation,
+    _In_ CONFIGURATION_TYPE ControllerType,
+    _In_ ULONG ControllerNumber,
+    _In_ PKEY_VALUE_FULL_INFORMATION* ControllerInformation,
+    _In_ CONFIGURATION_TYPE PeripheralType,
+    _In_ ULONG PeripheralNumber,
+    _In_ PKEY_VALUE_FULL_INFORMATION* PeripheralInformation)
+{
+    UNREFERENCED_PARAMETER(Context);
+    UNREFERENCED_PARAMETER(PathName);
+    UNREFERENCED_PARAMETER(BusType);
+    UNREFERENCED_PARAMETER(BusNumber);
+    UNREFERENCED_PARAMETER(BusInformation);
+    UNREFERENCED_PARAMETER(ControllerType);
+    UNREFERENCED_PARAMETER(ControllerNumber);
+    UNREFERENCED_PARAMETER(ControllerInformation);
+    UNREFERENCED_PARAMETER(PeripheralType);
+    UNREFERENCED_PARAMETER(PeripheralNumber);
+    UNREFERENCED_PARAMETER(PeripheralInformation);
+
+    /* The bus has been found */
+    return STATUS_SUCCESS;
+}
+
+/**
+ * @brief
+ * Enumerates all supported buses on the system.
+ **/
+static NTSTATUS
+IntVideoPortEnumBuses(
+    _In_ INTERFACE_TYPE AdapterInterfaceType,
+    _Inout_ PULONG BusNumber)
+{
+    // TODO: Forward-compatibility with Windows 7+:
+    // In case AdapterInterfaceType == PCIBus, check for the
+    // \Registry\HARDWARE\DESCRIPTION\System\VideoAdapterBusses
+    // key (created by pci.sys) that enumerates the PCI buses that
+    // are known to have video display adapters on them.
+    // This is a handy shortcut for videoprt, that would otherwise
+    // have to enumerate all the PCI buses (PCI_MAX_BRIDGE_NUMBER)
+    // to locate any video adapter.
+    // Otherwise, fall back to the usual method done below.
+
+    /* Find the next bus of the given type */
+    return IoQueryDeviceDescription(&AdapterInterfaceType,
+                                    BusNumber,
+                                    NULL,
+                                    NULL,
+                                    NULL,
+                                    NULL,
+                                    IntVideoPortEnumBusCallback,
+                                    NULL);
+}
 
 NTSTATUS
 NTAPI
@@ -393,12 +466,23 @@ IntVideoPortFindAdapter(
 
     if (LegacyDetection)
     {
-        ULONG BusNumber, MaxBuses;
+        ULONG BusNumber;
 
-        MaxBuses = DeviceExtension->AdapterInterfaceType == PCIBus ? PCI_MAX_BRIDGE_NUMBER : 1;
+        /* Suppose first we may not find any suitable device */
+        vpStatus = ERROR_DEV_NOT_EXIST; // ERROR_NO_MORE_DEVICES;
 
-        for (BusNumber = 0; BusNumber < MaxBuses; BusNumber++)
+        /* Enumerate all buses of the given type, call HwFindAdapter for each
+         * to find whether a video adapter is recognized there. Stop when an
+         * adapter has been found. */
+        for (BusNumber = 0;
+             (BusNumber < MAXULONG) &&
+             NT_SUCCESS(IntVideoPortEnumBuses(DeviceExtension->AdapterInterfaceType,
+                                              &BusNumber));
+             ++BusNumber)
         {
+            DPRINT("Bus Type %lu, Number %lu\n",
+                   DeviceExtension->AdapterInterfaceType, BusNumber);
+
             DeviceExtension->SystemIoBusNumber =
                 ConfigInfo.SystemIoBusNumber = BusNumber;
 
@@ -406,6 +490,7 @@ IntVideoPortFindAdapter(
                           DriverExtension->InitializationData.HwDeviceExtensionSize);
 
             /* FIXME: Need to figure out what string to pass as param 3. */
+            // FIXME: Handle the 'Again' parameter for legacy detection.
             vpStatus = DriverExtension->InitializationData.HwFindAdapter(
                          &DeviceExtension->MiniPortDeviceExtension,
                          DriverExtension->HwContext,
@@ -474,9 +559,6 @@ IntVideoPortFindAdapter(
                                     &HwResetAdaptersLock);
     }
 
-    /* Query children of the device. */
-    VideoPortEnumerateChildren(&DeviceExtension->MiniPortDeviceExtension, NULL);
-
     INFO_(VIDEOPRT, "STATUS_SUCCESS\n");
     return STATUS_SUCCESS;
 
@@ -519,11 +601,27 @@ IntLoadRegistryParameters(VOID)
 {
     NTSTATUS Status;
     HANDLE KeyHandle;
-    UNICODE_STRING Path = RTL_CONSTANT_STRING(L"\\REGISTRY\\MACHINE\\SYSTEM\\CurrentControlSet\\Control");
+    UNICODE_STRING UseNewKeyPath = RTL_CONSTANT_STRING(L"\\Registry\\Machine\\System\\CurrentControlSet\\Control\\GraphicsDrivers\\UseNewKey");
+    UNICODE_STRING Path = RTL_CONSTANT_STRING(L"\\Registry\\Machine\\System\\CurrentControlSet\\Control");
     UNICODE_STRING ValueName = RTL_CONSTANT_STRING(L"SystemStartOptions");
     OBJECT_ATTRIBUTES ObjectAttributes;
     PKEY_VALUE_PARTIAL_INFORMATION KeyInfo;
     ULONG Length, NewLength;
+
+    /* Check if we need to use new registry */
+    InitializeObjectAttributes(&ObjectAttributes,
+                               &UseNewKeyPath,
+                               OBJ_CASE_INSENSITIVE | OBJ_KERNEL_HANDLE,
+                               NULL,
+                               NULL);
+    Status = ZwOpenKey(&KeyHandle,
+                       GENERIC_READ | GENERIC_WRITE,
+                       &ObjectAttributes);
+    if (NT_SUCCESS(Status))
+    {
+        VideoPortUseNewKey = TRUE;
+        ZwClose(KeyHandle);
+    }
 
     /* Initialize object attributes with the path we want */
     InitializeObjectAttributes(&ObjectAttributes,
@@ -617,7 +715,7 @@ IntLoadRegistryParameters(VOID)
                                    NULL);
 
         Status = ZwCreateKey(&KeyHandle,
-                             KEY_WRITE,
+                             READ_CONTROL, // Non-0 placeholder: no use for this handle.
                              &ObjectAttributes,
                              0,
                              NULL,
@@ -679,10 +777,10 @@ VideoPortInitialize(
 
     switch (HwInitializationData->HwInitDataSize)
     {
-            /*
-             * NT4 drivers are special case, because we must use legacy method
-             * of detection instead of the Plug & Play one.
-             */
+        /*
+         * NT4 drivers are special case, because we must use legacy method
+         * of detection instead of the Plug & Play one.
+         */
         case SIZE_OF_NT4_VIDEO_HW_INITIALIZATION_DATA:
             INFO_(VIDEOPRT, "We were loaded by a Windows NT miniport driver.\n");
             break;
@@ -772,6 +870,14 @@ VideoPortInitialize(
             }
 
             RtlCopyUnicodeString(&DriverExtension->RegistryPath, RegistryPath);
+
+            /* There is a bug in Spice guest agent, which searches 'System' case-sensitively.
+             * Replace 'SYSTEM' by 'System' to fix that.
+             * Probably for similar reason, Windows also replaces 'MACHINE' by 'Machine'.
+             */
+            wcsncpy(wcsstr(DriverExtension->RegistryPath.Buffer, L"\\SYSTEM\\"), L"\\System\\", ARRAYSIZE(L"\\SYSTEM\\") - 1);
+            wcsncpy(wcsstr(DriverExtension->RegistryPath.Buffer, L"\\MACHINE\\"), L"\\Machine\\", ARRAYSIZE(L"\\MACHINE\\") - 1);
+
             INFO_(VIDEOPRT, "RegistryPath: %wZ\n", &DriverExtension->RegistryPath);
         }
         else
@@ -1170,11 +1276,10 @@ VideoPortSynchronizeExecution(
 /*
  * @implemented
  */
-VP_STATUS
-NTAPI
-VideoPortEnumerateChildren(
-    IN PVOID HwDeviceExtension,
-    IN PVOID Reserved)
+NTSTATUS NTAPI
+IntVideoPortEnumerateChildren(
+    IN PDEVICE_OBJECT DeviceObject,
+    IN PIRP Irp)
 {
     PVIDEO_PORT_DEVICE_EXTENSION DeviceExtension;
     ULONG Status;
@@ -1187,17 +1292,17 @@ VideoPortEnumerateChildren(
     PVIDEO_PORT_CHILD_EXTENSION ChildExtension;
 
     INFO_(VIDEOPRT, "Starting child device probe\n");
-    DeviceExtension = VIDEO_PORT_GET_DEVICE_EXTENSION(HwDeviceExtension);
+    DeviceExtension = DeviceObject->DeviceExtension;
     if (DeviceExtension->DriverExtension->InitializationData.HwGetVideoChildDescriptor == NULL)
     {
         WARN_(VIDEOPRT, "Miniport's HwGetVideoChildDescriptor is NULL!\n");
-        return NO_ERROR;
+        return STATUS_SUCCESS;
     }
 
     if (!IsListEmpty(&DeviceExtension->ChildDeviceList))
     {
         ERR_(VIDEOPRT, "FIXME: Support calling VideoPortEnumerateChildren again!\n");
-        return NO_ERROR;
+        return STATUS_SUCCESS;
     }
 
     /* Enumerate the children */
@@ -1239,7 +1344,7 @@ VideoPortEnumerateChildren(
 
         INFO_(VIDEOPRT, "Probing child: %d\n", ChildEnumInfo.ChildIndex);
         Status = DeviceExtension->DriverExtension->InitializationData.HwGetVideoChildDescriptor(
-                     HwDeviceExtension,
+                     DeviceExtension->MiniPortDeviceExtension,
                      &ChildEnumInfo,
                      &ChildExtension->ChildType,
                      ChildExtension->ChildDescriptor,
@@ -1331,8 +1436,25 @@ VideoPortEnumerateChildren(
                        &ChildExtension->ListEntry);
     }
 
-    /* Trigger reenumeration by the PnP manager */
-    IoInvalidateDeviceRelations(DeviceExtension->PhysicalDeviceObject, BusRelations);
+    return STATUS_SUCCESS;
+}
+
+VP_STATUS
+NTAPI
+VideoPortEnumerateChildren(
+    IN PVOID HwDeviceExtension,
+    IN PVOID Reserved)
+{
+    PVIDEO_PORT_DEVICE_EXTENSION DeviceExtension;
+
+    DeviceExtension = VIDEO_PORT_GET_DEVICE_EXTENSION(HwDeviceExtension);
+    ASSERT(DeviceExtension);
+
+    if (DeviceExtension->PhysicalDeviceObject)
+    {
+        /* Trigger reenumeration by the PnP manager */
+        IoInvalidateDeviceRelations(DeviceExtension->PhysicalDeviceObject, BusRelations);
+    }
 
     return NO_ERROR;
 }

@@ -1,9 +1,12 @@
 /*
- * PROJECT:     ReactOS Explorer-New
- * LICENSE:     GPL - See COPYING in the top level directory
- * FILE:        base/shell/explorer/lang/uk-UA.rc
- * PURPOSE:     Ukraianian Language File for ReactOS Explorer-New
- * TRANSLATORS: Artem Reznikov & Sakara Yevhen & Yaroslav Kibysh
+ * PROJECT:     ReactOS Explorer
+ * LICENSE:     LGPL-2.1-or-later (https://spdx.org/licenses/LGPL-2.1-or-later)
+ * PURPOSE:     Ukrainian resource file
+ * TRANSLATORS: Copyright 2007 Artem Reznikov <temarez@yandex.ru>
+ *              Copyright 2010 Sakara Yevhen <eresid@gmail.com>
+ *              Copyright 2010-2011 Igor Paliychuk <mansonigor@gmail.com>
+ *              Copyright 2015 Yaroslav Fedoryako <yaroslav.fedoryako@gmail.com>
+ *              Copyright 2019 Yaroslav Kibysh <yanet.prod@gmail.com>
  */
 
 LANGUAGE LANG_UKRAINIAN, SUBLANG_DEFAULT
@@ -203,4 +206,6 @@ STRINGTABLE
 BEGIN
     IDS_TASKBAR_STARTMENU_PROP_CAPTION "Властивості меню Пуск та Панелі завдань"
     IDS_RESTORE_ALL "&Показати відкриті вікна"
+    IDS_TRAYWND_UNDO_CASCADE "&Undo Cascade"
+    IDS_TRAYWND_UNDO_TILE "&Undo Tile"
 END

@@ -121,8 +121,8 @@
 #   R: learn-more, learn_more, Mark Jansen
 #   R: ThFabba, Thomas Faber
 #   S: Maintained
-/sdk/cmake/     @learn-more
-*.cmake         @learn-more
+/sdk/cmake/
+*.cmake
 
 # File Patch API
 #   M: learn-more, learn_more, Mark Jansen
@@ -225,7 +225,7 @@
 #   R: learn-more, learn_more, Mark Jansen
 #   R: ThFabba, Thomas Faber
 #   S: Maintained
-/modules/rostests/apitests/ @learn-more
+/modules/rostests/apitests/
 
 # ReactOS Kernel-Mode Tests
 #   M: ThFabba, Thomas Faber
@@ -252,6 +252,16 @@
 /modules/rostests/kmtests/ntos_se/   @GeoB99
 /ntoskrnl/se/                        @GeoB99
 
+# Shell
+#   M:
+#   R: learn-more, learn_more, Mark Jansen
+#   R: yagoulas, Giannis Adamopoulos
+#   S: Maintained
+/base/shell/explorer/   @learn-more @yagoulas
+/base/shell/rshell/     @learn-more @yagoulas
+/dll/win32/browseui/    @learn-more @yagoulas
+/dll/win32/shell32/     @learn-more @yagoulas
+
 # Shell Extensions
 #   M:
 #   R: learn-more, learn_more, Mark Jansen
@@ -272,7 +282,7 @@
 /drivers/filesystems/btrfs/         @HeisSpiter
 /drivers/filesystems/cdfs/          @HeisSpiter
 /drivers/filesystems/ext2/          @HeisSpiter
-/drivers/filesystems/fastfat_new/   @HeisSpiter
+/drivers/filesystems/fastfat/       @HeisSpiter
 /drivers/filesystems/nfs/           @HeisSpiter
 /media/doc/README.FSD               @HeisSpiter
 /sdk/lib/fslib/btrfslib/            @HeisSpiter

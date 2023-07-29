@@ -13,12 +13,14 @@ list(APPEND HAL_PC98_SOURCE
     generic/dma.c
     generic/drive.c
     generic/halinit.c
+    generic/kdpci.c
     generic/memory.c
     generic/misc.c
     generic/nmi.c
     generic/portio.c
     generic/sysinfo.c
-    generic/usage.c)
+    generic/usage.c
+    generic/x86bios.c)
 
 list(APPEND HAL_PC98_ASM_SOURCE
     generic/v86.S)

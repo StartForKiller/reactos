@@ -649,7 +649,7 @@ WSPCloseSocket(IN SOCKET Handle,
 
     if(!NT_SUCCESS(Status))
     {
-        ERR("NtCreateEvent failed: 0x%08x", Status);
+        ERR("NtCreateEvent failed: 0x%08x\n", Status);
         return SOCKET_ERROR;
     }
 
@@ -664,7 +664,7 @@ WSPCloseSocket(IN SOCKET Handle,
         if (Status)
         {
             if (lpErrno) *lpErrno = Status;
-            ERR("WSHNotify failed. Error 0x%#x", Status);
+            ERR("WSHNotify failed. Error 0x%#x\n", Status);
             NtClose(SockEvent);
             return SOCKET_ERROR;
         }
@@ -2513,7 +2513,12 @@ WSPIoctl(IN  SOCKET Handle,
                     *((PVOID *)lpvOutBuffer) = WSPGetAcceptExSockaddrs;
                     cbRet = sizeof(PVOID);
                     Errno = NO_ERROR;
-                    Ret = NO_ERROR;
+                    /* See CORE-14966 and associated commits.
+                     * Original line below was 'Ret = NO_ERROR:'.
+                     * This caused winetest ws2_32:sock to hang.
+                     * This new Ret value allows the test to complete. */
+                    ERR("SIO_GET_EXTENSION_FUNCTION_POINTER UNIMPLEMENTED\n");
+                    Ret = SOCKET_ERROR;
                 }
                 else
                 {

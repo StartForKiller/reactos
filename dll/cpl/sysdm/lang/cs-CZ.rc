@@ -8,7 +8,7 @@ LANGUAGE LANG_CZECH, SUBLANG_DEFAULT
 IDD_PROPPAGEGENERAL DIALOGEX 0, 0, 256, 218
 STYLE DS_SHELLFONT | WS_CHILD | WS_DISABLED | WS_CAPTION
 CAPTION "Obecné"
-FONT 8, "MS Shell Dlg", 0, 0, 0x0
+FONT 8, "MS Shell Dlg"
 BEGIN
     CONTROL "", IDC_ROSIMG, "Static", SS_OWNERDRAW, 4, 5, 248, 111
     LTEXT "Systém:", IDC_STATIC, 4, 116, 100, 9
@@ -31,7 +31,7 @@ END
 IDD_PROPPAGEHARDWARE DIALOGEX 0, 0, 256, 218
 STYLE DS_SHELLFONT | WS_CHILD | WS_DISABLED | WS_CAPTION
 CAPTION "Hardware"
-FONT 8, "MS Shell Dlg", 0, 0, 0x0
+FONT 8, "MS Shell Dlg"
 BEGIN
     GROUPBOX "Správce zařízení", IDC_STATIC, 6, 7, 244, 61
     ICON IDI_DEVMGR, IDC_STATIC, 12, 18, 23, 21, SS_ICON
@@ -50,7 +50,7 @@ END
 IDD_PROPPAGEADVANCED DIALOGEX 0, 0, 256, 218
 STYLE DS_SHELLFONT | WS_CHILD | WS_DISABLED | WS_CAPTION
 CAPTION "Pokročilé"
-FONT 8, "MS Shell Dlg", 0, 0, 0x0
+FONT 8, "MS Shell Dlg"
 BEGIN
     LTEXT "Pro většinu těchto nastavení jsou požadována administrátorská práva.", IDC_STATIC, 12, 5, 236, 8
     GROUPBOX "Výkon", IDC_STATIC, 6, 18, 244, 50
@@ -68,7 +68,7 @@ BEGIN
 END
 
 IDD_SYSSETTINGS DIALOGEX 0, 0, 221, 106
-STYLE DS_SHELLFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION
+STYLE DS_SHELLFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Nastavení systému"
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
@@ -233,7 +233,7 @@ END
 IDD_VIRTMEM DIALOGEX 6, 6, 223, 248
 STYLE DS_SHELLFONT | DS_MODALFRAME | DS_CONTEXTHELP | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
 CAPTION "Virtuální paměť"
-FONT 8, "MS Shell Dlg", 0, 0, 0x0
+FONT 8, "MS Shell Dlg"
 BEGIN
     LTEXT "Jednotka  [Jmenovka]", IDC_STATIC, 12, 5, 96, 9
     LTEXT "Velikost stránkovacího souboru (MB)", IDC_STATIC, 100, 5, 118, 9
@@ -265,7 +265,7 @@ END
 IDD_ENVIRONMENT_VARIABLES DIALOGEX 6, 18, 252, 245
 STYLE DS_SHELLFONT | DS_MODALFRAME | DS_CONTEXTHELP | WS_POPUPWINDOW | WS_CAPTION | WS_THICKFRAME | WS_VISIBLE
 CAPTION "Proměnné prostředí"
-FONT 8, "MS Shell Dlg", 0, 0, 0x0
+FONT 8, "MS Shell Dlg"
 BEGIN
     SCROLLBAR IDC_DIALOG_GRIP, 245, 238, 7, 7, SBS_SIZEGRIP
     GROUPBOX "Uživatelské proměnné", IDC_USER_VARIABLE_GROUP, 7, 12, 238, 100
@@ -287,41 +287,41 @@ END
 IDD_EDIT_VARIABLE DIALOGEX 10, 15, 372, 71
 STYLE DS_SHELLFONT | DS_MODALFRAME | DS_CONTEXTHELP | WS_POPUPWINDOW | WS_CAPTION | WS_THICKFRAME | WS_VISIBLE
 CAPTION "Úpravy proměnných"
-FONT 8, "MS Shell Dlg", 0, 0, 0x0
+FONT 8, "MS Shell Dlg"
 BEGIN
     SCROLLBAR IDC_DIALOG_GRIP, 365, 64, 7, 7, SBS_SIZEGRIP
-    LTEXT "&Název proměnné:", IDC_STATIC, 7, 14, 50, 8
+    LTEXT "&Název proměnné:", IDC_STATIC, 7, 14, 66, 8
     EDITTEXT IDC_VARIABLE_NAME, 75, 12, 289, 12, ES_AUTOHSCROLL
-    LTEXT "&Hodnota proměnné:", IDC_STATIC, 7, 32, 50, 8
+    LTEXT "&Hodnota proměnné:", IDC_STATIC, 7, 32, 66, 8
     EDITTEXT IDC_VARIABLE_VALUE, 75, 30, 289, 12, ES_AUTOHSCROLL
     DEFPUSHBUTTON "OK", IDOK, 260, 50, 50, 14
     PUSHBUTTON "Storno", IDCANCEL, 314, 50, 50, 14
-    PUSHBUTTON "Browse Directory...", IDC_BUTTON_BROWSE_FOLDER, 6, 50, 75, 14
-    PUSHBUTTON "Browse Files...", IDC_BUTTON_BROWSE_FILE, 86, 50, 75, 14
+    PUSHBUTTON "Browse &Directory...", IDC_BUTTON_BROWSE_FOLDER, 6, 50, 75, 14
+    PUSHBUTTON "Browse &Files...", IDC_BUTTON_BROWSE_FILE, 86, 50, 75, 14
 END
 
 IDD_EDIT_VARIABLE_FANCY DIALOGEX 10, 15, 300, 250
 STYLE DS_SHELLFONT | DS_MODALFRAME | DS_CONTEXTHELP | WS_POPUPWINDOW | WS_CAPTION | WS_THICKFRAME | WS_VISIBLE
 CAPTION "Úpravy proměnných"
-FONT 8, "MS Shell Dlg", 0, 0, 0x0
+FONT 8, "MS Shell Dlg"
 BEGIN
     SCROLLBAR IDC_DIALOG_GRIP, 293, 243, 7, 7, SBS_SIZEGRIP
     CONTROL "", IDC_LIST_VARIABLE_VALUE, "SysListView32", LVS_NOCOLUMNHEADER | LVS_EDITLABELS | LVS_SHOWSELALWAYS |
                 LVS_SINGLESEL | LVS_REPORT | WS_BORDER | WS_TABSTOP, 10, 10, 224, 208, WS_EX_CLIENTEDGE
-    PUSHBUTTON "New", IDC_BUTTON_NEW, 242, 10, 50, 14
-    PUSHBUTTON "Edit", IDC_BUTTON_EDIT, 242, 30, 50, 14
-    PUSHBUTTON "Browse...", IDC_BUTTON_BROWSE_FOLDER, 242, 50, 50, 14
-    PUSHBUTTON "Delete", IDC_BUTTON_DELETE, 242, 70, 50, 14
-    PUSHBUTTON "Move Up", IDC_BUTTON_MOVE_UP, 242, 100, 50, 14
-    PUSHBUTTON "Move Down", IDC_BUTTON_MOVE_DOWN, 242, 120, 50, 14
-    PUSHBUTTON "Edit text...", IDC_BUTTON_EDIT_TEXT, 242, 150, 50, 14
+    PUSHBUTTON "&New", IDC_BUTTON_NEW, 242, 10, 50, 14
+    PUSHBUTTON "&Edit", IDC_BUTTON_EDIT, 242, 30, 50, 14
+    PUSHBUTTON "&Browse...", IDC_BUTTON_BROWSE_FOLDER, 242, 50, 50, 14
+    PUSHBUTTON "&Delete", IDC_BUTTON_DELETE, 242, 70, 50, 14
+    PUSHBUTTON "Move &Up", IDC_BUTTON_MOVE_UP, 242, 100, 50, 14
+    PUSHBUTTON "Move D&own", IDC_BUTTON_MOVE_DOWN, 242, 120, 50, 14
+    PUSHBUTTON "Edit &text...", IDC_BUTTON_EDIT_TEXT, 242, 150, 50, 14
     DEFPUSHBUTTON "OK", IDOK, 188, 228, 50, 14
     PUSHBUTTON "Storno", IDCANCEL, 242, 228, 50, 14
 END
 
 IDD_LICENCE DIALOGEX 6, 5, 267, 159
 CAPTION "Licence"
-FONT 8, "MS Shell Dlg", 0, 0, 0x0
+FONT 8, "MS Shell Dlg"
 STYLE DS_SHELLFONT | WS_BORDER | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
 BEGIN
     EDITTEXT IDC_LICENCEEDIT, 6, 3, 255, 131, WS_VSCROLL | ES_READONLY | ES_MULTILINE
@@ -338,7 +338,7 @@ BEGIN
     IDS_PETABYTE "PB RAM"
     IDS_MEGAHERTZ "MHz"
     IDS_GIGAHERTZ "GHz"
-    IDS_UPTIME_FORMAT "%u Days, %02u:%02u:%02u"
+    IDS_UPTIME_FORMAT "%lu Days, %02lu:%02lu:%02lu"
     IDS_VARIABLE "Proměnná"
     IDS_VALUE "Hodnota"
     IDS_NO_DUMP "(Není)"
@@ -361,9 +361,9 @@ BEGIN
     IDS_MESSAGEBOXTITLE "Systémový aplet kontrolních panelů"
     IDS_WARNINITIALSIZE "Zadejte číselnou hodnotu pro počáteční velikost stránkovacího souboru."
     IDS_WARNMAXIMUMSIZE "Zadejte číselnou hodnotu pro maximální velikost stránkovacího souboru."
-    IDS_WARNINITIALRANGE "Počáteční velikost stránkovacího souboru nesmí být menší než 2 MB a nesmí překročit množství volného místa na zvolené diskové jednotce."
-    IDS_WARNMAXIMUMRANGE "Maximální velikost stránkovacího souboru nesmí být menší než velikost počáteční, nesmí být větší než 4095 MB a nesmí překročit množství volného místa na zvolené diskové jednotce."
-    IDS_PAGEFILE_MB "%u MB"
+    IDS_WARNINITIALRANGE "The initial paging file size must be between 2 MB and %lu MB on the selected drive."
+    IDS_WARNMAXIMUMRANGE "The maximum paging file size must be larger than or equal to its initial size, and less than %lu MB on the selected drive."
+    IDS_PAGEFILE_MB "%lu MB"
     IDS_PAGEFILE_NONE "Není"
     IDS_PAGEFILE_SYSTEM "Spravováno systémem"
     IDS_INFOREBOOT "Změny se projeví po restartování počítače."
@@ -374,4 +374,5 @@ BEGIN
     IDS_HWPROFILE_WARNING "Varování"
     IDS_ENVIRONMENT_WARNING "Any changes that have been done will be discarded and the variable's value will be edited as text."
     IDS_ENVIRONMENT_WARNING_TITLE "System Properties"
+    IDS_FILE_BROWSE_FILTER "All Files (*.*)\0*.*\0"
 END

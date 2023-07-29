@@ -86,13 +86,16 @@ private:
         if (FAILED_UNEXPECTEDLY(hr))
             return hr;
 
-        hr = m_pTrayPriv->AppendMenuW(&hmenu);
+        hr = m_pTrayPriv->AppendMenu(&hmenu);
         if (FAILED_UNEXPECTEDLY(hr))
             return hr;
 
         hr = m_pShellMenu->SetMenu(hmenu, NULL, SMSET_BOTTOM);
         if (FAILED_UNEXPECTEDLY(hr))
+        {
+            DestroyMenu(hmenu);
             return hr;
+        }
 
         return hr;
     }
@@ -530,7 +533,7 @@ RSHELL_CStartMenu_CreateInstance(REFIID riid, void **ppv)
         hr = SHGetSpecialFolderLocation(NULL, CSIDL_PROGRAMS, &pidlProgramsAbsolute);
         if (FAILED_UNEXPECTEDLY(hr))
         {
-            WARN("USER Programs folder not found.");
+            WARN("USER Programs folder not found.\n");
             hr = SHGetSpecialFolderLocation(NULL, CSIDL_COMMON_PROGRAMS, &pidlProgramsAbsolute);
             if (FAILED_UNEXPECTEDLY(hr))
                 return hr;

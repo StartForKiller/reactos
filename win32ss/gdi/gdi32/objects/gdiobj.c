@@ -206,7 +206,7 @@ GetObjectW(
             break;
 
         case GDI_OBJECT_TYPE_BRUSH:
-            if (!lpBuffer || !cbSize) return sizeof(LOGBRUSH);
+            if (!lpBuffer) return sizeof(LOGBRUSH);
             break;
 
         case GDI_OBJECT_TYPE_BITMAP:
@@ -320,7 +320,7 @@ DeleteObject(HGDIOBJ hObject)
         return FALSE;
 
     /* Check if this is a stock object */
-    if ((DWORD_PTR)hObject & GDI_HANDLE_STOCK_MASK)
+    if (GDI_HANDLE_IS_STOCKOBJ(hObject))
     {
         /* Ignore the attempt to delete a stock object */
         DPRINT1("Trying to delete system object 0x%p\n", hObject);

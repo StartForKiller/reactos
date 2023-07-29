@@ -28,6 +28,9 @@ extern KMUTANT MmSystemLoadLock;
 
 extern ULONG MmNumberOfPagingFiles;
 
+extern SIZE_T MmTotalNonPagedPoolQuota;
+extern SIZE_T MmTotalPagedPoolQuota;
+
 extern PVOID MmUnloadedDrivers;
 extern PVOID MmLastUnloadedDrivers;
 extern PVOID MmTriageActionTaken;
@@ -52,6 +55,14 @@ struct _KTRAP_FRAME;
 struct _EPROCESS;
 struct _MM_RMAP_ENTRY;
 typedef ULONG_PTR SWAPENTRY;
+
+//
+// Pool Quota values
+//
+#define MI_QUOTA_NON_PAGED_NEEDED_PAGES             64
+#define MI_NON_PAGED_QUOTA_MIN_RESIDENT_PAGES       200
+#define MI_CHARGE_PAGED_POOL_QUOTA                  0x80000
+#define MI_CHARGE_NON_PAGED_POOL_QUOTA              0x10000
 
 //
 // Special IRQL value (found in assertions)
@@ -646,12 +657,21 @@ MiFreePoolPages(
 
 /* pool.c *******************************************************************/
 
+_Requires_lock_held_(PspQuotaLock)
 BOOLEAN
 NTAPI
-MiRaisePoolQuota(
-    IN POOL_TYPE PoolType,
-    IN ULONG CurrentMaxQuota,
-    OUT PULONG NewMaxQuota
+MmRaisePoolQuota(
+    _In_ POOL_TYPE PoolType,
+    _In_ SIZE_T CurrentMaxQuota,
+    _Out_ PSIZE_T NewMaxQuota
+);
+
+_Requires_lock_held_(PspQuotaLock)
+VOID
+NTAPI
+MmReturnPoolQuota(
+    _In_ POOL_TYPE PoolType,
+    _In_ SIZE_T QuotaToReturn
 );
 
 /* mdl.c *********************************************************************/
@@ -845,6 +865,33 @@ VOID
 NTAPI
 MmDeleteKernelStack(PVOID Stack,
                     BOOLEAN GuiStack);
+
+/* balance.c / pagefile.c******************************************************/
+
+FORCEINLINE VOID UpdateTotalCommittedPages(LONG Delta)
+{
+    /*
+     * Add up all the used "Committed" memory + pagefile.
+     * Not sure this is right. 8^\
+     * MmTotalCommittedPages should be adjusted consistently with
+     * other counters at different places.
+     *
+       MmTotalCommittedPages = MiMemoryConsumers[MC_SYSTEM].PagesUsed +
+                               MiMemoryConsumers[MC_USER].PagesUsed +
+                               MiUsedSwapPages;
+     */
+
+    /* Update Commitment */
+    SIZE_T TotalCommittedPages = InterlockedExchangeAddSizeT(&MmTotalCommittedPages, Delta) + Delta;
+
+    /* Update Peak = max(Peak, Total) in a lockless way */
+    SIZE_T PeakCommitment = MmPeakCommitment;
+    while (TotalCommittedPages > PeakCommitment &&
+           InterlockedCompareExchangeSizeT(&MmPeakCommitment, TotalCommittedPages, PeakCommitment) != PeakCommitment)
+    {
+        PeakCommitment = MmPeakCommitment;
+    }
+}
 
 /* balance.c *****************************************************************/
 
@@ -1088,6 +1135,14 @@ MmCreateVirtualMappingUnsafe(
     PFN_NUMBER Page
 );
 
+NTSTATUS
+NTAPI
+MmCreatePhysicalMapping(
+    _Inout_opt_ PEPROCESS Process,
+    _In_ PVOID Address,
+    _In_ ULONG flProtect,
+    _In_ PFN_NUMBER Page);
+
 ULONG
 NTAPI
 MmGetPageProtect(
@@ -1241,13 +1296,22 @@ NTSTATUS
 NTAPI
 MmGetExecuteOptions(IN PULONG ExecuteOptions);
 
-VOID
-NTAPI
+_Success_(return)
+BOOLEAN
 MmDeleteVirtualMapping(
-    struct _EPROCESS *Process,
-    PVOID Address,
-    BOOLEAN* WasDirty,
-    PPFN_NUMBER Page
+    _Inout_opt_ PEPROCESS Process,
+    _In_ PVOID Address,
+    _Out_opt_ BOOLEAN* WasDirty,
+    _Out_opt_ PPFN_NUMBER Page
+);
+
+_Success_(return)
+BOOLEAN
+MmDeletePhysicalMapping(
+    _Inout_opt_ PEPROCESS Process,
+    _In_ PVOID Address,
+    _Out_opt_ BOOLEAN * WasDirty,
+    _Out_opt_ PPFN_NUMBER Page
 );
 
 /* arch/procsup.c ************************************************************/

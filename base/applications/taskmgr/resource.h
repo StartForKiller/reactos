@@ -1,3 +1,10 @@
+/*
+ * PROJECT:     ReactOS Task Manager
+ * LICENSE:     LGPL-2.1-or-later (https://spdx.org/licenses/LGPL-2.1-or-later)
+ * PURPOSE:     Resources header.
+ * COPYRIGHT:   Copyright 1999-2001 Brian Palmer <brianp@reactos.org>
+ */
+
 #pragma once
 
 #define IDS_IDLE_PROCESS              102
@@ -179,6 +186,8 @@
 #define ID_PROCESS_PAGE_SETPRIORITY_NORMAL      32812
 #define ID_PROCESS_PAGE_SETPRIORITY_BELOWNORMAL 32813
 #define ID_PROCESS_PAGE_SETPRIORITY_LOW         32814
+#define ID_PROCESS_PAGE_PROPERTIES              32825
+#define ID_PROCESS_PAGE_OPENFILELOCATION        32826
 
 #define ID_SHUTDOWN_STANDBY         32816
 #define ID_SHUTDOWN_HIBERNATE       32817

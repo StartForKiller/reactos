@@ -1,24 +1,9 @@
 /*
- *  ReactOS Task Manager
- *
- *  perfdata.c
- *
- *  Copyright (C) 1999 - 2001  Brian Palmer                <brianp@reactos.org>
- *  Copyright (C)        2014  Ismael Ferreras Morezuelas  <swyterzone+ros@gmail.com>
- *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2.1 of the License, or (at your option) any later version.
- *
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+ * PROJECT:     ReactOS Task Manager
+ * LICENSE:     LGPL-2.1-or-later (https://spdx.org/licenses/LGPL-2.1-or-later)
+ * PURPOSE:     Performance Counters.
+ * COPYRIGHT:   Copyright 1999-2001 Brian Palmer <brianp@reactos.org>
+ *              Copyright 2014 Ismael Ferreras Morezuelas <swyterzone+ros@gmail.com>
  */
 
 #include "precomp.h"
@@ -473,7 +458,7 @@ ULONG PerfDataGetProcessorUsage(void)
 {
     ULONG Result;
     EnterCriticalSection(&PerfDataCriticalSection);
-    Result = (ULONG)dbIdleTime;
+    Result = (ULONG)min(max(dbIdleTime, 0.), 100.);
     LeaveCriticalSection(&PerfDataCriticalSection);
     return Result;
 }
@@ -482,7 +467,7 @@ ULONG PerfDataGetProcessorSystemUsage(void)
 {
     ULONG Result;
     EnterCriticalSection(&PerfDataCriticalSection);
-    Result = (ULONG)dbKernelTime;
+    Result = (ULONG)min(max(dbKernelTime, 0.), 100.);
     LeaveCriticalSection(&PerfDataCriticalSection);
     return Result;
 }
@@ -649,16 +634,15 @@ cleanup:
 
 void PerfDataDeallocCommandLineCache()
 {
-    PCMD_LINE_CACHE cache = global_cache;
-    PCMD_LINE_CACHE cache_old;
+    PCMD_LINE_CACHE cache, pnext;
 
-    while (cache && cache->pnext != NULL)
+    for (cache = global_cache; cache; cache = pnext)
     {
-        cache_old = cache;
-        cache = cache->pnext;
-
-        HeapFree(GetProcessHeap(), 0, cache_old);
+        pnext = cache->pnext;
+        HeapFree(GetProcessHeap(), 0, cache);
     }
+
+    global_cache = NULL;
 }
 
 ULONG PerfDataGetSessionId(ULONG Index)

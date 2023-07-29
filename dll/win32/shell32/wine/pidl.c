@@ -522,7 +522,11 @@ BOOL _ILHACKCompareSimpleIds(LPCITEMIDLIST pidltemp1, LPCITEMIDLIST pidltemp2)
     }
     else
     {
-        return FALSE;
+        if ((pidltemp1->mkid.cb != pidltemp2->mkid.cb) ||
+            !RtlEqualMemory((BYTE*)&pidltemp1->mkid, (BYTE*)&pidltemp2->mkid, pidltemp1->mkid.cb))
+        {
+            return FALSE;
+        }
     }
 
     return TRUE;
@@ -1914,6 +1918,17 @@ BOOL _ILIsNetHood(LPCITEMIDLIST pidl)
 
     if (iid)
         return IsEqualIID(iid, &CLSID_NetworkPlaces);
+    return FALSE;
+}
+
+BOOL _ILIsControlPanel(LPCITEMIDLIST pidl)
+{
+    IID *iid = _ILGetGUIDPointer(pidl);
+
+    TRACE("(%p)\n", pidl);
+
+    if (iid)
+        return IsEqualIID(iid, &CLSID_ControlPanel);
     return FALSE;
 }
 

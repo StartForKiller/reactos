@@ -92,13 +92,34 @@ BOOL WINAPI SHExpandEnvironmentStringsForUserW(HANDLE, LPCWSTR, LPWSTR, DWORD);
 
 BOOL WINAPI SHIsEmptyStream(IStream*);
 HRESULT WINAPI SHInvokeDefaultCommand(HWND,IShellFolder*,LPCITEMIDLIST);
-HRESULT WINAPI SHPropertyBag_ReadPOINTL(IPropertyBag*,LPCWSTR,POINTL*);
+HRESULT WINAPI SHPropertyBag_ReadType(IPropertyBag *ppb, LPCWSTR pszPropName, VARIANTARG *pvarg, VARTYPE vt);
+HRESULT WINAPI SHPropertyBag_ReadBOOL(IPropertyBag *ppb, LPCWSTR pszPropName, BOOL *pbValue);
+BOOL WINAPI SHPropertyBag_ReadBOOLOld(IPropertyBag *ppb, LPCWSTR pszPropName, BOOL bDefValue);
+HRESULT WINAPI SHPropertyBag_ReadSHORT(IPropertyBag *ppb, LPCWSTR pszPropName, SHORT *psValue);
+HRESULT WINAPI SHPropertyBag_ReadLONG(IPropertyBag *ppb, LPCWSTR pszPropName, LPLONG pValue);
+HRESULT WINAPI SHPropertyBag_ReadDWORD(IPropertyBag *ppb, LPCWSTR pszPropName, DWORD *pdwValue);
+HRESULT WINAPI SHPropertyBag_ReadBSTR(IPropertyBag *ppb, LPCWSTR pszPropName, BSTR *pbstr);
+HRESULT WINAPI SHPropertyBag_ReadStr(IPropertyBag *ppb, LPCWSTR pszPropName, LPWSTR pszDst, int cchMax);
+HRESULT WINAPI SHPropertyBag_ReadPOINTL(IPropertyBag *ppb, LPCWSTR pszPropName, POINTL *pptl);
+HRESULT WINAPI SHPropertyBag_ReadPOINTS(IPropertyBag *ppb, LPCWSTR pszPropName, POINTS *ppts);
+HRESULT WINAPI SHPropertyBag_ReadRECTL(IPropertyBag *ppb, LPCWSTR pszPropName, RECTL *prcl);
 
 HRESULT WINAPI SHGetPerScreenResName(OUT LPWSTR lpResName,
                                      IN INT cchResName,
                                      IN DWORD dwReserved);
 
 HRESULT WINAPI SHPropertyBag_ReadStream(IPropertyBag*,LPCWSTR,IStream**);
+HRESULT WINAPI SHPropertyBag_Delete(IPropertyBag *ppb, LPCWSTR pszPropName);
+HRESULT WINAPI SHPropertyBag_WriteBOOL(IPropertyBag *ppb, LPCWSTR pszPropName, BOOL bValue);
+HRESULT WINAPI SHPropertyBag_WriteSHORT(IPropertyBag *ppb, LPCWSTR pszPropName, SHORT sValue);
+HRESULT WINAPI SHPropertyBag_WriteLONG(IPropertyBag *ppb, LPCWSTR pszPropName, LONG lValue);
+HRESULT WINAPI SHPropertyBag_WriteDWORD(IPropertyBag *ppb, LPCWSTR pszPropName, DWORD dwValue);
+HRESULT WINAPI SHPropertyBag_WriteStr(IPropertyBag *ppb, LPCWSTR pszPropName, LPCWSTR pszValue);
+HRESULT WINAPI SHPropertyBag_WriteGUID(IPropertyBag *ppb, LPCWSTR pszPropName, const GUID *pguid);
+HRESULT WINAPI SHPropertyBag_WriteStream(IPropertyBag *ppb, LPCWSTR pszPropName, IStream *pStream);
+HRESULT WINAPI SHPropertyBag_WritePOINTL(IPropertyBag *ppb, LPCWSTR pszPropName, const POINTL *pptl);
+HRESULT WINAPI SHPropertyBag_WritePOINTS(IPropertyBag *ppb, LPCWSTR pszPropName, const POINTS *ppts);
+HRESULT WINAPI SHPropertyBag_WriteRECTL(IPropertyBag *ppb, LPCWSTR pszPropName, const RECTL *prcl);
 
 HWND WINAPI SHCreateWorkerWindowA(WNDPROC wndProc, HWND hWndParent, DWORD dwExStyle,
                                   DWORD dwStyle, HMENU hMenu, LONG_PTR wnd_extra);
@@ -134,10 +155,14 @@ DWORD WINAPI SHGetValueGoodBootA(HKEY hkey, LPCSTR pSubKey, LPCSTR pValue,
                                  LPDWORD pwType, LPVOID pvData, LPDWORD pbData);
 DWORD WINAPI SHGetValueGoodBootW(HKEY hkey, LPCWSTR pSubKey, LPCWSTR pValue,
                                  LPDWORD pwType, LPVOID pvData, LPDWORD pbData);
+HRESULT WINAPI SHLoadRegUIStringA(HKEY hkey, LPCSTR value, LPSTR buf, DWORD size);
+HRESULT WINAPI SHLoadRegUIStringW(HKEY hkey, LPCWSTR value, LPWSTR buf, DWORD size);
 #ifdef UNICODE
 #define SHGetValueGoodBoot SHGetValueGoodBootW
+#define SHLoadRegUIString  SHLoadRegUIStringW
 #else
 #define SHGetValueGoodBoot SHGetValueGoodBootA
+#define SHLoadRegUIString  SHLoadRegUIStringA
 #endif
 
 int
@@ -164,6 +189,7 @@ ShellMessageBoxWrapW(
 BOOL WINAPI PathFileExistsDefExtW(LPWSTR lpszPath, DWORD dwWhich);
 BOOL WINAPI PathFindOnPathExW(LPWSTR lpszFile, LPCWSTR *lppszOtherDirs, DWORD dwWhich);
 VOID WINAPI FixSlashesAndColonW(LPWSTR);
+BOOL WINAPI PathIsValidCharW(WCHAR c, DWORD dwClass);
 
 #ifdef __cplusplus
 } /* extern "C" */

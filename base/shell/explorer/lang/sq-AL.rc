@@ -1,6 +1,9 @@
-/* TRANSLATOR : Ardit Dani (Ard1t) (ardit.dani@gmail.com)
- * DATE OF TR:  29-11-2013
-*/
+/*
+ * PROJECT:     ReactOS Explorer
+ * LICENSE:     LGPL-2.1-or-later (https://spdx.org/licenses/LGPL-2.1-or-later)
+ * PURPOSE:     Albanian resource file
+ * TRANSLATOR:  Copyright 2013 Ardit Dani (Ard1t) <ardit.dani@gmail.com>
+ */
 
 LANGUAGE LANG_ALBANIAN, SUBLANG_NEUTRAL
 
@@ -199,4 +202,6 @@ STRINGTABLE
 BEGIN
     IDS_TASKBAR_STARTMENU_PROP_CAPTION "Taskbar dhe Start Menu"
     IDS_RESTORE_ALL "&Show Open Windows"
+    IDS_TRAYWND_UNDO_CASCADE "&Undo Cascade"
+    IDS_TRAYWND_UNDO_TILE "&Undo Tile"
 END

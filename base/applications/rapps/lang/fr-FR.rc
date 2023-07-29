@@ -1,3 +1,13 @@
+/*
+ * PROJECT:     ReactOS Applications Manager
+ * LICENSE:     GPL-2.0-or-later (https://spdx.org/licenses/GPL-2.0-or-later)
+ * PURPOSE:     French resource file
+ * TRANSLATORS: Copyright 2011 Jason Toscano (JanusMagnus) <jasongenie@gmail.com>
+ *              Copyright 2011 Pierre Schweitzer <pierre@reactos.org>
+ *              Copyright 2015 Hermès Bélusca-Maïto <hermes.belusca-maito@reactos.org>
+ *              Copyright 2020-2022 Kyle Katarn <contact@kcsoftwares.com>
+ */
+
 LANGUAGE LANG_FRENCH, SUBLANG_NEUTRAL
 
 IDR_MAINMENU MENU
@@ -75,7 +85,7 @@ BEGIN
     CONTROL "Direct (Pas de proxy)", IDC_NO_PROXY, "Button", BS_AUTORADIOBUTTON | WS_TABSTOP, 15, 195, 210, 10
     CONTROL "Proxy", IDC_USE_PROXY, "Button", BS_AUTORADIOBUTTON | WS_TABSTOP, 15, 210, 74, 10
     EDITTEXT IDC_PROXY_SERVER, 90, 210, 147, 12, ES_AUTOHSCROLL | WS_DISABLED
-    LTEXT "Pas de proxy pour", -1, 27, 225, 64, 10
+    LTEXT "Pas de proxy pour", -1, 26, 226, 64, 10
     EDITTEXT IDC_NO_PROXY_FOR, 90, 225, 147, 12, ES_AUTOHSCROLL | WS_DISABLED
     PUSHBUTTON "Par défaut", IDC_DEFAULT_SETTINGS, 8, 245, 60, 14
     DEFPUSHBUTTON "Accepter", IDOK, 116, 245, 60, 14
@@ -94,8 +104,8 @@ BEGIN
     PUSHBUTTON "Annuler", IDCANCEL, 150, 78, 60, 14
 END
 
-IDD_DOWNLOAD_DIALOG DIALOGEX 0, 0, 220, 72
-STYLE DS_SHELLFONT | DS_CENTER | WS_BORDER | WS_CAPTION | WS_POPUP | WS_SYSMENU | WS_VISIBLE
+IDD_DOWNLOAD_DIALOG DIALOGEX 0, 0, 220, 220
+STYLE DS_SHELLFONT | DS_CENTER | WS_POPUPWINDOW | WS_CAPTION | WS_VISIBLE
 CAPTION "Téléchargement %ls…"
 FONT 8, "MS Shell Dlg"
 BEGIN
@@ -109,6 +119,7 @@ BEGIN
     IDS_TOOLTIP_INSTALL "Installer"
     IDS_TOOLTIP_UNINSTALL "Désinstaller"
     IDS_TOOLTIP_MODIFY "Modifier"
+    IDS_TOOLTIP_SELECT_ALL "Sélectionner/Désélectionner tout"
     IDS_TOOLTIP_SETTINGS "Configuration"
     IDS_TOOLTIP_REFRESH "Rafraîchir"
     IDS_TOOLTIP_UPDATE_DB "Mettre à jour la base"
@@ -181,13 +192,10 @@ BEGIN
     IDS_APPTITLE "Gestionnaire d'applications ReactOS"
     IDS_APP_AUTHORS "Copyright 2009 Dmitry Chapyshev"
     IDS_SEARCH_TEXT "Chercher…"
-    IDS_INSTALL "Installer"
-    IDS_UNINSTALL "Désinstaller"
-    IDS_MODIFY "Modifier"
     IDS_APPS_COUNT "Nombre d'applications : %d ; Sélectionnées : %d"
     IDS_WELCOME_TITLE "Bienvenue dans ReactOS Applications Manager !\n\n"
     IDS_WELCOME_TEXT "Choisissez une catégorie à gauche, ensuite choisissez une application à installer ou désinstaller.\nSite internet de ReactOS : "
-    IDS_WELCOME_URL "https://reactos.org/"
+    IDS_WELCOME_URL "https://reactos.org"
     IDS_INSTALLED "Installé"
     IDS_AVAILABLEFORINST "Disponible pour installation"
     IDS_UPDATES "Mises à jour"
@@ -206,7 +214,6 @@ BEGIN
     IDS_INTEG_CHECK_FAIL "Le contrôle d'intégrité du paquet a échoué, il se peut qu'il ait été corrompu ou altéré au cours du téléchargement. L'exécution du programme n'est pas recommandée."
     IDS_INTERRUPTED_DOWNLOAD "Le téléchargement a été interrompu. Vérifiez votre connexion à Internet."
     IDS_UNABLE_TO_WRITE "Impossible d'écrire sur le disque. Votre disque pourrait être plein."
-    IDS_SELECT_ALL "Sélectionner/Désélectionner tout"
     IDS_INSTALL_SELECTED "Installer la sélection"
     IDS_SELECTEDFORINST "Sélectionnées pour installation"
     IDS_MISMATCH_CERT_INFO "Certificat inconnu:\nSujet: %s\nEmetteur: %s\nVoulez-vous continuer ?"
@@ -214,7 +221,7 @@ BEGIN
     IDS_APP_DISPLAY_DETAILS "Détails"
     IDS_APP_DISPLAY_LIST "Liste"
     IDS_APP_DISPLAY_TILE "Tuile"
-    IDS_NO_SEARCH_RESULTS "No search results"
+    IDS_NO_SEARCH_RESULTS "Aucun résultat"
 END
 
 STRINGTABLE

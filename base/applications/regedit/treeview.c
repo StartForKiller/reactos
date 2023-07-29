@@ -32,6 +32,11 @@ static LPWSTR pathBuffer;
 
 #define NUM_ICONS   3
 
+/* External resources in shell32.dll */
+#define IDI_SHELL_FOLDER             4
+#define IDI_SHELL_FOLDER_OPEN        5
+#define IDI_SHELL_MY_COMPUTER       16
+
 static BOOL get_item_path(HWND hwndTV, HTREEITEM hItem, HKEY* phKey, LPWSTR* pKeyPath, int* pPathLen, int* pMaxLen)
 {
     TVITEMW item;
@@ -85,14 +90,25 @@ LPCWSTR GetItemPath(HWND hwndTV, HTREEITEM hItem, HKEY* phRootKey)
     int pathLen = 0, maxLen;
 
     *phRootKey = NULL;
-    if (!pathBuffer) pathBuffer = HeapAlloc(GetProcessHeap(), 0, 1024);
-    if (!pathBuffer) return NULL;
-    *pathBuffer = 0;
+
+    if (!pathBuffer)
+    {
+        pathBuffer = HeapAlloc(GetProcessHeap(), 0, 1024);
+    }
+    if (!pathBuffer)
+    {
+        return NULL;
+    }
+
+    *pathBuffer = UNICODE_NULL;
+
     maxLen = (int) HeapSize(GetProcessHeap(), 0, pathBuffer);
-    if (maxLen == -1) return NULL;
-    if (!hItem) hItem = TreeView_GetSelection(hwndTV);
-    if (!hItem) return NULL;
-    if (!get_item_path(hwndTV, hItem, phRootKey, &pathBuffer, &pathLen, &maxLen))
+
+    if (!hItem)
+    {
+        hItem = TreeView_GetSelection(hwndTV);
+    }
+    if (maxLen == -1 || !hItem || !get_item_path(hwndTV, hItem, phRootKey, &pathBuffer, &pathLen, &maxLen))
     {
         return NULL;
     }
@@ -348,7 +364,7 @@ HTREEITEM InsertNode(HWND hwndTV, HTREEITEM hItem, LPWSTR name)
     if (!TreeView_GetItem(hwndTV, &item))
         return FALSE;
 
-    if ((item.state & TVIS_EXPANDEDONCE) && (item.cChildren > 0))
+    if (item.state & TVIS_EXPANDEDONCE)
     {
         hNewItem = AddEntryToTree(hwndTV, hItem, name, 0, 0);
         SendMessageW(hwndTV, TVM_SORTCHILDREN, 0, (LPARAM) hItem);
@@ -370,7 +386,7 @@ HTREEITEM InsertNode(HWND hwndTV, HTREEITEM hItem, LPWSTR name)
             item.mask = TVIF_HANDLE | TVIF_TEXT;
             item.hItem = hNewItem;
             item.pszText = buf;
-            item.cchTextMax = COUNT_OF(buf);
+            item.cchTextMax = ARRAY_SIZE(buf);
             if (!TreeView_GetItem(hwndTV, &item)) continue;
             if (wcscmp(name, item.pszText) == 0) break;
         }
@@ -439,48 +455,45 @@ static BOOL InitTreeViewImageLists(HWND hwndTV)
 {
     HIMAGELIST himl;  /* handle to image list  */
     HICON hico;       /* handle to icon  */
+    INT cx = GetSystemMetrics(SM_CXSMICON);
+    INT cy = GetSystemMetrics(SM_CYSMICON);
+    HMODULE hShell32 = GetModuleHandleW(L"shell32.dll");
 
     /* Create the image list.  */
-    if ((himl = ImageList_Create(GetSystemMetrics(SM_CXSMICON),
-                                 GetSystemMetrics(SM_CYSMICON),
-                                 ILC_MASK | ILC_COLOR32,
-                                 0,
-                                 NUM_ICONS)) == NULL)
-    {
+    if ((himl = ImageList_Create(cx, cy, ILC_MASK | ILC_COLOR32, 0, NUM_ICONS)) == NULL)
         return FALSE;
-    }
 
     /* Add the open file, closed file, and document bitmaps.  */
-    hico = LoadImageW(hInst,
-                      MAKEINTRESOURCEW(IDI_OPEN_FILE),
+    hico = LoadImageW(hShell32,
+                      MAKEINTRESOURCEW(IDI_SHELL_FOLDER_OPEN),
                       IMAGE_ICON,
-                      GetSystemMetrics(SM_CXSMICON),
-                      GetSystemMetrics(SM_CYSMICON),
-                      0);
+                      cx,
+                      cy,
+                      LR_DEFAULTCOLOR);
     if (hico)
     {
         Image_Open = ImageList_AddIcon(himl, hico);
         DestroyIcon(hico);
     }
 
-    hico = LoadImageW(hInst,
-                      MAKEINTRESOURCEW(IDI_CLOSED_FILE),
+    hico = LoadImageW(hShell32,
+                      MAKEINTRESOURCEW(IDI_SHELL_FOLDER),
                       IMAGE_ICON,
-                      GetSystemMetrics(SM_CXSMICON),
-                      GetSystemMetrics(SM_CYSMICON),
-                      0);
+                      cx,
+                      cy,
+                      LR_DEFAULTCOLOR);
     if (hico)
     {
         Image_Closed = ImageList_AddIcon(himl, hico);
         DestroyIcon(hico);
     }
 
-    hico = LoadImageW(hInst,
-                      MAKEINTRESOURCEW(IDI_ROOT),
+    hico = LoadImageW(hShell32,
+                      MAKEINTRESOURCEW(IDI_SHELL_MY_COMPUTER),
                       IMAGE_ICON,
-                      GetSystemMetrics(SM_CXSMICON),
-                      GetSystemMetrics(SM_CYSMICON),
-                      0);
+                      cx,
+                      cy,
+                      LR_DEFAULTCOLOR);
     if (hico)
     {
         Image_Root = ImageList_AddIcon(himl, hico);
@@ -586,7 +599,7 @@ BOOL CreateNewKey(HWND hwndTV, HTREEITEM hItem)
     else if (RegOpenKeyW(hRootKey, pszKeyPath, &hKey) != ERROR_SUCCESS)
         goto done;
 
-    if (LoadStringW(hInst, IDS_NEW_KEY, szNewKeyFormat, COUNT_OF(szNewKeyFormat)) <= 0)
+    if (LoadStringW(hInst, IDS_NEW_KEY, szNewKeyFormat, ARRAY_SIZE(szNewKeyFormat)) <= 0)
         goto done;
 
     /* Need to create a new key with a unique name */
@@ -641,10 +654,11 @@ BOOL TreeWndNotifyProc(HWND hWnd, WPARAM wParam, LPARAM lParam, BOOL *Result)
             /* Get the parent of the current item */
             HTREEITEM hParentItem = TreeView_GetParent(g_pChildWnd->hTreeWnd, pnmtv->itemNew.hItem);
 
-            UpdateAddress(pnmtv->itemNew.hItem, NULL, NULL);
+            UpdateAddress(pnmtv->itemNew.hItem, NULL, NULL, TRUE);
 
-            /* Disable the Permissions menu item for 'My Computer' */
+            /* Disable the Permissions and new key menu items for 'My Computer' */
             EnableMenuItem(hMenuFrame, ID_EDIT_PERMISSIONS, MF_BYCOMMAND | (hParentItem ? MF_ENABLED : MF_GRAYED));
+            EnableMenuItem(hMenuFrame, ID_EDIT_NEW_KEY, MF_BYCOMMAND | (hParentItem ? MF_ENABLED : MF_GRAYED));
 
             /*
              * Disable Delete/Rename menu options for 'My Computer' (first item so doesn't have any parent)
@@ -672,7 +686,7 @@ BOOL TreeWndNotifyProc(HWND hWnd, WPARAM wParam, LPARAM lParam, BOOL *Result)
             break;
         case TVN_BEGINLABELEDIT:
         {
-            LPNMTVDISPINFO ptvdi = (LPNMTVDISPINFO) lParam;
+            LPNMTVDISPINFO ptvdi = (LPNMTVDISPINFO)lParam;
             /* cancel label edit for rootkeys */
             if (!TreeView_GetParent(g_pChildWnd->hTreeWnd, ptvdi->item.hItem) ||
                 !TreeView_GetParent(g_pChildWnd->hTreeWnd, TreeView_GetParent(g_pChildWnd->hTreeWnd, ptvdi->item.hItem)))
@@ -690,7 +704,7 @@ BOOL TreeWndNotifyProc(HWND hWnd, WPARAM wParam, LPARAM lParam, BOOL *Result)
             LPCWSTR keyPath;
             HKEY hRootKey;
             HKEY hKey = NULL;
-            LPNMTVDISPINFO ptvdi = (LPNMTVDISPINFO) lParam;
+            LPNMTVDISPINFO ptvdi = (LPNMTVDISPINFO)lParam;
             LONG nRenResult;
             LONG lResult = TRUE;
             WCHAR szBuffer[MAX_PATH];
@@ -700,9 +714,9 @@ BOOL TreeWndNotifyProc(HWND hWnd, WPARAM wParam, LPARAM lParam, BOOL *Result)
             {
                 keyPath = GetItemPath(g_pChildWnd->hTreeWnd, TreeView_GetParent(g_pChildWnd->hTreeWnd, ptvdi->item.hItem), &hRootKey);
                 if (wcslen(keyPath))
-                    _snwprintf(szBuffer, COUNT_OF(szBuffer), L"%s\\%s", keyPath, ptvdi->item.pszText);
+                    _snwprintf(szBuffer, ARRAY_SIZE(szBuffer), L"%s\\%s", keyPath, ptvdi->item.pszText);
                 else
-                    _snwprintf(szBuffer, COUNT_OF(szBuffer), L"%s", ptvdi->item.pszText);
+                    _snwprintf(szBuffer, ARRAY_SIZE(szBuffer), L"%s", ptvdi->item.pszText);
                 keyPath = GetItemPath(g_pChildWnd->hTreeWnd, ptvdi->item.hItem, &hRootKey);
                 if (RegOpenKeyExW(hRootKey, szBuffer, 0, KEY_READ, &hKey) == ERROR_SUCCESS)
                 {
@@ -715,12 +729,12 @@ BOOL TreeWndNotifyProc(HWND hWnd, WPARAM wParam, LPARAM lParam, BOOL *Result)
                     nRenResult = RenameKey(hRootKey, keyPath, ptvdi->item.pszText);
                     if (nRenResult != ERROR_SUCCESS)
                     {
-                        LoadStringW(hInst, IDS_ERROR, Caption, COUNT_OF(Caption));
+                        LoadStringW(hInst, IDS_ERROR, Caption, ARRAY_SIZE(Caption));
                         ErrorMessageBox(hWnd, Caption, nRenResult);
                         lResult = FALSE;
                     }
                     else
-                        UpdateAddress(ptvdi->item.hItem, hRootKey, szBuffer);
+                        UpdateAddress(ptvdi->item.hItem, hRootKey, szBuffer, FALSE);
                 }
                 *Result = lResult;
             }
@@ -778,8 +792,8 @@ BOOL SelectNode(HWND hwndTV, LPCWSTR keyPath)
     TVITEMW tvi;
 
     /* Load "My Computer" string... */
-    LoadStringW(hInst, IDS_MY_COMPUTER, szBuffer, COUNT_OF(szBuffer));
-    wcscat(szBuffer, L"\\");
+    LoadStringW(hInst, IDS_MY_COMPUTER, szBuffer, ARRAY_SIZE(szBuffer));
+    StringCbCatW(szBuffer, sizeof(szBuffer), L"\\");
 
     /* ... and remove it from the key path */
     if (!_wcsnicmp(keyPath, szBuffer, wcslen(szBuffer)))
@@ -793,24 +807,33 @@ BOOL SelectNode(HWND hwndTV, LPCWSTR keyPath)
 
     while(keyPath[0])
     {
+        size_t copyLength;
         s = wcschr(keyPath, L'\\');
-        lstrcpynW(szPathPart, keyPath, s ? s - keyPath + 1 : wcslen(keyPath) + 1);
+        if (s != NULL)
+        {
+            copyLength = (s - keyPath) * sizeof(WCHAR);
+        }
+        else
+        {
+            copyLength = sizeof(szPathPart);
+        }
+        StringCbCopyNW(szPathPart, sizeof(szPathPart), keyPath, copyLength);
 
         /* Special case for root to expand root key abbreviations */
         if (hItem == hRoot)
         {
             if (!_wcsicmp(szPathPart, L"HKCR"))
-                wcscpy(szPathPart, L"HKEY_CLASSES_ROOT");
+                StringCbCopyW(szPathPart, sizeof(szPathPart), L"HKEY_CLASSES_ROOT");
             else if (!_wcsicmp(szPathPart, L"HKCU"))
-                wcscpy(szPathPart, L"HKEY_CURRENT_USER");
+                StringCbCopyW(szPathPart, sizeof(szPathPart), L"HKEY_CURRENT_USER");
             else if (!_wcsicmp(szPathPart, L"HKLM"))
-                wcscpy(szPathPart, L"HKEY_LOCAL_MACHINE");
+                StringCbCopyW(szPathPart, sizeof(szPathPart), L"HKEY_LOCAL_MACHINE");
             else if (!_wcsicmp(szPathPart, L"HKU"))
-                wcscpy(szPathPart, L"HKEY_USERS");
+                StringCbCopyW(szPathPart, sizeof(szPathPart), L"HKEY_USERS");
             else if (!_wcsicmp(szPathPart, L"HKCC"))
-                wcscpy(szPathPart, L"HKEY_CURRENT_CONFIG");
+                StringCbCopyW(szPathPart, sizeof(szPathPart), L"HKEY_CURRENT_CONFIG");
             else if (!_wcsicmp(szPathPart, L"HKDD"))
-                wcscpy(szPathPart, L"HKEY_DYN_DATA");
+                StringCbCopyW(szPathPart, sizeof(szPathPart), L"HKEY_DYN_DATA");
         }
 
         for (hChildItem = TreeView_GetChild(hwndTV, hItem); hChildItem;
@@ -820,7 +843,7 @@ BOOL SelectNode(HWND hwndTV, LPCWSTR keyPath)
             tvi.hItem = hChildItem;
             tvi.mask = TVIF_TEXT | TVIF_CHILDREN;
             tvi.pszText = szBuffer;
-            tvi.cchTextMax = COUNT_OF(szBuffer);
+            tvi.cchTextMax = ARRAY_SIZE(szBuffer);
 
             (void)TreeView_GetItem(hwndTV, &tvi);
 

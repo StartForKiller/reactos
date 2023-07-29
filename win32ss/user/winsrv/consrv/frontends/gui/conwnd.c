@@ -3,7 +3,7 @@
  * PROJECT:         ReactOS Console Server DLL
  * FILE:            win32ss/user/winsrv/consrv/frontends/gui/conwnd.c
  * PURPOSE:         GUI Console Window Class
- * PROGRAMMERS:     Gé van Geldorp
+ * PROGRAMMERS:     GÃ© van Geldorp
  *                  Johannes Anderwald
  *                  Jeffrey Morlan
  *                  Hermes Belusca-Maito (hermes.belusca@sfr.fr)
@@ -518,31 +518,54 @@ CreateDerivedFont(HFONT OrgFont,
 }
 
 BOOL
-InitFonts(PGUI_CONSOLE_DATA GuiData,
-          LPWSTR FaceName, // Points to a WCHAR array of LF_FACESIZE elements.
-          ULONG  FontFamily,
-          COORD  FontSize,
-          ULONG  FontWeight)
+InitFonts(
+    _Inout_ PGUI_CONSOLE_DATA GuiData,
+    _In_reads_or_z_(LF_FACESIZE)
+         PCWSTR FaceName,
+    _In_ ULONG FontWeight,
+    _In_ ULONG FontFamily,
+    _In_ COORD FontSize,
+    _In_opt_ UINT CodePage,
+    _In_ BOOL UseDefaultFallback)
 {
     HDC hDC;
     HFONT hFont;
+    FONT_DATA FontData;
+    UINT OldCharWidth  = GuiData->CharWidth;
+    UINT OldCharHeight = GuiData->CharHeight;
+    COORD OldFontSize  = GuiData->GuiInfo.FontSize;
+    WCHAR NewFaceName[LF_FACESIZE];
+
+    /* Default to current code page if none has been provided */
+    if (!CodePage)
+        CodePage = GuiData->Console->OutputCodePage;
 
     /*
-     * Initialize a new NORMAL font and get its character cell size.
+     * Initialize a new NORMAL font.
      */
+
+    /* Copy the requested face name into the local buffer.
+     * It will be modified in output by CreateConsoleFontEx()
+     * to hold a possible fallback font face name. */
+    StringCchCopyNW(NewFaceName, ARRAYSIZE(NewFaceName),
+                    FaceName, LF_FACESIZE);
+
     /* NOTE: FontSize is always in cell height/width units (pixels) */
     hFont = CreateConsoleFontEx((LONG)(ULONG)FontSize.Y,
                                 (LONG)(ULONG)FontSize.X,
-                                FaceName,
-                                FontFamily,
+                                NewFaceName,
                                 FontWeight,
-                                GuiData->Console->OutputCodePage);
-    if (hFont == NULL)
+                                FontFamily,
+                                CodePage,
+                                UseDefaultFallback,
+                                &FontData);
+    if (!hFont)
     {
-        DPRINT1("InitFonts: CreateConsoleFontEx failed\n");
+        DPRINT1("InitFonts: CreateConsoleFontEx('%S') failed\n", NewFaceName);
         return FALSE;
     }
 
+    /* Retrieve its character cell size */
     hDC = GetDC(GuiData->hWindow);
     if (!GetFontCellSize(hDC, hFont, &GuiData->CharHeight, &GuiData->CharWidth))
     {
@@ -561,35 +584,43 @@ InitFonts(PGUI_CONSOLE_DATA GuiData,
     GuiData->Font[FONT_NORMAL] = hFont;
 
     /*
-     * Now build the other fonts (bold, underlined, mixed).
+     * Now build the optional fonts (bold, underlined, mixed).
+     * Do not error in case they fail to be created.
      */
     GuiData->Font[FONT_BOLD] =
         CreateDerivedFont(GuiData->Font[FONT_NORMAL],
-                          FontWeight < FW_BOLD ? FW_BOLD : FontWeight,
+                          max(FW_BOLD, FontData.Weight),
                           FALSE,
                           FALSE);
     GuiData->Font[FONT_UNDERLINE] =
         CreateDerivedFont(GuiData->Font[FONT_NORMAL],
-                          FontWeight,
+                          FontData.Weight,
                           TRUE,
                           FALSE);
     GuiData->Font[FONT_BOLD | FONT_UNDERLINE] =
         CreateDerivedFont(GuiData->Font[FONT_NORMAL],
-                          FontWeight < FW_BOLD ? FW_BOLD : FontWeight,
+                          max(FW_BOLD, FontData.Weight),
                           TRUE,
                           FALSE);
 
     /*
-     * Save the settings.
+     * Save the new font characteristics.
      */
-    if (FaceName != GuiData->GuiInfo.FaceName)
+    StringCchCopyNW(GuiData->GuiInfo.FaceName,
+                    ARRAYSIZE(GuiData->GuiInfo.FaceName),
+                    NewFaceName, ARRAYSIZE(NewFaceName));
+    GuiData->GuiInfo.FontWeight = FontData.Weight;
+    GuiData->GuiInfo.FontFamily = FontData.Family;
+    GuiData->GuiInfo.FontSize   = FontData.Size;
+
+    /* Resize the terminal, in case the new font has a different size */
+    if ((OldCharWidth  != GuiData->CharWidth)  ||
+        (OldCharHeight != GuiData->CharHeight) ||
+        (OldFontSize.X != FontData.Size.X ||
+         OldFontSize.Y != FontData.Size.Y))
     {
-        StringCchCopyNW(GuiData->GuiInfo.FaceName, ARRAYSIZE(GuiData->GuiInfo.FaceName),
-                        FaceName, LF_FACESIZE);
+        TermResizeTerminal(GuiData->Console);
     }
-    GuiData->GuiInfo.FontFamily = FontFamily;
-    GuiData->GuiInfo.FontSize   = FontSize;
-    GuiData->GuiInfo.FontWeight = FontWeight;
 
     return TRUE;
 }
@@ -615,14 +646,40 @@ OnNcCreate(HWND hWnd, LPCREATESTRUCTW Create)
     /* Initialize the fonts */
     if (!InitFonts(GuiData,
                    GuiData->GuiInfo.FaceName,
+                   GuiData->GuiInfo.FontWeight,
                    GuiData->GuiInfo.FontFamily,
                    GuiData->GuiInfo.FontSize,
-                   GuiData->GuiInfo.FontWeight))
+                   0, FALSE))
     {
-        DPRINT1("GuiConsoleNcCreate: InitFonts failed\n");
-        GuiData->hWindow = NULL;
-        NtSetEvent(GuiData->hGuiInitEvent, NULL);
-        return FALSE;
+        /* Reset only the output code page if we don't have a suitable
+         * font for it, possibly falling back to "United States (OEM)". */
+        UINT AltCodePage = GetOEMCP();
+
+        if (AltCodePage == Console->OutputCodePage)
+            AltCodePage = CP_USA;
+
+        DPRINT1("Could not initialize font '%S' for code page %d - Resetting CP to %d\n",
+                GuiData->GuiInfo.FaceName, Console->OutputCodePage, AltCodePage);
+
+        CON_SET_OUTPUT_CP(Console, AltCodePage);
+
+        /* We will use a fallback font if we cannot find
+         * anything for this replacement code page. */
+        if (!InitFonts(GuiData,
+                       GuiData->GuiInfo.FaceName,
+                       GuiData->GuiInfo.FontWeight,
+                       GuiData->GuiInfo.FontFamily,
+                       GuiData->GuiInfo.FontSize,
+                       0, TRUE))
+        {
+            DPRINT1("Failed to initialize font '%S' for code page %d\n",
+                    GuiData->GuiInfo.FaceName, Console->OutputCodePage);
+
+            DPRINT1("GuiConsoleNcCreate: InitFonts failed\n");
+            GuiData->hWindow = NULL;
+            NtSetEvent(GuiData->hGuiInitEvent, NULL);
+            return FALSE;
+        }
     }
 
     /* Initialize the terminal framebuffer */
@@ -690,12 +747,12 @@ OnActivate(PGUI_CONSOLE_DATA GuiData, WPARAM wParam)
     }
 
     /*
-     * Ignore the next mouse signal when we are going to be enabled again via
+     * Ignore the next mouse event when we are going to be enabled again via
      * the mouse, in order to prevent, e.g. when we are in Edit mode, erroneous
      * mouse actions from the user that could spoil text selection or copy/pastes.
      */
     if (ActivationState == WA_CLICKACTIVE)
-        GuiData->IgnoreNextMouseSignal = TRUE;
+        GuiData->IgnoreNextMouseEvent = TRUE;
 }
 
 static VOID
@@ -1564,7 +1621,7 @@ OnMouse(PGUI_CONSOLE_DATA GuiData, UINT msg, WPARAM wParam, LPARAM lParam)
     // and whether we are or not in edit mode, in order to know if we need
     // to deal with the mouse.
 
-    if (GuiData->IgnoreNextMouseSignal)
+    if (GuiData->IgnoreNextMouseEvent)
     {
         if (msg != WM_LBUTTONDOWN &&
             msg != WM_MBUTTONDOWN &&
@@ -1572,15 +1629,15 @@ OnMouse(PGUI_CONSOLE_DATA GuiData, UINT msg, WPARAM wParam, LPARAM lParam)
             msg != WM_XBUTTONDOWN)
         {
             /*
-             * If this mouse signal is not a button-down action
+             * If this mouse event is not a button-down action
              * then this is the last one being ignored.
              */
-            GuiData->IgnoreNextMouseSignal = FALSE;
+            GuiData->IgnoreNextMouseEvent = FALSE;
         }
         else
         {
             /*
-             * This mouse signal is a button-down action.
+             * This mouse event is a button-down action.
              * Ignore it and perform default action.
              */
             DoDefault = TRUE;
@@ -1682,8 +1739,8 @@ OnMouse(PGUI_CONSOLE_DATA GuiData, UINT msg, WPARAM wParam, LPARAM lParam)
                     GuiData->Selection.dwFlags |= CONSOLE_MOUSE_SELECTION | CONSOLE_MOUSE_DOWN;
                     UpdateSelection(GuiData, &cL, &cR);
 
-                    /* Ignore the next mouse move signal */
-                    GuiData->IgnoreNextMouseSignal = TRUE;
+                    /* Ignore the next mouse move event */
+                    GuiData->IgnoreNextMouseEvent = TRUE;
 #undef IS_WORD_SEP
                 }
 
@@ -1702,8 +1759,8 @@ OnMouse(PGUI_CONSOLE_DATA GuiData, UINT msg, WPARAM wParam, LPARAM lParam)
                     Copy(GuiData);
                 }
 
-                /* Ignore the next mouse move signal */
-                GuiData->IgnoreNextMouseSignal = TRUE;
+                /* Ignore the next mouse move event */
+                GuiData->IgnoreNextMouseEvent = TRUE;
                 break;
             }
 
@@ -1719,6 +1776,29 @@ OnMouse(PGUI_CONSOLE_DATA GuiData, UINT msg, WPARAM wParam, LPARAM lParam)
 
             default:
                 DoDefault = TRUE; // FALSE;
+                break;
+        }
+
+        /*
+         * HACK FOR CORE-8394 (Part 1):
+         *
+         * It appears that when running ReactOS on VBox with Mouse Integration
+         * enabled, the next mouse event coming after a button-down action is
+         * a mouse-move. However it is NOT always a rule, so that we cannot use
+         * the IgnoreNextMouseEvent flag to just "ignore" the next mouse event,
+         * thinking it would always be a mouse-move event.
+         *
+         * To work around this problem (that should really be fixed in Win32k),
+         * we use a second flag to ignore this possible next mouse move event.
+         */
+        switch (msg)
+        {
+            case WM_LBUTTONDOWN:
+            case WM_MBUTTONDOWN:
+            case WM_RBUTTONDOWN:
+            case WM_XBUTTONDOWN:
+                GuiData->HackCORE8394IgnoreNextMove = TRUE;
+            default:
                 break;
         }
     }
@@ -1863,15 +1943,14 @@ OnMouse(PGUI_CONSOLE_DATA GuiData, UINT msg, WPARAM wParam, LPARAM lParam)
         /*
          * HACK FOR CORE-8394 (Part 1):
          *
-         * It appears that depending on which VM ReactOS runs, the next mouse
-         * signal coming after a button-down action can be a mouse-move (e.g.
-         * on VBox, whereas on QEMU it is not the case). However it is NOT a
-         * rule, so that we cannot use the IgnoreNextMouseSignal flag to just
-         * "ignore" the next mouse event, thinking it would always be a mouse-
-         * move signal.
+         * It appears that when running ReactOS on VBox with Mouse Integration
+         * enabled, the next mouse event coming after a button-down action is
+         * a mouse-move. However it is NOT always a rule, so that we cannot use
+         * the IgnoreNextMouseEvent flag to just "ignore" the next mouse event,
+         * thinking it would always be a mouse-move event.
          *
          * To work around this problem (that should really be fixed in Win32k),
-         * we use a second flag to ignore this possible next mouse move signal.
+         * we use a second flag to ignore this possible next mouse move event.
          */
         switch (msg)
         {
@@ -2296,6 +2375,11 @@ ConWndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
             }
             /* Detect Alt-Esc/Space/Tab presses defer to DefWindowProc */
             if ( (HIWORD(lParam) & KF_ALTDOWN) && (wParam == VK_ESCAPE || wParam == VK_SPACE || wParam == VK_TAB))
+            {
+                return DefWindowProcW(hWnd, msg, wParam, lParam);
+            }
+            /* Detect Alt+Shift */
+            if (wParam == VK_SHIFT && (msg == WM_SYSKEYDOWN || msg == WM_SYSKEYUP))
             {
                 return DefWindowProcW(hWnd, msg, wParam, lParam);
             }

@@ -18,7 +18,9 @@ ULONG gDiskReadBuffer, gFileSysBuffer;
 BOOLEAN ArmHwDetectRan;
 PCONFIGURATION_COMPONENT_DATA RootNode;
 
+#ifndef UEFIBOOT
 BOOLEAN AcpiPresent = FALSE;
+#endif
 
 ULONG FirstLevelDcacheSize;
 ULONG FirstLevelDcacheFillSize;
@@ -98,7 +100,7 @@ ArmHwDetect(VOID)
 
     /* Create the root node */
     if (ArmHwDetectRan++) return RootNode;
-    FldrCreateSystemKey(&RootNode);
+    FldrCreateSystemKey(&RootNode, "");
 
     /*
      * TODO:
@@ -174,6 +176,7 @@ ArmHwIdle(VOID)
     /* UNIMPLEMENTED */
 }
 
+#ifndef UEFIBOOT
 VOID
 MachInit(IN PCCH CommandLine)
 {
@@ -229,3 +232,4 @@ MachInit(IN PCCH CommandLine)
     MachVtbl.HwDetect = ArmHwDetect;
     MachVtbl.HwIdle = ArmHwIdle;
 }
+#endif

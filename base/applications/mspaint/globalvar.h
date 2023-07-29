@@ -1,108 +1,52 @@
 /*
- * PROJECT:     PAINT for ReactOS
- * LICENSE:     LGPL
- * FILE:        base/applications/mspaint/globalvar.h
- * PURPOSE:     Declaring global variables for later initialization
- * PROGRAMMERS: Benedikt Freisen
+ * PROJECT:    PAINT for ReactOS
+ * LICENSE:    LGPL-2.0-or-later (https://spdx.org/licenses/LGPL-2.0-or-later)
+ * PURPOSE:    Declaring global variables for later initialization
+ * COPYRIGHT:  Copyright 2015 Benedikt Freisen <b.freisen@gmx.net>
  */
 
 #pragma once
 
 /* VARIABLES declared in main.cpp ***********************************/
 
-class RegistrySettings;
-extern RegistrySettings registrySettings;
+extern BOOL g_askBeforeEnlarging;
 
-class ImageModel;
-extern ImageModel imageModel;
-extern BOOL askBeforeEnlarging;
+extern POINT g_ptStart, g_ptEnd;
 
-extern POINT start;
-extern POINT last;
+extern HINSTANCE g_hinstExe;
 
-class ToolsModel;
-extern ToolsModel toolsModel;
-
-class SelectionModel;
-extern SelectionModel selectionModel;
-
-extern LOGFONT lfTextFont;
-extern HFONT hfontTextFont;
-extern LPTSTR textToolText;
-extern int textToolTextMaxLen;
-
-class PaletteModel;
-extern PaletteModel paletteModel;
-
-extern HWND hStatusBar;
-extern CHOOSECOLOR choosecolor;
-extern OPENFILENAME ofn;
-extern OPENFILENAME sfn;
-extern HICON hNontranspIcon;
-extern HICON hTranspIcon;
-
-extern HCURSOR hCurFill;
-extern HCURSOR hCurColor;
-extern HCURSOR hCurZoom;
-extern HCURSOR hCurPen;
-extern HCURSOR hCurAirbrush;
-
-extern HWND hToolBtn[16];
-
-extern HINSTANCE hProgInstance;
-
-extern TCHAR filepathname[1000];
-extern BOOL isAFile;
-extern BOOL imageSaved;
-extern int fileSize;
-extern int fileHPPM;
-extern int fileVPPM;
-extern SYSTEMTIME fileTime;
-
-extern BOOL showGrid;
-extern BOOL showMiniature;
-
-class CMainWindow;
-class CFullscreenWindow;
-class CMiniatureWindow;
-class CToolBox;
-class CToolSettingsWindow;
-class CPaletteWindow;
-class CScrollboxWindow;
-class CSelectionWindow;
-class CImgAreaWindow;
-class CSizeboxWindow;
-class CTextEditWindow;
+extern TCHAR g_szFileName[MAX_LONG_PATH];
+extern BOOL g_isAFile;
+extern BOOL g_imageSaved;
+extern BOOL g_showGrid;
 
 extern CMainWindow mainWindow;
+
+/* VARIABLES declared in dialogs.cpp ********************************/
+
+extern CMirrorRotateDialog mirrorRotateDialog;
+extern CAttributesDialog attributesDialog;
+extern CStretchSkewDialog stretchSkewDialog;
+extern CFontsDialog fontsDialog;
+
+/* VARIABLES declared in the other places ***************************/
+
+extern RegistrySettings registrySettings;
+extern ImageModel imageModel;
+extern ToolsModel toolsModel;
+extern SelectionModel selectionModel;
+extern PaletteModel paletteModel;
+
+extern HWND g_hStatusBar;
+extern float g_xDpi;
+extern float g_yDpi;
+extern INT g_fileSize;
+extern SYSTEMTIME g_fileTime;
+
 extern CFullscreenWindow fullscreenWindow;
 extern CMiniatureWindow miniature;
 extern CToolBox toolBoxContainer;
 extern CToolSettingsWindow toolSettingsWindow;
 extern CPaletteWindow paletteWindow;
-extern CScrollboxWindow scrollboxWindow;
-extern CScrollboxWindow scrlClientWindow;
-extern CSelectionWindow selectionWindow;
-extern CImgAreaWindow imageArea;
-extern CSizeboxWindow sizeboxLeftTop;
-extern CSizeboxWindow sizeboxCenterTop;
-extern CSizeboxWindow sizeboxRightTop;
-extern CSizeboxWindow sizeboxLeftCenter;
-extern CSizeboxWindow sizeboxRightCenter;
-extern CSizeboxWindow sizeboxLeftBottom;
-extern CSizeboxWindow sizeboxCenterBottom;
-extern CSizeboxWindow sizeboxRightBottom;
+extern CCanvasWindow canvasWindow;
 extern CTextEditWindow textEditWindow;
-
-/* VARIABLES declared in dialogs.cpp ********************************/
-
-class CMirrorRotateDialog;
-class CAttributesDialog;
-class CStretchSkewDialog;
-
-extern CMirrorRotateDialog mirrorRotateDialog;
-extern CAttributesDialog attributesDialog;
-extern CStretchSkewDialog stretchSkewDialog;
-
-/* VARIABLES declared in mouse.cpp **********************************/
-

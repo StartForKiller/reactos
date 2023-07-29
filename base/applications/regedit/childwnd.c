@@ -157,7 +157,7 @@ static void SuggestKeys(HKEY hRootKey, LPCWSTR pszKeyPath, LPWSTR pszSuggestions
 
             /* Check default key */
             if (QueryStringValue(hRootKey, pszKeyPath, NULL,
-                                 szBuffer, COUNT_OF(szBuffer)) == ERROR_SUCCESS)
+                                 szBuffer, ARRAY_SIZE(szBuffer)) == ERROR_SUCCESS)
             {
                 /* Sanity check this key; it cannot be empty, nor can it be a
                  * loop back */
@@ -189,7 +189,7 @@ static void SuggestKeys(HKEY hRootKey, LPCWSTR pszKeyPath, LPWSTR pszSuggestions
         if (RegOpenKeyW(hRootKey, pszKeyPath, &hSubKey) == ERROR_SUCCESS)
         {
             if (QueryStringValue(hSubKey, L"CLSID", NULL, szBuffer,
-                                 COUNT_OF(szBuffer)) == ERROR_SUCCESS)
+                                 ARRAY_SIZE(szBuffer)) == ERROR_SUCCESS)
             {
                 lstrcpynW(pszSuggestions, L"HKCR\\CLSID\\", (int)iSuggestionsLength);
                 i = wcslen(pszSuggestions);
@@ -218,7 +218,7 @@ LRESULT CALLBACK AddressBarProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPar
     case WM_KEYUP:
         if (wParam == VK_RETURN)
         {
-            GetWindowTextW(hwnd, s_szNode, COUNT_OF(s_szNode));
+            GetWindowTextW(hwnd, s_szNode, ARRAY_SIZE(s_szNode));
             SelectNode(g_pChildWnd->hTreeWnd, s_szNode);
         }
         break;
@@ -229,7 +229,7 @@ LRESULT CALLBACK AddressBarProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPar
 }
 
 VOID
-UpdateAddress(HTREEITEM hItem, HKEY hRootKey, LPCWSTR pszPath)
+UpdateAddress(HTREEITEM hItem, HKEY hRootKey, LPCWSTR pszPath, BOOL bSelectNone)
 {
     LPCWSTR keyPath, rootName;
     LPWSTR fullPath;
@@ -251,10 +251,10 @@ UpdateAddress(HTREEITEM hItem, HKEY hRootKey, LPCWSTR pszPath)
 
     if (keyPath)
     {
-        RefreshListView(g_pChildWnd->hListWnd, hRootKey, keyPath);
+        RefreshListView(g_pChildWnd->hListWnd, hRootKey, keyPath, bSelectNone);
         rootName = get_root_key_name(hRootKey);
         cbFullPath = (wcslen(rootName) + 1 + wcslen(keyPath) + 1) * sizeof(WCHAR);
-        fullPath = HeapAlloc(GetProcessHeap(), 0, cbFullPath);
+        fullPath = malloc(cbFullPath);
         if (fullPath)
         {
             /* set (correct) the address bar text */
@@ -265,7 +265,7 @@ UpdateAddress(HTREEITEM hItem, HKEY hRootKey, LPCWSTR pszPath)
 
             SendMessageW(hStatusBar, SB_SETTEXTW, 0, (LPARAM)fullPath);
             SendMessageW(g_pChildWnd->hAddressBarWnd, WM_SETTEXT, 0, (LPARAM)fullPath);
-            HeapFree(GetProcessHeap(), 0, fullPath);
+            free(fullPath);
 
             /* disable hive manipulation items temporarily (enable only if necessary) */
             EnableMenuItem(hMenuFrame, ID_REGISTRY_LOADHIVE, MF_BYCOMMAND | MF_GRAYED);
@@ -313,7 +313,7 @@ LRESULT CALLBACK ChildWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
         DWORD style;
 
         /* Load "My Computer" string */
-        LoadStringW(hInst, IDS_MY_COMPUTER, buffer, COUNT_OF(buffer));
+        LoadStringW(hInst, IDS_MY_COMPUTER, buffer, ARRAY_SIZE(buffer));
 
         g_pChildWnd = HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, sizeof(ChildWnd));
         if (!g_pChildWnd) return 0;
@@ -603,7 +603,7 @@ LRESULT CALLBACK ChildWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
                 TreeView_GetItem(g_pChildWnd->hTreeWnd, &item);
 
                 /* Set the Expand/Collapse menu item appropriately */
-                LoadStringW(hInst, (item.state & TVIS_EXPANDED) ? IDS_COLLAPSE : IDS_EXPAND, buffer, COUNT_OF(buffer));
+                LoadStringW(hInst, (item.state & TVIS_EXPANDED) ? IDS_COLLAPSE : IDS_EXPAND, buffer, ARRAY_SIZE(buffer));
                 memset(&mii, 0, sizeof(mii));
                 mii.cbSize = sizeof(mii);
                 mii.fMask = MIIM_STRING | MIIM_STATE | MIIM_ID;
@@ -632,18 +632,18 @@ LRESULT CALLBACK ChildWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
 
                     /* Come up with suggestions */
                     keyPath = GetItemPath(g_pChildWnd->hTreeWnd, NULL, &hRootKey);
-                    SuggestKeys(hRootKey, keyPath, Suggestions, COUNT_OF(Suggestions));
+                    SuggestKeys(hRootKey, keyPath, Suggestions, ARRAY_SIZE(Suggestions));
                     if (Suggestions[0])
                     {
                         AppendMenu(hContextMenu, MF_SEPARATOR, 0, NULL);
 
-                        LoadStringW(hInst, IDS_GOTO_SUGGESTED_KEY, resource, COUNT_OF(resource));
+                        LoadStringW(hInst, IDS_GOTO_SUGGESTED_KEY, resource, ARRAY_SIZE(resource));
 
                         s = Suggestions;
                         wID = ID_TREE_SUGGESTION_MIN;
                         while(*s && (wID <= ID_TREE_SUGGESTION_MAX))
                         {
-                            _snwprintf(buffer, COUNT_OF(buffer), resource, s);
+                            _snwprintf(buffer, ARRAY_SIZE(buffer), resource, s);
 
                             memset(&mii, 0, sizeof(mii));
                             mii.cbSize = sizeof(mii);
@@ -656,7 +656,7 @@ LRESULT CALLBACK ChildWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
                         }
                     }
                 }
-                TrackPopupMenu(hContextMenu, TPM_RIGHTBUTTON, pt.x, pt.y, 0, hFrameWnd/*g_pChildWnd->hWnd*/, NULL);
+                TrackPopupMenu(hContextMenu, TPM_RIGHTBUTTON, pt.x, pt.y, 0, hFrameWnd, NULL);
             }
         }
         break;

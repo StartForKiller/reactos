@@ -1108,9 +1108,6 @@ RegCreateKeyExW(
 
     TRACE("RegCreateKeyExW() called\n");
 
-    if (lpSecurityAttributes && lpSecurityAttributes->nLength != sizeof(SECURITY_ATTRIBUTES))
-        return ERROR_INVALID_USER_BUFFER;
-
     /* get the real parent key */
     Status = MapDefaultKey(&ParentKey,
                            hKey);
@@ -4088,6 +4085,7 @@ RegQueryValueExA(
     /* We don't need this anymore */
     RtlFreeUnicodeString(&nameW);
 
+    /* Get the length for the multi-byte string (without the terminating NULL!) */
     DataLength = *count;
     RtlUnicodeToMultiByteSize(count, Buffer, BufferSize);
 
@@ -4101,7 +4099,7 @@ RegQueryValueExA(
     RtlUnicodeToMultiByteN(DataStr, DataLength, NULL, Buffer, BufferSize);
 
     /* NULL-terminate if there is enough room */
-    if ((DataLength > *count) && (DataStr[*count - 1] != '\0'))
+    if (DataLength > *count)
         DataStr[*count] = '\0';
 
     RtlFreeHeap(RtlGetProcessHeap(), 0, Buffer);

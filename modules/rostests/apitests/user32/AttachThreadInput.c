@@ -19,10 +19,9 @@ typedef struct {
     MSG_CACHE cache;
 } THREAD_DATA;
 
-DWORD tidMouseMove;
-THREAD_DATA data[6];
-HHOOK hMouseHookLL = NULL;
-HHOOK hKbdHookLL = NULL;
+static THREAD_DATA data[6];
+static HHOOK hMouseHookLL = NULL;
+static HHOOK hKbdHookLL = NULL;
 
 
 #define EXPECT_FOREGROUND(expected) ok(GetForegroundWindow() == expected, \
@@ -193,9 +192,6 @@ BOOLEAN InitThreads()
 
     /* create thread2(same desktop) */
     if(!CreateTestThread(2, NULL)) return FALSE;
-
-    /* ugly ros hack to bypass desktop crapiness */
-    if(!CreateTestThread(6, L"ThreadTestDesktop")) return FALSE;
 
     /* create thread3(different desktop) */
     if(!CreateTestThread(3, L"ThreadTestDesktop")) return FALSE;

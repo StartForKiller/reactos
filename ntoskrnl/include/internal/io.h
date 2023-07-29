@@ -1,10 +1,10 @@
 /*
-* PROJECT:         ReactOS Kernel
-* LICENSE:         GPL - See COPYING in the top level directory
-* FILE:            ntoskrnl/include/internal/io.h
-* PURPOSE:         Internal header for the I/O Manager
-* PROGRAMMERS:     Alex Ionescu (alex.ionescu@reactos.org)
-*/
+ * PROJECT:         ReactOS Kernel
+ * LICENSE:         GPL - See COPYING in the top level directory
+ * FILE:            ntoskrnl/include/internal/io.h
+ * PURPOSE:         Internal header for the I/O Manager
+ * PROGRAMMERS:     Alex Ionescu (alex.ionescu@reactos.org)
+ */
 
 #include "ntdddisk.h"
 
@@ -411,18 +411,6 @@ typedef struct _DRIVER_INFORMATION
 } DRIVER_INFORMATION, *PDRIVER_INFORMATION;
 
 //
-// Boot Driver Node
-//
-typedef struct _BOOT_DRIVER_NODE
-{
-    BOOT_DRIVER_LIST_ENTRY ListEntry;
-    UNICODE_STRING Group;
-    UNICODE_STRING Name;
-    ULONG Tag;
-    ULONG ErrorControl;
-} BOOT_DRIVER_NODE, *PBOOT_DRIVER_NODE;
-
-//
 // List of Bus Type GUIDs
 //
 typedef struct _IO_BUS_TYPE_GUID_LIST
@@ -539,7 +527,8 @@ typedef enum _DEVICE_ACTION
     PiActionEnumRootDevices,
     PiActionResetDevice,
     PiActionAddBootDevices,
-    PiActionStartDevice
+    PiActionStartDevice,
+    PiActionQueryState,
 } DEVICE_ACTION;
 
 //
@@ -1075,16 +1064,22 @@ PnpRootDriverEntry(
 );
 
 NTSTATUS
+PnpRootCreateDeviceObject(
+    OUT PDEVICE_OBJECT *DeviceObject);
+
+NTSTATUS
 PnpRootCreateDevice(
     IN PUNICODE_STRING ServiceName,
-    IN OPTIONAL PDRIVER_OBJECT DriverObject,
     OUT PDEVICE_OBJECT *PhysicalDeviceObject,
-    OUT OPTIONAL PUNICODE_STRING FullInstancePath
+    OUT PUNICODE_STRING FullInstancePath
 );
 
 NTSTATUS
 PnpRootRegisterDevice(
     IN PDEVICE_OBJECT DeviceObject);
+
+VOID
+PnpRootInitializeDevExtension(VOID);
 
 //
 // Driver Routines
@@ -1341,17 +1336,17 @@ IopStartRamdisk(
 // Configuration Routines
 //
 NTSTATUS
-NTAPI
-IopFetchConfigurationInformation(OUT PWSTR * SymbolicLinkList,
-                                 IN GUID Guid,
-                                 IN ULONG ExpectedInterfaces,
-                                 IN PULONG Interfaces
+IopFetchConfigurationInformation(
+    _Out_ PWSTR* SymbolicLinkList,
+    _In_ GUID Guid,
+    _In_ ULONG ExpectedInterfaces,
+    _Out_ PULONG Interfaces
 );
 
 VOID
-NTAPI
-IopStoreSystemPartitionInformation(IN PUNICODE_STRING NtSystemPartitionDeviceName,
-                                   IN PUNICODE_STRING OsLoaderPathName
+IopStoreSystemPartitionInformation(
+    _In_ PUNICODE_STRING NtSystemPartitionDeviceName,
+    _In_ PUNICODE_STRING OsLoaderPathName
 );
 
 //
@@ -1414,6 +1409,16 @@ NTSTATUS
 PiIrpQueryDeviceRelations(
     _In_ PDEVICE_NODE DeviceNode,
     _In_ DEVICE_RELATION_TYPE Type);
+
+NTSTATUS
+PiIrpQueryResources(
+    _In_ PDEVICE_NODE DeviceNode,
+    _Out_ PCM_RESOURCE_LIST *Resources);
+
+NTSTATUS
+PiIrpQueryResourceRequirements(
+    _In_ PDEVICE_NODE DeviceNode,
+    _Out_ PIO_RESOURCE_REQUIREMENTS_LIST *Resources);
 
 NTSTATUS
 PiIrpQueryDeviceText(

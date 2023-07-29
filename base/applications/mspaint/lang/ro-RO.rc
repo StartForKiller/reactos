@@ -1,13 +1,15 @@
 /*
  * PROJECT:     PAINT for ReactOS
- * LICENSE:     LGPL
- * FILE:        base/applications/mspaint/lang/ro-RO.rc
- * PURPOSE:     Romanian Language resource file
- * TRANSLATORS: Petru Dimitriu (petrimetri at gmail dot com)
- *              Ștefan Fulea (stefan dot fulea at mail dot com)
+ * LICENSE:     LGPL-2.0-or-later (https://spdx.org/licenses/LGPL-2.0-or-later)
+ * PURPOSE:     Romanian resource file
+ * TRANSLATORS: Copyright 2009 Petru Dimitriu <petrimetri@gmail.com>
+ *              Copyright 2011-2018 Ștefan Fulea <stefan.fulea@mail.com>
+ *              Copyright 2022 Andrei Miloiu <miloiuandrei@gmail.com>
  */
 
 LANGUAGE LANG_ROMANIAN, SUBLANG_NEUTRAL
+
+//IDB_FONTSTOOLBAR BITMAP "icons/fontstoolbar-ro-RO.bmp"
 
 ID_MENU MENU
 BEGIN
@@ -99,6 +101,25 @@ BEGIN
     END
 END
 
+ID_POPUPMENU MENU
+BEGIN
+    POPUP "Popup #0"
+    BEGIN
+        MENUITEM "C&ut\tCtrl+X", IDM_EDITCUT
+        MENUITEM "Copy\tCtrl+C", IDM_EDITCOPY
+        MENUITEM "&Paste\tCtrl+V", IDM_EDITPASTE
+        MENUITEM "De&lete selection\tDel", IDM_EDITDELETESELECTION
+        MENUITEM "Select &All\tCtrl+A", IDM_EDITSELECTALL
+        MENUITEM SEPARATOR
+        MENUITEM "C&opy to...", IDM_EDITCOPYTO
+        MENUITEM "Paste &from...", IDM_EDITPASTEFROM
+        MENUITEM SEPARATOR
+        MENUITEM "Rotate/&Mirror...\tCtrl+R", IDM_IMAGEROTATEMIRROR
+        MENUITEM "&Stretch/Skew...\tCtrl+W", IDM_IMAGESTRETCHSKEW
+        MENUITEM "&Invert colors\tCtrl+I", IDM_IMAGEINVERTCOLORS
+    END
+END
+
 ID_ACCELERATORS ACCELERATORS
 BEGIN
     "^N", IDM_FILENEW
@@ -143,25 +164,25 @@ STYLE DS_SHELLFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 FONT 8, "MS Shell Dlg"
 CAPTION "Atribute"
 BEGIN
+    LTEXT "&Lățime:", IDD_ATTRIBUTESTEXT1, 10, 42, 35, 10
     EDITTEXT IDD_ATTRIBUTESEDIT1, 48, 40, 35, 12
+    LTEXT "Î&nălțime:", IDD_ATTRIBUTESTEXT2, 90, 42, 35, 10
     EDITTEXT IDD_ATTRIBUTESEDIT2, 128, 40, 35, 12
-    LTEXT "Lățime:", IDD_ATTRIBUTESTEXT1, 10, 40, 35, 10
-    LTEXT "Înălțime:", IDD_ATTRIBUTESTEXT2, 90, 40, 35, 10
     LTEXT "Dată fișier:", IDD_ATTRIBUTESTEXT3, 10, 5, 60, 10
     LTEXT "Dimensiune:", IDD_ATTRIBUTESTEXT4, 10, 15, 60, 10
     LTEXT "Rezoluție:", IDD_ATTRIBUTESTEXT5, 10, 25, 60, 10
     LTEXT "Indisponibil", IDD_ATTRIBUTESTEXT6, 60, 5, 90, 10
     LTEXT "Indisponibil", IDD_ATTRIBUTESTEXT7, 60, 15, 90, 10
-    LTEXT "Indisponibil", IDD_ATTRIBUTESTEXT8, 60, 25, 90, 10
+    LTEXT "ppcm", IDD_ATTRIBUTESTEXT8, 60, 25, 90, 10 /* This unit must match IDS_PRINTRES */
     GROUPBOX "Unități", IDD_ATTRIBUTESGROUP1, 6, 57, 158, 27
-    AUTORADIOBUTTON "țoli", IDD_ATTRIBUTESRB1, 12, 69, 45, 10, WS_GROUP
-    AUTORADIOBUTTON "cm", IDD_ATTRIBUTESRB2, 62, 69, 45, 10
-    AUTORADIOBUTTON "pixeli", IDD_ATTRIBUTESRB3, 112, 69, 45, 10
+    AUTORADIOBUTTON "ț&oli", IDD_ATTRIBUTESRB1, 12, 69, 45, 10, WS_GROUP
+    AUTORADIOBUTTON "c&m", IDD_ATTRIBUTESRB2, 62, 69, 45, 10
+    AUTORADIOBUTTON "&pixeli", IDD_ATTRIBUTESRB3, 112, 69, 45, 10
     GROUPBOX "Culori", IDD_ATTRIBUTESGROUP2, 6, 88, 158, 27
-    AUTORADIOBUTTON "Alb-negru", IDD_ATTRIBUTESRB4, 12, 100, 70, 10, WS_GROUP
-    AUTORADIOBUTTON "Color", IDD_ATTRIBUTESRB5, 92, 100, 35, 10
-    DEFPUSHBUTTON "Con&firmă", IDOK, 170, 8, 48, 14
-    PUSHBUTTON "A&nulează", IDCANCEL, 170, 24, 48, 14
+    AUTORADIOBUTTON "&Alb-negru", IDD_ATTRIBUTESRB4, 12, 100, 70, 10, WS_GROUP
+    AUTORADIOBUTTON "C&uloare", IDD_ATTRIBUTESRB5, 92, 100, 42, 10
+    DEFPUSHBUTTON "Confirmă", IDOK, 170, 8, 48, 14
+    PUSHBUTTON "Anulează", IDCANCEL, 170, 24, 48, 14
     PUSHBUTTON "Impli&cite", IDD_ATTRIBUTESSTANDARD, 170, 40, 48, 14
 END
 
@@ -192,6 +213,17 @@ BEGIN
     PUSHBUTTON "A&nulează", IDCANCEL, 170, 24, 48, 14
 END
 
+IDD_FONTS DIALOG 0, 0, 225, 25
+CAPTION "Fonts"
+STYLE DS_CENTER | DS_MODALFRAME | WS_POPUPWINDOW | WS_CAPTION
+EXSTYLE WS_EX_TOOLWINDOW
+FONT 8, "MS Shell Dlg"
+BEGIN
+    COMBOBOX IDD_FONTSNAMES, 5, 5, 110, 200, CBS_HASSTRINGS | CBS_DROPDOWN | CBS_AUTOHSCROLL | CBS_SORT | CBS_OWNERDRAWFIXED | WS_VSCROLL | WS_TABSTOP
+    COMBOBOX IDD_FONTSSIZES, 120, 5, 35, 250, CBS_HASSTRINGS | CBS_DROPDOWN | WS_VSCROLL | WS_TABSTOP
+    CONTROL "", IDD_FONTSTOOLBAR, "ToolbarWindow32", TBSTYLE_TOOLTIPS | CCS_NODIVIDER | CCS_NOPARENTALIGN | CCS_NOMOVEY, 160, 5, 60, 20
+END
+
 STRINGTABLE
 BEGIN
     IDS_PROGRAMNAME "Pictare"
@@ -199,7 +231,7 @@ BEGIN
     IDS_INFOTITLE "Pictare pentru ReactOS"
     IDS_INFOTEXT "Disponibilă sub licența GNU Lesser General Public (vedeți www.gnu.org)"
     IDS_SAVEPROMPTTEXT "Doriți păstrarea modificărilor din %s?"
-    IDS_DEFAULTFILENAME "FărăNume"
+    IDS_DEFAULTFILENAME "Fără nume"
     IDS_MINIATURETITLE "Miniatură"
     IDS_TOOLTIP1 "Golire selecție"
     IDS_TOOLTIP2 "Selecție"
@@ -220,10 +252,16 @@ BEGIN
     IDS_ALLFILES "Orice fișier"
     IDS_ALLPICTUREFILES "Toate fișierele imagine"
     IDS_FILESIZE "%d octeți"
-    IDS_PRINTRES "%d x %d pixeli pe metru"
     IDS_INTNUMBERS "Introduceți doar numere întregi!"
     IDS_PERCENTAGE "Procentajul trebuie să fie între 1 și 500."
     IDS_ANGLE "Unghiul trebuie să fie între -89 și 89."
     IDS_LOADERRORTEXT "Fișierul %s nu poate fi încărcat."
     IDS_ENLARGEPROMPTTEXT "Imaginea din memorie este mai mare decât suprafața curent disponibilă în aplicație.\nDoriți să redimensionați suprafața de desen disponibilă?"
+    IDS_BOLD "Îngroșat"
+    IDS_ITALIC "Cursiv"
+    IDS_UNDERLINE "Subliniat"
+    IDS_VERTICAL "Vertical"
+    IDS_PRINTRES "%d x %d pixeli/cm"
+    IDS_CANTPASTE "Nu a putut fi lipit din clipboard. Formatul de date este fie incorect, fie nesuportat."
+    IDS_SAVEERROR "Failed to save the bitmap to file:\n\n%s"
 END

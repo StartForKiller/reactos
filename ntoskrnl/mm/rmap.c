@@ -2,7 +2,7 @@
  * COPYRIGHT:       See COPYING in the top directory
  * PROJECT:         ReactOS kernel
  * FILE:            ntoskrnl/mm/rmap.c
- * PURPOSE:         Kernel memory managment functions
+ * PURPOSE:         Kernel memory management functions
  *
  * PROGRAMMERS:     David Welch (welch@cwcom.net)
  */
@@ -135,6 +135,7 @@ GetEntry:
         PFN_NUMBER MapPage;
         LARGE_INTEGER Offset;
         BOOLEAN Released;
+        BOOLEAN Unmapped;
 
         Offset.QuadPart = MemoryArea->SectionData.ViewOffset +
                  ((ULONG_PTR)Address - MA_GetStartingAddress(MemoryArea));
@@ -158,10 +159,19 @@ GetEntry:
 
         /* Delete this virtual mapping in the process */
         MmDeleteRmap(Page, Process, Address);
-        MmDeleteVirtualMapping(Process, Address, &Dirty, &MapPage);
-
-        /* We checked this earlier */
-        ASSERT(MapPage == Page);
+        Unmapped = MmDeleteVirtualMapping(Process, Address, &Dirty, &MapPage);
+        if (!Unmapped || (MapPage != Page))
+        {
+            /*
+             * Something's corrupted, we got there because this process is
+             * supposed to be mapping this page there.
+             */
+            KeBugCheckEx(MEMORY_MANAGEMENT,
+                         (ULONG_PTR)Process,
+                         (ULONG_PTR)Address,
+                         (ULONG_PTR)__FILE__,
+                         __LINE__);
+        }
 
         if (Page != PFN_FROM_SSE(Entry))
         {
@@ -459,7 +469,9 @@ MmGetSegmentRmap(PFN_NUMBER Page, PULONG RawOffset)
 {
     PCACHE_SECTION_PAGE_TABLE Result = NULL;
     PMM_RMAP_ENTRY current_entry;//, previous_entry;
-    KIRQL OldIrql = MiAcquirePfnLock();
+
+    /* Must hold the PFN lock */
+    ASSERT(KeGetCurrentIrql() == DISPATCH_LEVEL);
 
     //previous_entry = NULL;
     current_entry = MmGetRmapListHeadPage(Page);
@@ -471,16 +483,15 @@ MmGetSegmentRmap(PFN_NUMBER Page, PULONG RawOffset)
             *RawOffset = (ULONG_PTR)current_entry->Address & ~RMAP_SEGMENT_MASK;
             if (*Result->Segment->Flags & MM_SEGMENT_INDELETE)
             {
-                MiReleasePfnLock(OldIrql);
                 return NULL;
             }
-            MiReleasePfnLock(OldIrql);
+
             return Result;
         }
         //previous_entry = current_entry;
         current_entry = current_entry->Next;
     }
-    MiReleasePfnLock(OldIrql);
+
     return NULL;
 }
 

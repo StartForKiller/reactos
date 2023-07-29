@@ -1,5 +1,11 @@
-/* Translated by Baruch Rutman, additional translations by Shy Zedaka and Omer I.S. */
-
+/*
+ * PROJECT:     ReactOS Applications Manager
+ * LICENSE:     GPL-2.0-or-later (https://spdx.org/licenses/GPL-2.0-or-later)
+ * PURPOSE:     Hebrew resource file
+ * TRANSLATORS: Copyright 2013-2019 Baruch Rutman <peterooch@gmail.com>
+ *              Copyright 2019 Shy Zedaka <shaytzedaka123@gmail.com>
+ *              Copyright 2020 Omer Itzic Schwartz <omeritzicschwartz@gmail.com>
+ */
 
 LANGUAGE LANG_HEBREW, SUBLANG_DEFAULT
 
@@ -79,7 +85,7 @@ BEGIN
     CONTROL "חיבור ישיר(ללא פרוקסי)", IDC_NO_PROXY, "Button", BS_AUTORADIOBUTTON | WS_TABSTOP, 15, 195, 210, 10
     CONTROL "פרוקסי", IDC_USE_PROXY, "Button", BS_AUTORADIOBUTTON | WS_TABSTOP, 15, 210, 74, 10
     EDITTEXT IDC_PROXY_SERVER, 90, 210, 147, 12, ES_AUTOHSCROLL | WS_DISABLED
-    LTEXT "ללא פרוקסי עבור:", -1, 27, 225, 64, 10
+    LTEXT "ללא פרוקסי עבור:", -1, 26, 226, 64, 10
     EDITTEXT IDC_NO_PROXY_FOR, 90, 225, 147, 12, ES_AUTOHSCROLL | WS_DISABLED
     PUSHBUTTON "ברירת מחדל", IDC_DEFAULT_SETTINGS, 8, 245, 60, 14
     DEFPUSHBUTTON "אישור", IDOK, 116, 245, 60, 14
@@ -99,8 +105,8 @@ BEGIN
     PUSHBUTTON "ביטול", IDCANCEL, 150, 78, 60, 14
 END
 
-IDD_DOWNLOAD_DIALOG DIALOGEX 0, 0, 220, 72
-STYLE DS_SHELLFONT | DS_CENTER | WS_BORDER | WS_CAPTION | WS_POPUP | WS_SYSMENU | WS_VISIBLE
+IDD_DOWNLOAD_DIALOG DIALOGEX 0, 0, 220, 220
+STYLE DS_SHELLFONT | DS_CENTER | WS_POPUPWINDOW | WS_CAPTION | WS_VISIBLE
 EXSTYLE WS_EX_LAYOUTRTL
 CAPTION "הורדה %ls…"
 FONT 8, "MS Shell Dlg"
@@ -115,6 +121,7 @@ BEGIN
     IDS_TOOLTIP_INSTALL "התקנה"
     IDS_TOOLTIP_UNINSTALL "הסרה"
     IDS_TOOLTIP_MODIFY "שינוי"
+    IDS_TOOLTIP_SELECT_ALL "בחר הכול/בטל בחירת הכול"
     IDS_TOOLTIP_SETTINGS "הגדרות"
     IDS_TOOLTIP_REFRESH "רענון"
     IDS_TOOLTIP_UPDATE_DB "עדכון מסד נתונים"
@@ -187,13 +194,10 @@ BEGIN
     IDS_APPTITLE "מנהל היישומים של ReactOS"
     IDS_APP_AUTHORS "Copyright 2009 Dmitry Chapyshev"
     IDS_SEARCH_TEXT "חיפוש…"
-    IDS_INSTALL "התקנה"
-    IDS_UNINSTALL "הסרה"
-    IDS_MODIFY "שינוי"
     IDS_APPS_COUNT "ספירת יישומים: %d; Selected: %d"
     IDS_WELCOME_TITLE "ברוכים הבאים למנהל היישומים של ReactOS!\n\n"
     IDS_WELCOME_TEXT "בחר קטגוריה בצד שמאל, לאחר מכן בחר יישום להתקנה או להסרה.\nהאתר של ReactOS: "
-    IDS_WELCOME_URL "https://reactos.org/"
+    IDS_WELCOME_URL "https://reactos.org"
     IDS_INSTALLED "מותקן"
     IDS_AVAILABLEFORINST "זמין להתקנה"
     IDS_UPDATES "עדכונים"
@@ -212,7 +216,6 @@ BEGIN
     IDS_INTEG_CHECK_FAIL "The package did not pass the integrity check, it may have been corrupted or tampered with during downloading. Running the software is not recommended."
     IDS_INTERRUPTED_DOWNLOAD "The download was interrupted. Check connection to Internet."
     IDS_UNABLE_TO_WRITE "Unable to write to disk. Disk may be at capacity."
-    IDS_SELECT_ALL "בחר הכול/בטל בחירת הכול"
     IDS_INSTALL_SELECTED "התקן נבחרים"
     IDS_SELECTEDFORINST "Selected for installation"
     IDS_MISMATCH_CERT_INFO "The certificate used is unknown:\nSubject: %s\nIssuer: %s\nDo you want to continue anyway?"

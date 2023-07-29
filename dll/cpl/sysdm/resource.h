@@ -6,6 +6,7 @@
 #define IDI_DEVMGR    51
 #define IDI_HARDPROF  52
 #define IDI_USERPROF  53
+#define IDI_LICENSE   54
 #define IDI_UP        2500
 #define IDI_DOWN      2501
 #define IDI_ADDHW     2502
@@ -65,6 +66,7 @@
 
 #define IDS_ENVIRONMENT_WARNING            150
 #define IDS_ENVIRONMENT_WARNING_TITLE      151
+#define IDS_FILE_BROWSE_FILTER             152
 
 /* Propsheet - general */
 #define IDD_PROPPAGEGENERAL  100

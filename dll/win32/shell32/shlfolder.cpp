@@ -26,6 +26,7 @@
 
 WINE_DEFAULT_DEBUG_CHANNEL(shell);
 
+
 /***************************************************************************
  *  GetNextElement (internal function)
  *
@@ -422,42 +423,52 @@ SHOpenFolderAndSelectItems(PCIDLIST_ABSOLUTE pidlFolder,
         return E_FAIL;
 }
 
+
+
+static
+DWORD WINAPI
+_ShowPropertiesDialogThread(LPVOID lpParameter)
+{
+    CComPtr<IDataObject> pDataObject;
+    pDataObject.Attach((IDataObject*)lpParameter);
+
+    CDataObjectHIDA cida(pDataObject);
+
+    if (FAILED_UNEXPECTEDLY(cida.hr()))
+        return cida.hr();
+
+    if (cida->cidl > 1)
+    {
+        ERR("SHMultiFileProperties is not yet implemented\n");
+        return E_FAIL;
+    }
+
+    CComHeapPtr<ITEMIDLIST> completePidl(ILCombine(HIDA_GetPIDLFolder(cida), HIDA_GetPIDLItem(cida, 0)));
+    CComHeapPtr<WCHAR> wszName;
+    if (FAILED_UNEXPECTEDLY(SHGetNameFromIDList(completePidl, SIGDN_PARENTRELATIVEPARSING, &wszName)))
+        return 0;
+
+    BOOL bSuccess = SH_ShowPropertiesDialog(wszName, pDataObject);
+    if (!bSuccess)
+        ERR("SH_ShowPropertiesDialog failed\n");
+
+    return 0;
+}
+
 /*
  * for internal use
  */
 HRESULT WINAPI
 Shell_DefaultContextMenuCallBack(IShellFolder *psf, IDataObject *pdtobj)
 {
-    PIDLIST_ABSOLUTE pidlFolder;
-    PUITEMID_CHILD *apidl;
-    UINT cidl;
-    HRESULT hr = SH_GetApidlFromDataObject(pdtobj, &pidlFolder, &apidl, &cidl);
-    if (FAILED_UNEXPECTEDLY(hr))
-        return hr;
-
-    if (cidl > 1)
+    pdtobj->AddRef();
+    if (!SHCreateThread(_ShowPropertiesDialogThread, pdtobj, CTF_INSIST | CTF_COINIT, NULL))
     {
-        ERR("SHMultiFileProperties is not yet implemented\n");
-        SHFree(pidlFolder);
-        _ILFreeaPidl(apidl, cidl);
-        return E_FAIL;
-    }
-
-    STRRET strFile;
-    hr = psf->GetDisplayNameOf(apidl[0], SHGDN_FORPARSING, &strFile);
-    if (SUCCEEDED(hr))
-    {
-        hr = SH_ShowPropertiesDialog(strFile.pOleStr, pidlFolder, apidl);
-        if (FAILED(hr))
-            ERR("SH_ShowPropertiesDialog failed\n");
+        pdtobj->Release();
+        return HRESULT_FROM_WIN32(GetLastError());
     }
     else
     {
-        ERR("Failed to get display name\n");
+        return S_OK;
     }
-
-    SHFree(pidlFolder);
-    _ILFreeaPidl(apidl, cidl);
-
-    return hr;
 }

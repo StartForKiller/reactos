@@ -139,7 +139,7 @@ BEGIN
     ICON "", IDC_ABOUT_ICON, 7, 55, 21, 20
     LTEXT "", IDC_ABOUT_APPNAME, 35, 55, 200, 10, SS_NOPREFIX
     LTEXT "", IDC_ABOUT_VERSION, 35, 65, 250, 10, SS_NOPREFIX
-    LTEXT "Copyright 1998-", IDC_STATIC, 35, 75, 53, 10
+    LTEXT "Copyright 1996-", IDC_STATIC, 35, 75, 53, 10
     LTEXT COPYRIGHT_YEAR, IDC_STATIC, 88, 75, 17, 10
     LTEXT " Ekipi ReactOS\0", IDC_STATIC, 105, 75, 53, 10
     LTEXT "", IDC_ABOUT_OTHERSTUFF, 35, 90, 180, 20, SS_NOPREFIX
@@ -240,10 +240,10 @@ BEGIN
     EDITTEXT 14015, 58, 128, 170, 10, ES_LEFT | ES_READONLY | NOT WS_BORDER | NOT WS_TABSTOP | ES_AUTOHSCROLL
     LTEXT "", -1, 8, 144, 221, 1, SS_ETCHEDHORZ | WS_CHILD | WS_VISIBLE
     LTEXT "Atribute:", 14020, 8, 152, 46, 10
-    AUTOCHECKBOX "&Vetëm-lexues", 14021, 58, 151, 70, 10
-    AUTOCHECKBOX "&Fshehur", 14022, 126, 151, 70, 10
-    AUTOCHECKBOX "&Arkiva", 14023, 181, 151, 70, 10
-    PUSHBUTTON "A&vancuar...", 14028, 158, 150, 70, 14, WS_CHILD | WS_VISIBLE | WS_TABSTOP
+    AUTOCHECKBOX "&Vetëm-lexues", 14021, 58, 151, 68, 10
+    AUTOCHECKBOX "&Fshehur", 14022, 126, 151, 55, 10
+    AUTOCHECKBOX "&Arkiva", 14023, 181, 151, 59, 10
+    PUSHBUTTON "A&vancuar...", 14028, 158, 170, 70, 14, WS_CHILD | WS_VISIBLE | WS_TABSTOP
 END
 
 IDD_FILE_PROPERTIES DIALOGEX 0, 0, 240, 205
@@ -325,12 +325,12 @@ BEGIN
     LTEXT "Kapaciteti:", -1, 25, 103, 80, 10
     EDITTEXT 14007, 110, 103, 86, 10, ES_LEFT | ES_READONLY | NOT WS_BORDER | NOT WS_TABSTOP | ES_AUTOHSCROLL
     EDITTEXT 14008, 197, 103, 33, 10, ES_LEFT | ES_READONLY | NOT WS_BORDER | NOT WS_TABSTOP | ES_AUTOHSCROLL
-    CONTROL "", 14015, "Static", SS_OWNERDRAW, 70, 116, 100, 30
-    LTEXT "Drive %c", 14009, 100, 150, 70, 10
-    PUSHBUTTON "Pastrim &Disku", 14010, 160, 154, 70, 15, WS_TABSTOP
-    LTEXT "", -1, 8, 171, 223, 1, SS_ETCHEDHORZ | WS_CHILD | WS_VISIBLE
-    CHECKBOX "Kompres drivin për të kursyer hapësirë ​​në disk", 14011, 8, 191, 222, 10, WS_DISABLED
-    CHECKBOX "Lejo Shërbimet e Indeksimi për indeksim të këtij disku për dokumentat të shpejtë në kërkim", 14012, 8, 205, 222, 10, WS_DISABLED
+    CONTROL "", 14015, "Static", SS_OWNERDRAW, 70, 116, 100, 40
+    CTEXT "Drive %c", 14009, 95, 162, 50, 10
+    PUSHBUTTON "Pastrim &Disku", 14010, 160, 159, 70, 15, WS_TABSTOP
+    LTEXT "", -1, 8, 176, 223, 1, SS_ETCHEDHORZ | WS_CHILD | WS_VISIBLE
+    CHECKBOX "Kompres drivin për të kursyer hapësirë ​​në disk", 14011, 8, 200, 222, 10, WS_DISABLED
+    CHECKBOX "Lejo Shërbimet e Indeksimi për indeksim të këtij disku për dokumentat të shpejtë në kërkim", 14012, 8, 214, 222, 10, WS_DISABLED
 END
 
 IDD_DRIVE_TOOLS DIALOGEX 0, 0, 240, 230
@@ -340,11 +340,11 @@ FONT 8, "MS Shell Dlg", 0, 0, 0x0
 BEGIN
     GROUPBOX "Bagim-kontroll", -1, 5, 5, 230, 60
     ICON IDI_SHELL_TOOLS_CHKDSK, IDC_STATIC, 13, 25, 21, 20
-    LTEXT "Ky opsion do të kontrollojë volumin për\ngabime.", -1, 40, 25, 160, 20
+    LTEXT "Ky opsion do të kontrollojë volumin për gabime.", -1, 40, 25, 160, 20
     PUSHBUTTON "Kontrollo tani...", 14000, 130, 45, 90, 15, WS_TABSTOP
     GROUPBOX "Defragmentacion", -1, 5, 65, 230, 60
     ICON IDI_SHELL_TOOLS_DEFRAG, IDC_STATIC, 13, 85, 21, 20
-    LTEXT "Ky opsion do të defragmentojë dokumentat nga vëllimi", -1, 40, 85, 160, 20
+    LTEXT "Ky opsion do të defragmentojë dokumentat nga vëllimi.", -1, 40, 85, 160, 20
     PUSHBUTTON "Defragmento Tani...", 14001, 130, 105, 90, 15, WS_TABSTOP
     GROUPBOX "Rezervat", -1, 5, 130, 230, 60
     ICON IDI_SHELL_TOOLS_BACKUP, IDC_STATIC, 13, 150, 21, 20
@@ -438,7 +438,7 @@ FONT 8, "MS Shell Dlg", 0, 0, 0x0
 BEGIN
     GROUPBOX "Vëzhgo Dosjen", -1, 7, 10, 249, 60
     ICON IDI_SHELL_PROGRAMS_FOLDER2, IDC_STATIC, 20, 20, 21, 20
-    LTEXT "Ju mund të aplikoni pamje (të tilla si Detaje ose Pllaka) që\nJu jeni duke përdorur për këtë dosje të gjitha dosjet.", -1, 60, 20, 180, 20
+    LTEXT "Ju mund të aplikoni pamje (të tilla si Detaje ose Pllaka) që Ju jeni duke përdorur për këtë dosje të gjitha dosjet.", -1, 60, 20, 180, 20
     PUSHBUTTON "Apliko për të gjitha Dosjet", IDC_VIEW_APPLY_TO_ALL, 60, 50, 80, 14, WS_TABSTOP
     PUSHBUTTON "&Rivë të gjitha Dosjet", IDC_VIEW_RESET_ALL, 150, 50, 80, 14, WS_TABSTOP
     LTEXT "Cilësime të Avancuar:", -1, 7, 80, 100, 10
@@ -812,6 +812,8 @@ BEGIN
     IDS_MOVEERROR "Cannot move '%s': %s"
     IDS_COPYERROR "Cannot copy '%s': %s"
 
+    IDS_CREATEFILE_DENIED "Could not create file %1"
+    IDS_CREATEFILE_CAPTION "Error creating file"
     IDS_CREATEFOLDER_DENIED "Unable to create the folder '%1'"
     IDS_CREATEFOLDER_CAPTION "Unable to create folder"
     IDS_DELETEITEM_CAPTION "Konfirmo fshirjen e dokumentit"
@@ -886,6 +888,7 @@ BEGIN
     IDS_NETWORKPLACE "Vendi Rrjetit Tim"
 
     IDS_NEWFOLDER "Dosje e're"
+    IDS_NEWITEMFORMAT "New %s"
 
     IDS_DRIVE_FIXED "Disku Vendorë"
     IDS_DRIVE_CDROM "CD Drive"
@@ -902,7 +905,7 @@ BEGIN
 
     IDS_SHELL_ABOUT_AUTHORS "&Autorët"
     IDS_SHELL_ABOUT_BACK "< &Mbrapa"
-    FCIDM_SHVIEW_NEW "E're"
+    FCIDM_SHVIEW_NEW "Ne&w" /* A menu item with an ampersand */
     FCIDM_SHVIEW_NEWFOLDER "&Dosje E're"
     FCIDM_SHVIEW_NEWLINK "&Lidhje e Re"
     IDS_FOLDER_OPTIONS "Opsione Dosje"
@@ -983,6 +986,11 @@ BEGIN
     IDS_MENU_EMPTY "(Empty)"
     IDS_OBJECTS "%d Objects"
     IDS_OBJECTS_SELECTED "%d Objects Selected"
+
+    IDS_TITLE_MYCOMP "Kompjuteri Im"
+    IDS_TITLE_MYNET "Vendi Rrjetit Tim"
+    IDS_TITLE_BIN_1 "Plehra (plot)"
+    IDS_TITLE_BIN_0 "Plehra (bosh)"
 
     IDS_ADVANCED_FOLDER "Files and Folders"
     IDS_ADVANCED_NET_CRAWLER "Automatically search for network folders and printers"

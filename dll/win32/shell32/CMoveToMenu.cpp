@@ -100,6 +100,9 @@ BrowseCallbackProc(HWND hwnd, UINT uMsg, LPARAM lParam, LPARAM lpData)
         }
         case BFFM_SELCHANGED:
         {
+            if (!this_)
+                break;
+
             WCHAR szPath[MAX_PATH];
             LPCITEMIDLIST pidl = reinterpret_cast<LPCITEMIDLIST>(lParam);
 
@@ -267,6 +270,9 @@ CMoveToMenu::QueryContextMenu(HMENU hMenu,
     TRACE("CMoveToMenu::QueryContextMenu(%p, %u, %u, %u, %u)\n",
           hMenu, indexMenu, idCmdFirst, idCmdLast, uFlags);
 
+    if (uFlags & (CMF_NOVERBS | CMF_VERBSONLY))
+        return MAKE_HRESULT(SEVERITY_SUCCESS, 0, idCmdFirst);
+
     m_idCmdFirst = m_idCmdLast = idCmdFirst;
 
     // insert separator if necessary
@@ -308,7 +314,7 @@ CMoveToMenu::QueryContextMenu(HMENU hMenu,
         ++Count;
     }
 
-    return MAKE_HRESULT(SEVERITY_SUCCESS, 0, Count);
+    return MAKE_HRESULT(SEVERITY_SUCCESS, 0, idCmdFirst + Count);
 }
 
 HRESULT WINAPI

@@ -69,6 +69,11 @@ CreateDIBPalette(
                                     0,
                                     0,
                                     0);
+        if (ppal == NULL)
+        {
+            DPRINT1("Failed to allocate palette.\n");
+            return NULL;
+        }
 
         /* Check if the BITMAPINFO specifies how many colors to use */
         if ((pbmi->bmiHeader.biSize >= sizeof(BITMAPINFOHEADER)) &&
@@ -513,7 +518,27 @@ NtGdiSetDIBitsToDeviceInternal(
     }
     _SEH2_END;
 
-    ScanLines = min(ScanLines, abs(bmi->bmiHeader.biHeight) - StartScan);
+    DPRINT("StartScan %d ScanLines %d Bits %p bmi %p ColorUse %d\n"
+           "    Height %d Width %d SizeImage %d\n"
+           "    biHeight %d biWidth %d biBitCount %d\n"
+           "    XSrc %d YSrc %d xDext %d yDest %d\n",
+           StartScan, ScanLines, Bits, bmi, ColorUse,
+           Height, Width, bmi->bmiHeader.biSizeImage,
+           bmi->bmiHeader.biHeight, bmi->bmiHeader.biWidth,
+           bmi->bmiHeader.biBitCount,
+           XSrc, YSrc, XDest, YDest);
+
+    if (YDest >= 0)
+    {
+        ScanLines = min(abs(Height), ScanLines);
+        if (YSrc > 0)
+            ScanLines += YSrc;
+    }
+    else
+    {
+        ScanLines = min(ScanLines, abs(bmi->bmiHeader.biHeight) - StartScan);
+    }
+
     if (ScanLines == 0)
     {
         DPRINT1("ScanLines == 0\n");
@@ -529,7 +554,7 @@ NtGdiSetDIBitsToDeviceInternal(
         goto Exit;
     }
 
-    if (pDC->dctype == DC_TYPE_INFO)
+    if (pDC->dctype == DCTYPE_INFO)
     {
         ret = 0;
         goto Exit;
@@ -557,6 +582,10 @@ NtGdiSetDIBitsToDeviceInternal(
 
     SourceSize.cx = bmi->bmiHeader.biWidth;
     SourceSize.cy = ScanLines;
+    if (YDest >= 0 && YSrc > 0)
+    {
+        ScanLines += YSrc;
+    }
 
     //DIBWidth = WIDTH_BYTES_ALIGN32(SourceSize.cx, bmi->bmiHeader.biBitCount);
 
@@ -714,7 +743,7 @@ GreGetDIBitsInternal(
         return 0;
 
     pDC = DC_LockDc(hDC);
-    if (pDC == NULL || pDC->dctype == DC_TYPE_INFO)
+    if (pDC == NULL || pDC->dctype == DCTYPE_INFO)
     {
         ScanLines = 0;
         goto done;
@@ -1573,7 +1602,13 @@ IntCreateDIBitmap(
             Surface = SURFACE_ShareLockSurface(handle);
             ASSERT(Surface);
             Palette = CreateDIBPalette(data, Dc, coloruse);
-            ASSERT(Palette);
+            if (Palette == NULL)
+            {
+                SURFACE_ShareUnlockSurface(Surface);
+                GreDeleteObject(handle);
+                return NULL;
+            }
+
             SURFACE_vSetPalette(Surface, Palette);
 
             PALETTE_ShareUnlockPalette(Palette);

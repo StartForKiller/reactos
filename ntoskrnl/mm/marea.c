@@ -314,16 +314,23 @@ MmFreeMemoryArea(
             BOOLEAN Dirty = FALSE;
             SWAPENTRY SwapEntry = 0;
             PFN_NUMBER Page = 0;
+            BOOLEAN DoFree;
 
             if (MmIsPageSwapEntry(Process, (PVOID)Address))
             {
                 MmDeletePageFileMapping(Process, (PVOID)Address, &SwapEntry);
+                /* We'll have to do some cleanup when we're on the page file */
+                DoFree = TRUE;
+            }
+            else if (FreePage == NULL)
+            {
+                DoFree = MmDeletePhysicalMapping(Process, (PVOID)Address, &Dirty, &Page);
             }
             else
             {
-                MmDeleteVirtualMapping(Process, (PVOID)Address, &Dirty, &Page);
+                DoFree = MmDeleteVirtualMapping(Process, (PVOID)Address, &Dirty, &Page);
             }
-            if (FreePage != NULL)
+            if (DoFree && (FreePage != NULL))
             {
                 FreePage(FreePageContext, MemoryArea, (PVOID)Address,
                          Page, SwapEntry, (BOOLEAN)Dirty);

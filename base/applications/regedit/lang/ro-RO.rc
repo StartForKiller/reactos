@@ -1,15 +1,77 @@
-/* Translator: Ștefan Fulea (stefan dot fulea at mail dot com) */
+/*
+ * PROJECT:     ReactOS Registry Editor
+ * LICENSE:     LGPL-2.1-or-later (https://spdx.org/licenses/LGPL-2.1-or-later)
+ * PURPOSE:     Romanian resource file
+ * TRANSLATORS: Copyright 2011-2018 Ștefan Fulea <stefan.fulea@mail.com>
+ *              Copyright 2023 Andrei Miloiu <miloiuandrei@gmail.com>
+ */
 
 LANGUAGE LANG_ROMANIAN, SUBLANG_NEUTRAL
 
 ID_ACCEL ACCELERATORS
 BEGIN
+    "D", ID_ADDRESS_FOCUS, VIRTKEY, ALT
     VK_DELETE, ID_EDIT_DELETE, VIRTKEY, NOINVERT
     "^F", ID_EDIT_FIND
     VK_F1, ID_HELP_HELPTOPICS, VIRTKEY, NOINVERT
     VK_F2, ID_EDIT_RENAME, VIRTKEY, NOINVERT
     VK_F3, ID_EDIT_FINDNEXT, VIRTKEY, NOINVERT
+    VK_F4, ID_ADDRESS_FOCUS, VIRTKEY, NOINVERT
     VK_F5, ID_VIEW_REFRESH, VIRTKEY, NOINVERT
+END
+
+/* Command-line strings */
+STRINGTABLE
+BEGIN
+    STRING_USAGE "Utilizare:\n\
+  regedit [options] [filename] [reg_key]\n\n\
+Opțiuni:\n\
+  [no option]    Lansează versiunea grafică a programului.\n\
+  /L:system.dat  Locația fișierului system.dat urmează să fie modificată.\n\
+                 Compatibil cu orice alt comutator. Ignorat.\n\
+  /R:user.dat    Locația fișierului user.dat urmează să fie modificată.\n\
+                 Compatibil cu orice alt comutator. Ignorat.\n\
+  /C             Importă conținutul unui fișier de registru.\n\
+  /D             Șterge o cheie de registru specificată.\n\
+  /E             Exportă conținutul unei chei de registru specificată într-un\n\
+                 fișier. Dacă nu este nicio cheie specificată, este exportat\n\
+                 întregul registru.\n\
+  /S             Modul silențios. Nu sunt afișate mesaje.\n\
+  /V             Lansează interfața grafică (GUI) în modul avansat. Ignorat.\n\
+  /?             Afișează informații și părăsește programul.\n\
+  [filename]     Locația fișierului ce conține informații despre registrul ce\n\
+                 urmează să fie importat. Când e folosit cu [/E], această\n\
+                 opțiune specifică locația fișierului în care informațiile\n\
+                 despre registru vor fi exportate.\n\
+  [reg_key]      Cheie de registru ce urmează să fie modificată.\n\
+\n\
+Exemple de utilizări:\n\
+  regedit ""import.reg""\n\
+  regedit /E ""export.reg"" ""HKEY_CURRENT_USER\\Consolă""\n\
+  regedit /D ""HKEY_LOCAL_MACHINE\\Eroare\\Cale""\n"
+    STRING_INVALID_SWITCH "regedit: Comutatorul este nevalid sau nerecunoscut [%1]\n"
+    STRING_HELP "Scrieți ""regedit /?"" pentru ajutor.\n"
+    STRING_NO_FILENAME "regedit: Niciun nume de fișier nu a fost specificat.\n"
+    STRING_NO_REG_KEY "regedit: Nicio cheie de registru nu a fost specificată pentru ștergere.\n"
+    STRING_FILE_NOT_FOUND "regedit: Fișierul '%1' nu a fost găsit.\n"
+    STRING_CANNOT_OPEN_FILE "regedit: Fișierul '%1' nu a putut fi deschis.\n"
+    STRING_UNHANDLED_ACTION "regedit: Acțiune necontrolată.\n"
+    STRING_OUT_OF_MEMORY "regedit: Fără memorie! (%1!S!, linia %2!u!)\n"
+    STRING_INVALID_HEX "regedit: Valoare hexazecimală nevalidă.\n"
+    STRING_CSV_HEX_ERROR "regedit: Datele hexazecimale nu au putut fi transformate. O valoare nevalidă a fost întâlnită la '%1'.\n"
+    STRING_ESCAPE_SEQUENCE "regedit: Secvență de evadare nerecunoscută [\\%1!c!]\n"
+    STRING_UNKNOWN_DATA_FORMAT "regedit: Tipul de date de registru [0x%1!x!] e nesuportat\n"
+    STRING_UNEXPECTED_EOL "regedit: Capăt de linie neașteptat în '%1'.\n"
+    STRING_UNRECOGNIZED_LINE "regedit: Linia '%1' nu a fost recunoscută.\n"
+    STRING_SETVALUE_FAILED "regedit: Valoarea de registru '%1' nu a putut fi adăugată la '%2'.\n"
+    STRING_OPEN_KEY_FAILED "regedit: Cheia de registru '%1' nu a putut fi deschisă.\n"
+    STRING_UNSUPPORTED_TYPE "regedit: Tipul de date de registru [0x%1!x!] nesuportat a apărut în '%2'.\n"
+    STRING_EXPORT_AS_BINARY "regedit: Valoarea de registru '%1' va fi exportată ca date binare.\n"
+    STRING_INVALID_SYSTEM_KEY "regedit: Cheia de sistem [%1] este nevalidă\n"
+    STRING_REG_KEY_NOT_FOUND "regedit: '%1' nu a putut fi exportat. Cheia de registru specificată nu a fost găsită.\n"
+    STRING_DELETE_FAILED "regedit: Cheia de registru nu a putut fi ștearsă '%1'.\n"
+    STRING_UNKNOWN_TYPE "Tip necunoscut"
+    STRING_INVALID_LINE_SYNTAX, "regedit: Linia conține sintaxă nevalidă.\n"
 END
 
 /* Menus */
@@ -247,7 +309,7 @@ BEGIN
     LTEXT "Nedeterminată", IDC_UNDETERMINED, 18, 230, 50, 8, WS_DISABLED
     LTEXT "Partajată", IDC_SHARED, 18, 240, 48, 8, WS_DISABLED
     LTEXT "Dispozitiv, exclusivă", IDC_DEVICE_EXCLUSIVE, 75, 230, 74, 8, WS_DISABLED
-    LTEXT "Modúl-pilot, exclusivă", IDC_DRIVER_EXCLUSIVE, 75, 240, 74, 8, WS_DISABLED
+    LTEXT "Modul-pilot, exclusivă", IDC_DRIVER_EXCLUSIVE, 75, 240, 74, 8, WS_DISABLED
     RTEXT "Tip interfață:", IDC_STATIC, 158, 220, 57, 8
     LTEXT "", IDC_INTERFACETYPE, 218, 220, 66, 8
     RTEXT "Număr magistrală:", IDC_STATIC, 155, 230, 60, 8
@@ -448,8 +510,8 @@ BEGIN
     IDS_BUS_INTERNAL "Internă"
     IDS_BUS_ISA "ISA"
     IDS_BUS_EISA "EISA"
-    IDS_BUS_MICROCHANNEL "MicroChannel"
-    IDS_BUS_TURBOCHANNEL "TurboChannel"
+    IDS_BUS_MICROCHANNEL "Microcanal"
+    IDS_BUS_TURBOCHANNEL "Turbocanal"
     IDS_BUS_PCIBUS "PCI"
     IDS_BUS_VMEBUS "VME"
     IDS_BUS_NUBUS "NuBus"
@@ -548,7 +610,7 @@ END
 /*
  *STRINGTABLE
  *BEGIN
- *    ID_HELP_HELPTOPICS "Opens Registry Editor Help."
- *    ID_HELP_ABOUT "Displays program information, version number, and copyright."
+ *    ID_HELP_HELPTOPICS "Deschide Ajutor pentru Editorul de registru."
+ *    ID_HELP_ABOUT "Afișează informații despre program, numărul versiunii și marca înregistrată."
  *END
  */

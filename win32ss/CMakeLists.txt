@@ -73,9 +73,12 @@ list(APPEND SOURCE
     gdi/eng/ldevobj.c
     gdi/eng/mapping.c
     gdi/eng/math.c
+    gdi/eng/mdevobj.c
     gdi/eng/mem.c
     gdi/eng/engmisc.c
     gdi/eng/mouse.c
+    gdi/eng/multidisp.c
+    gdi/eng/pandisp.c
     gdi/eng/paint.c
     gdi/eng/pathobj.c
     gdi/eng/pdevobj.c
@@ -142,6 +145,7 @@ list(APPEND SOURCE
     user/ntuser/prop.c
     user/ntuser/scrollbar.c
     user/ntuser/scrollex.c
+    user/ntuser/security.c
     user/ntuser/session.c
     user/ntuser/shutdown.c
     user/ntuser/simplecall.c
@@ -222,6 +226,7 @@ list(APPEND SOURCE
 endif()
 
 if(KDBG)
+    add_definitions(-DKDBG)
     list(APPEND SOURCE gdi/ntgdi/gdikdbgext.c)
 endif()
 
@@ -245,7 +250,11 @@ add_importlibs(win32k ntoskrnl hal ftfd)
 add_pch(win32k pch.h SOURCE)
 add_cd_file(TARGET win32k DESTINATION reactos/system32 FOR all)
 
-set_source_files_properties(sys-stubs.S PROPERTIES OBJECT_DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/w32ksvc.h)
+if(ARCH STREQUAL "amd64")
+    set_source_files_properties(sys-stubs.S PROPERTIES OBJECT_DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/w32ksvc64.h)
+else()
+    set_source_files_properties(sys-stubs.S PROPERTIES OBJECT_DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/w32ksvc32.h)
+endif()
 add_asm_files(win32ksys_asm sys-stubs.S)
 add_library(win32ksys ${win32ksys_asm})
 set_target_properties(win32ksys PROPERTIES LINKER_LANGUAGE "C")

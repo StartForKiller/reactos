@@ -24,14 +24,13 @@
 
 #define _USE_MATH_DEFINES
 #include <math.h>
+#include <devguid.h>
 
 #define NTOS_MODE_USER
 #include <ndk/iofuncs.h>
 #include <ndk/obfuncs.h>
 
 WINE_DEFAULT_DEBUG_CHANNEL(shell);
-
-static const GUID GUID_DEVCLASS_DISKDRIVE = {0x4d36e967L, 0xe325, 0x11ce, {0xbf, 0xc1, 0x08, 0x00, 0x2b, 0xe1, 0x03, 0x18}};
 
 typedef enum
 {
@@ -217,6 +216,7 @@ CDrvDefExt::PaintStaticControls(HWND hwndDlg, LPDRAWITEMSTRUCT pDrawItem)
         HBRUSH hBlueBrush = CreateSolidBrush(RGB(0, 0, 255));
         HBRUSH hMagBrush = CreateSolidBrush(RGB(255, 0, 255));
         HBRUSH hbrOld;
+        HPEN hBlackPen = (HPEN)GetStockObject(BLACK_PEN);
         HPEN hDarkBluePen = CreatePen(PS_SOLID, 1, RGB(0, 0, 128));
         HPEN hDarkMagPen = CreatePen(PS_SOLID, 1, RGB(128, 0, 128));
         HPEN hOldPen = (HPEN)SelectObject(pDrawItem->hDC, hDarkMagPen);
@@ -233,15 +233,27 @@ CDrvDefExt::PaintStaticControls(HWND hwndDlg, LPDRAWITEMSTRUCT pDrawItem)
         {
             double cos_val = (x - xCenter) * 2.0f / cx;
             INT y = yCenter + (INT)(sin(acos(cos_val)) * cy / 2) - 1;
+            HPEN hCenterPen;
 
             if (m_FreeSpacePerc < 50 && x == xRadial)
                 SelectObject(pDrawItem->hDC, hDarkBluePen);
+            
+            /* Temporarily change pens to draw edges */
+            if (x == pDrawItem->rcItem.left)
+                hCenterPen = (HPEN)SelectObject(pDrawItem->hDC, hBlackPen);
+            else if (x == pDrawItem->rcItem.right - 1)
+                SelectObject(pDrawItem->hDC, hBlackPen);
 
             MoveToEx(pDrawItem->hDC, x, y, NULL);
             LineTo(pDrawItem->hDC, x, y + 10);
+            SetPixel(pDrawItem->hDC, x, y + 10, RGB(0, 0, 0));
+            
+            /* Restore fill section pens */
+            if (x == pDrawItem->rcItem.left)
+                SelectObject(pDrawItem->hDC, hCenterPen);
         }
 
-        SelectObject(pDrawItem->hDC, hOldPen);
+        SelectObject(pDrawItem->hDC, hBlackPen);
 
         if (m_FreeSpacePerc > 50)
         {
@@ -275,6 +287,7 @@ CDrvDefExt::PaintStaticControls(HWND hwndDlg, LPDRAWITEMSTRUCT pDrawItem)
         }
 
         SelectObject(pDrawItem->hDC, hbrOld);
+        SelectObject(pDrawItem->hDC, hOldPen);
 
         DeleteObject(hBlueBrush);
         DeleteObject(hMagBrush);
@@ -653,10 +666,12 @@ CDrvDefExt::HardwarePageProc(
     {
         case WM_INITDIALOG:
         {
-            GUID Guid = GUID_DEVCLASS_DISKDRIVE;
+            GUID Guids[2];
+            Guids[0] = GUID_DEVCLASS_DISKDRIVE;
+            Guids[1] = GUID_DEVCLASS_CDROM;
 
             /* create the hardware page */
-            DeviceCreateHardwarePageEx(hwndDlg, &Guid, 1, HWPD_STANDARDLIST);
+            DeviceCreateHardwarePageEx(hwndDlg, Guids, _countof(Guids), HWPD_STANDARDLIST);
             break;
         }
     }

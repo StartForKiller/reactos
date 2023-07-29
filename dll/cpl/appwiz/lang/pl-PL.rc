@@ -1,7 +1,7 @@
 /*
  *         translated by Caemyr - Olaf Siejka (Jan, 2008)
  *         Use ReactOS forum PM or IRC to contact me
- *         http://www.reactos.org
+ *         https://reactos.org
  *         IRC: irc.freenode.net #reactos-pl;
  *         UTF-8 conversion by Caemyr (May, 2011)
  *         Updated by Saibamen - Adam Stachowicz (saibamenppl@gmail.com) (April, 2014)
@@ -97,4 +97,5 @@ BEGIN
     IDS_NO_DIRECTORY "Nie podano ścieżki!"
     IDS_INVALID_PATH "Podana ścieżka jest niepoprawna!"
     IDS_INVALID_NAME "Wprowadzona nazwa skrótu zawiera nieprawidłowe znaki lub jest za długa."
+    IDS_BROWSE_FOR_TARGET "Please select the target of the shortcut below:"
 END

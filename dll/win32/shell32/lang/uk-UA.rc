@@ -135,7 +135,7 @@ BEGIN
     ICON "", IDC_ABOUT_ICON, 7, 55, 21, 20
     LTEXT "", IDC_ABOUT_APPNAME, 35, 55, 200, 10, SS_NOPREFIX
     LTEXT "", IDC_ABOUT_VERSION, 35, 65, 250, 10, SS_NOPREFIX
-    LTEXT "Copyright 1998-", IDC_STATIC, 35, 75, 53, 10
+    LTEXT "Copyright 1996-", IDC_STATIC, 35, 75, 53, 10
     LTEXT COPYRIGHT_YEAR, IDC_STATIC, 88, 75, 17, 10
     LTEXT " ReactOS Team\0", IDC_STATIC, 105, 75, 53, 10
     LTEXT "", IDC_ABOUT_OTHERSTUFF, 35, 90, 180, 20, SS_NOPREFIX
@@ -236,10 +236,10 @@ BEGIN
     EDITTEXT 14015, 58, 128, 170, 10, ES_LEFT | ES_READONLY | NOT WS_BORDER | NOT WS_TABSTOP | ES_AUTOHSCROLL
     LTEXT "", -1, 8, 144, 221, 1, SS_ETCHEDHORZ | WS_CHILD | WS_VISIBLE
     LTEXT "Атрибути:", 14020, 8, 152, 46, 10
-    AUTOCHECKBOX "Лише &читання", 14021, 58, 151, 70, 10
-    AUTOCHECKBOX "При&хована", 14022, 126, 151, 70, 10
-    AUTOCHECKBOX "&Архівний", 14023, 181, 151, 70, 10
-    PUSHBUTTON "&Додатково...", 14028, 158, 150, 70, 14, WS_CHILD | WS_VISIBLE | WS_TABSTOP
+    AUTOCHECKBOX "Лише &читання", 14021, 58, 151, 68, 10
+    AUTOCHECKBOX "При&хована", 14022, 126, 151, 55, 10
+    AUTOCHECKBOX "&Архівний", 14023, 181, 151, 59, 10
+    PUSHBUTTON "&Додатково...", 14028, 158, 170, 70, 14, WS_CHILD | WS_VISIBLE | WS_TABSTOP
 END
 
 IDD_FILE_PROPERTIES DIALOGEX 0, 0, 240, 205
@@ -321,12 +321,12 @@ BEGIN
     LTEXT "Місткість:", -1, 25, 103, 80, 10
     EDITTEXT 14007, 110, 103, 86, 10, ES_LEFT | ES_READONLY | NOT WS_BORDER | NOT WS_TABSTOP | ES_AUTOHSCROLL
     EDITTEXT 14008, 197, 103, 33, 10, ES_LEFT | ES_READONLY | NOT WS_BORDER | NOT WS_TABSTOP | ES_AUTOHSCROLL
-    CONTROL "", 14015, "Static", SS_OWNERDRAW, 70, 116, 100, 30
-    LTEXT "Диск %c", 14009, 100, 150, 70, 10
-    PUSHBUTTON "Очищення &диску", 14010, 160, 154, 70, 15, WS_TABSTOP
-    LTEXT "", -1, 8, 171, 223, 1, SS_ETCHEDHORZ | WS_CHILD | WS_VISIBLE
-    CHECKBOX "Стискати диск для заощадження місця", 14011, 8, 191, 222, 10, WS_DISABLED
-    CHECKBOX "Дозволити індексування диску для прискорення пошуку", 14012, 8, 205, 222, 10, WS_DISABLED
+    CONTROL "", 14015, "Static", SS_OWNERDRAW, 70, 116, 100, 40
+    CTEXT "Диск %c", 14009, 95, 162, 50, 10
+    PUSHBUTTON "Очищення &диску", 14010, 160, 159, 70, 15, WS_TABSTOP
+    LTEXT "", -1, 8, 176, 223, 1, SS_ETCHEDHORZ | WS_CHILD | WS_VISIBLE
+    CHECKBOX "Стискати диск для заощадження місця", 14011, 8, 200, 222, 10, WS_DISABLED
+    CHECKBOX "Дозволити індексування диску для прискорення пошуку", 14012, 8, 214, 222, 10, WS_DISABLED
 END
 
 IDD_DRIVE_TOOLS DIALOGEX 0, 0, 240, 230
@@ -808,6 +808,8 @@ BEGIN
     IDS_MOVEERROR "Cannot move '%s': %s"
     IDS_COPYERROR "Cannot copy '%s': %s"
 
+    IDS_CREATEFILE_DENIED "Could not create file %1"
+    IDS_CREATEFILE_CAPTION "Error creating file"
     IDS_CREATEFOLDER_DENIED "Не вдалося створити папку '%1'"
     IDS_CREATEFOLDER_CAPTION "Не вдалося створити папку"
     IDS_DELETEITEM_CAPTION "Підтвердження вилучення файлу"
@@ -882,6 +884,7 @@ BEGIN
     IDS_NETWORKPLACE "Мережне оточення"
 
     IDS_NEWFOLDER "Нова папка"
+    IDS_NEWITEMFORMAT "New %s"
 
     IDS_DRIVE_FIXED "Локальний диск"
     IDS_DRIVE_CDROM "Привід компакт-дисків"
@@ -898,7 +901,7 @@ BEGIN
 
     IDS_SHELL_ABOUT_AUTHORS "&Автори"
     IDS_SHELL_ABOUT_BACK "< &Назад"
-    FCIDM_SHVIEW_NEW "Створити"
+    FCIDM_SHVIEW_NEW "Ne&w" /* A menu item with an ampersand */
     FCIDM_SHVIEW_NEWFOLDER "&Папку"
     FCIDM_SHVIEW_NEWLINK "&Ярлик"
     IDS_FOLDER_OPTIONS "Властивості папки"
@@ -979,6 +982,11 @@ BEGIN
     IDS_MENU_EMPTY "(Пусто)"
     IDS_OBJECTS "%d об'єктів"
     IDS_OBJECTS_SELECTED "Обрано %d об'єктів"
+
+    IDS_TITLE_MYCOMP "Мій комп'ютер"
+    IDS_TITLE_MYNET "Мережне оточення"
+    IDS_TITLE_BIN_1 "Кошик (повний)"
+    IDS_TITLE_BIN_0 "Кошик (порожній)"
 
     IDS_ADVANCED_FOLDER "Файли та папки"
     IDS_ADVANCED_NET_CRAWLER "Автоматично знаходити мережеві папки і принтери"

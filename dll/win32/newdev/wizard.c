@@ -1,7 +1,7 @@
 /*
  * New device installer (newdev.dll)
  *
- * Copyright 2006 Hervé Poussineau (hpoussin@reactos.org)
+ * Copyright 2006 HervÃ© Poussineau (hpoussin@reactos.org)
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -41,6 +41,13 @@ CenterWindow(
 
     GetWindowRect(hWndParent, &rcParent);
     GetWindowRect(hWnd, &rcWindow);
+
+    /* Check if the child window fits inside the parent window */
+    if (rcWindow.left < rcParent.left || rcWindow.top < rcParent.top ||
+        rcWindow.right > rcParent.right || rcWindow.bottom > rcParent.bottom)
+    {
+        return;
+    }
 
     SetWindowPos(
         hWnd,
@@ -248,11 +255,13 @@ FindDriverProc(
     }
     else
     {
-        /* Update device configuration */
-        SetFailedInstall(DevInstData->hDevInfo,
-                         &DevInstData->devInfoData,
-                         TRUE);
-
+        if (!DevInstData->bUpdate)
+        {
+            /* Update device configuration */
+            SetFailedInstall(DevInstData->hDevInfo,
+                             &DevInstData->devInfoData,
+                             TRUE);
+        }
         PostMessage(DevInstData->hDialog, WM_SEARCH_FINISHED, 0, 0);
     }
     return 0;
@@ -511,9 +520,12 @@ WelcomeDlgProc(
                 (WPARAM)TRUE,
                 (LPARAM)0);
 
-            SetFailedInstall(DevInstData->hDevInfo,
-                             &DevInstData->devInfoData,
-                             TRUE);
+            if (!DevInstData->bUpdate)
+            {
+                SetFailedInstall(DevInstData->hDevInfo,
+                                 &DevInstData->devInfoData,
+                                 TRUE);
+            }
             break;
         }
 
@@ -565,6 +577,38 @@ AutoDriver(HWND Dlg, BOOL Enabled)
     EnableWindow(GetDlgItem(Dlg, IDC_CHECK_MEDIA), Enabled);
     EnableWindow(GetDlgItem(Dlg, IDC_CHECK_PATH), Enabled);
     IncludePath(Dlg, Enabled & IsDlgButtonChecked(Dlg, IDC_CHECK_PATH));
+}
+
+static INT CALLBACK
+BrowseCallbackProc(HWND hwnd, UINT uMsg, LPARAM lParam, LPARAM lpData)
+{
+    BOOL bValid = FALSE;
+
+    switch (uMsg)
+    {
+        case BFFM_INITIALIZED:
+        {
+            PCWSTR pszPath = ((PDEVINSTDATA)lpData)->CustomSearchPath;
+
+            bValid = CheckBestDriver((PDEVINSTDATA)lpData, pszPath);
+            SendMessageW(hwnd, BFFM_SETSELECTION, TRUE, (LPARAM)pszPath);
+            SendMessageW(hwnd, BFFM_ENABLEOK, 0, bValid);
+            break;
+        }
+
+        case BFFM_SELCHANGED:
+        {
+            WCHAR szDir[MAX_PATH];
+
+            if (SHGetPathFromIDListW((LPITEMIDLIST)lParam, szDir))
+            {
+                bValid = CheckBestDriver((PDEVINSTDATA)lpData, szDir);
+            }
+            PostMessageW(hwnd, BFFM_ENABLEOK, 0, bValid);
+            break;
+        }
+    }
+    return 0;
 }
 
 static INT_PTR CALLBACK
@@ -639,12 +683,33 @@ CHSourceDlgProc(
 
                 case IDC_BROWSE:
                 {
-                    BROWSEINFO bi = { 0 };
+                    BROWSEINFOW bi = { 0 };
                     LPITEMIDLIST pidl;
+                    WCHAR Title[MAX_PATH];
+                    WCHAR CustomSearchPath[MAX_PATH] = { 0 };
+                    INT len, idx = (INT)SendDlgItemMessageW(hwndDlg, IDC_COMBO_PATH, CB_GETCURSEL, 0, 0);
+                    LoadStringW(hDllInstance, IDS_BROWSE_FOR_FOLDER_TITLE, Title, _countof(Title));
+
+                    if (idx == CB_ERR)
+                        len = GetWindowTextLengthW(GetDlgItem(hwndDlg, IDC_COMBO_PATH));
+                    else
+                        len = (INT)SendDlgItemMessageW(hwndDlg, IDC_COMBO_PATH, CB_GETLBTEXTLEN, idx, 0);
+
+                    if (len < _countof(CustomSearchPath))
+                    {
+                        if (idx == CB_ERR)
+                            GetWindowTextW(GetDlgItem(hwndDlg, IDC_COMBO_PATH), CustomSearchPath, _countof(CustomSearchPath));
+                        else
+                            SendDlgItemMessageW(hwndDlg, IDC_COMBO_PATH, CB_GETLBTEXT, idx, (LPARAM)CustomSearchPath);
+                    }
+                    DevInstData->CustomSearchPath = CustomSearchPath;
 
                     bi.hwndOwner = hwndDlg;
-                    bi.ulFlags = BIF_USENEWUI | BIF_RETURNONLYFSDIRS;
-                    pidl = SHBrowseForFolder(&bi);
+                    bi.ulFlags = BIF_USENEWUI | BIF_RETURNONLYFSDIRS | BIF_STATUSTEXT | BIF_NONEWFOLDERBUTTON;
+                    bi.lpszTitle = Title;
+                    bi.lpfn = BrowseCallbackProc;
+                    bi.lParam = (LPARAM)DevInstData;
+                    pidl = SHBrowseForFolderW(&bi);
                     if (pidl)
                     {
                         WCHAR Directory[MAX_PATH];

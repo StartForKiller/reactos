@@ -53,14 +53,8 @@ extern HANDLE hModuleWin;    // This Win32k Instance.
 extern struct _CLS *SystemClassList;
 extern BOOL RegisteredSysClasses;
 
-#include <pshpack1.h>
-// FIXME: Move to ntuser.h
-typedef struct _TL
-{
-    struct _TL* next;
-    PVOID pobj;
-    PVOID pfnFree;
-} TL, *PTL;
+struct _TL;
+typedef struct _TL *PTL;
 
 typedef struct _W32THREAD
 {
@@ -78,6 +72,10 @@ typedef struct _W32THREAD
 
 struct tagIMC;
 
+/*
+ * THREADINFO structure.
+ * See also: https://reactos.org/wiki/Techwiki:Win32k/THREADINFO
+ */
 #ifdef __cplusplus
 typedef struct _THREADINFO : _W32THREAD
 {
@@ -164,8 +162,6 @@ typedef struct _THREADINFO
 #endif // __cplusplus
 } THREADINFO;
 
-#include <poppack.h>
-
 
 #define IntReferenceThreadInfo(pti) \
     InterlockedIncrement(&(pti)->RefCount)
@@ -208,8 +204,9 @@ typedef struct _W32HEAP_USER_MAPPING
 
 
 /*
- Information from STARTUPINFOW, psdk/winbase.h.
- Set from PsGetCurrentProcess()->Peb->ProcessParameters.
+ * Information from STARTUPINFOW, psdk/winbase.h.
+ * Set from PsGetCurrentProcess()->Peb->ProcessParameters.
+ * See also: https://reactos.org/wiki/Techwiki:Win32k/PROCESSINFO
 */
 typedef struct tagUSERSTARTUPINFO
 {
@@ -244,6 +241,10 @@ typedef struct _W32PROCESS
 
 #define CLIBS 32
 
+/*
+ * PROCESSINFO structure.
+ * See also: https://reactos.org/wiki/Techwiki:Win32k/PROCESSINFO
+ */
 #ifdef __cplusplus
 typedef struct _PROCESSINFO : _W32PROCESS
 {

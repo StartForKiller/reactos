@@ -1,4 +1,4 @@
-LANGUAGE LANG_PORTUGUESE, SUBLANG_NEUTRAL
+LANGUAGE LANG_PORTUGUESE, SUBLANG_PORTUGUESE
 
 STRINGTABLE
 BEGIN
@@ -178,7 +178,7 @@ parâmetro - por exemplo, /-W.\n"
     STRING_DIR_HELP3 " Volume na unidade %c não tem rótulo.\n"
     STRING_DIR_HELP4 " Número de série do volume é %04X-%04X\n"
     STRING_DIR_HELP5 "\n     Total de ficheiros listados:\n%16i ficheiro(s) %14s bytes\n"
-    STRING_DIR_HELP6 "%16i Dir(s) %15s bytes livres\n"
+    STRING_DIR_HELP6 "%16i Dir(s)      %14s bytes livres\n"
     STRING_DIR_HELP7 "\n Diretório de %s\n\n"
     STRING_DIR_HELP8 "%16i ficheiro(s) %14s bytes\n"
     STRING_DIRSTACK_HELP1 "Armazena o directório actual para uso pelo comando POPD, de\n\
@@ -461,7 +461,7 @@ lista de créditos. "
  Fundação para o Software Livre; a versão 2 da Licença ou\n\
  (à sua escolha) qualquer versão posterior.\n"
     STRING_VERSION_HELP5 "\nEnvie relatórios de bug para <ros-dev@reactos.org>.\n\
-As actualizações estão disponíveis em: http://www.reactos.org"
+As actualizações estão disponíveis em: https://reactos.org"
     STRING_VERSION_HELP6 "\nVersão do FreeDOS escrita por:\n"
     STRING_VERSION_HELP7 "\nReactOS versão escrita por:\n"
     STRING_VOL_HELP1 "O volume na unidade %c é %s\n"

@@ -11,9 +11,6 @@
 #include <commctrl.h>
 #include <commdlg.h>
 #include <string.h>
-#include <strsafe.h>
-
-#define MAX_STR_LENGTH  128
 
 typedef struct _VARIABLE_DATA
 {
@@ -155,7 +152,9 @@ GatherDataFromListView(HWND hwndListView,
             return 0;
     }
 
-    /* Copy the variable values while seperating them with a semi-colon except for the last value */
+    /* First reinitialize the value buffer, then copy the variable values while
+     * separating them with a semi-colon, except for the last value. */
+    VarData->lpRawValue[0] = _T('\0');
     for (i = 0; i < NumberOfItems; i++)
     {
         if (i > 0)
@@ -302,13 +301,16 @@ static VOID
 BrowseRequiredFile(HWND hwndDlg)
 {
     OPENFILENAME ofn;
+    TCHAR szFilter[MAX_STR_LENGTH] = _T("");
     TCHAR szFile[MAX_PATH] = _T("");
+
+    LoadString(hApplet, IDS_FILE_BROWSE_FILTER, szFilter, _countof(szFilter));
 
     ZeroMemory(&ofn, sizeof(ofn));
 
     ofn.lStructSize = sizeof(ofn);
     ofn.hwndOwner = hwndDlg;
-    ofn.lpstrFilter = _T("All Files (*.*)\0*.*\0");
+    ofn.lpstrFilter = szFilter;
     ofn.lpstrFile = szFile;
     ofn.nMaxFile = _countof(szFile);
     ofn.Flags = OFN_EXPLORER | OFN_FILEMUSTEXIST | OFN_HIDEREADONLY;
@@ -981,16 +983,11 @@ EditVariableDlgProc(HWND hwndDlg,
 
                 case IDC_BUTTON_EDIT_TEXT:
                 {
-                    TCHAR szStr[MAX_STR_LENGTH] = _T("");
-                    TCHAR szStr2[MAX_STR_LENGTH] = _T("");
-
-                    LoadString(hApplet, IDS_ENVIRONMENT_WARNING, szStr, _countof(szStr));
-                    LoadString(hApplet, IDS_ENVIRONMENT_WARNING_TITLE, szStr2, _countof(szStr2));
-
-                    if (MessageBox(hwndDlg,
-                                   szStr,
-                                   szStr2,
-                                   MB_OKCANCEL | MB_ICONWARNING | MB_DEFBUTTON1) == IDOK)
+                    if (ResourceMessageBox(hApplet,
+                                           hwndDlg,
+                                           MB_OKCANCEL | MB_ICONWARNING | MB_DEFBUTTON1,
+                                           IDS_ENVIRONMENT_WARNING_TITLE,
+                                           IDS_ENVIRONMENT_WARNING) == IDOK)
                     {
                         EndDialog(hwndDlg, -1);
                     }

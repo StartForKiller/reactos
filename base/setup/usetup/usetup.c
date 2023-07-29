@@ -175,7 +175,7 @@ DrawBox(IN SHORT xLeft,
     coPos.X = xLeft;
     coPos.Y = yTop;
     FillConsoleOutputCharacterA(StdOutput,
-                                0xDA, // '+',
+                                CharUpperLeftCorner, // '+',
                                 1,
                                 coPos,
                                 &Written);
@@ -184,7 +184,7 @@ DrawBox(IN SHORT xLeft,
     coPos.X = xLeft + 1;
     coPos.Y = yTop;
     FillConsoleOutputCharacterA(StdOutput,
-                                0xC4, // '-',
+                                CharHorizontalLine, // '-',
                                 Width - 2,
                                 coPos,
                                 &Written);
@@ -193,7 +193,7 @@ DrawBox(IN SHORT xLeft,
     coPos.X = xLeft + Width - 1;
     coPos.Y = yTop;
     FillConsoleOutputCharacterA(StdOutput,
-                                0xBF, // '+',
+                                CharUpperRightCorner, // '+',
                                 1,
                                 coPos,
                                 &Written);
@@ -203,7 +203,7 @@ DrawBox(IN SHORT xLeft,
     {
         coPos.X = xLeft;
         FillConsoleOutputCharacterA(StdOutput,
-                                    0xB3, // '|',
+                                    CharVerticalLine, // '|',
                                     1,
                                     coPos,
                                     &Written);
@@ -217,7 +217,7 @@ DrawBox(IN SHORT xLeft,
 
         coPos.X = xLeft + Width - 1;
         FillConsoleOutputCharacterA(StdOutput,
-                                    0xB3, // '|',
+                                    CharVerticalLine, // '|',
                                     1,
                                     coPos,
                                     &Written);
@@ -227,7 +227,7 @@ DrawBox(IN SHORT xLeft,
     coPos.X = xLeft;
     coPos.Y = yTop + Height - 1;
     FillConsoleOutputCharacterA(StdOutput,
-                                0xC0, // '+',
+                                CharLowerLeftCorner, // '+',
                                 1,
                                 coPos,
                                 &Written);
@@ -236,7 +236,7 @@ DrawBox(IN SHORT xLeft,
     coPos.X = xLeft + 1;
     coPos.Y = yTop + Height - 1;
     FillConsoleOutputCharacterA(StdOutput,
-                                0xC4, // '-',
+                                CharHorizontalLine, // '-',
                                 Width - 2,
                                 coPos,
                                 &Written);
@@ -245,7 +245,7 @@ DrawBox(IN SHORT xLeft,
     coPos.X = xLeft + Width - 1;
     coPos.Y = yTop + Height - 1;
     FillConsoleOutputCharacterA(StdOutput,
-                                0xD9, // '+',
+                                CharLowerRightCorner, // '+',
                                 1,
                                 coPos,
                                 &Written);
@@ -375,21 +375,21 @@ PopupError(PCCH Text,
         coPos.Y = yTop + Height - 3;
         coPos.X = xLeft;
         FillConsoleOutputCharacterA(StdOutput,
-                                    0xC3, // '+',
+                                    CharVertLineAndRightHorizLine, // '+',
                                     1,
                                     coPos,
                                     &Written);
 
         coPos.X = xLeft + 1;
         FillConsoleOutputCharacterA(StdOutput,
-                                    0xC4, // '-',
+                                    CharHorizontalLine, // '-',
                                     Width - 2,
                                     coPos,
                                     &Written);
 
         coPos.X = xLeft + Width - 1;
         FillConsoleOutputCharacterA(StdOutput,
-                                    0xB4, // '+',
+                                    CharLeftHorizLineAndVertLine, // '+',
                                     1,
                                     coPos,
                                     &Written);
@@ -662,6 +662,12 @@ LanguagePage(PINPUT_RECORD Ir)
 
                 /* Load the font */
                 SetConsoleCodePage();
+
+                /* Redraw the list */
+                DrawGenericList(&ListUi,
+                                2, 18,
+                                xScreen - 3,
+                                yScreen - 3);
 
                 /* Redraw language selection page in native language */
                 MUIDisplayPage(LANGUAGE_PAGE);
@@ -3644,6 +3650,8 @@ FileCopyCallback(PVOID Context,
             }
             else if (Notification == SPFILENOTIFY_STARTCOPY)
             {
+                static PCSTR s_pszCopying = NULL; /* Cached for speed */
+
                 /* Display copy message */
                 ASSERT(Param2 == FILEOP_COPY);
 
@@ -3652,8 +3660,9 @@ FileCopyCallback(PVOID Context,
                 if (DstFileName) ++DstFileName;
                 else DstFileName = FilePathInfo->Target;
 
-                CONSOLE_SetStatusText(MUIGetString(STRING_COPYING),
-                                      DstFileName);
+                if (!s_pszCopying)
+                    s_pszCopying = MUIGetString(STRING_COPYING);
+                CONSOLE_SetStatusText(s_pszCopying, DstFileName);
 #ifdef __REACTOS__ /* HACK */
                 DoWatchDestFileName(DstFileName);
 #endif

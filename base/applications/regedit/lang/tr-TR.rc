@@ -4,12 +4,66 @@ LANGUAGE LANG_TURKISH, SUBLANG_DEFAULT
 
 ID_ACCEL ACCELERATORS
 BEGIN
+    "D", ID_ADDRESS_FOCUS, VIRTKEY, ALT
     VK_DELETE, ID_EDIT_DELETE, VIRTKEY, NOINVERT
     "^F", ID_EDIT_FIND
     VK_F1, ID_HELP_HELPTOPICS, VIRTKEY, NOINVERT
     VK_F2, ID_EDIT_RENAME, VIRTKEY, NOINVERT
     VK_F3, ID_EDIT_FINDNEXT, VIRTKEY, NOINVERT
+    VK_F4, ID_ADDRESS_FOCUS, VIRTKEY, NOINVERT
     VK_F5, ID_VIEW_REFRESH, VIRTKEY, NOINVERT
+END
+
+/* Command-line strings */
+STRINGTABLE
+BEGIN
+    STRING_USAGE "Kullanım:\n\
+  regedit [seçenekler] [dosya adı] [reg_key]\n\n\
+Seçenekler:\n\
+  [seçenek yok]  Bu programın grafik sürümünü başlatın.\n\
+  /L:system.dat  Değiştirilecek system.dat dosyasının konumu.\n\
+                 Diğer tüm anahtarlarla uyumludur. Yok sayıldı.\n\
+  /R:user.dat    Değiştirilecek user.dat dosyasının konumu.\n\
+                 Diğer tüm anahtarlarla uyumludur. Yok sayıldı.\n\
+  /C             Bir kayıt defteri dosyasının içeriğini içe aktarın.\n\
+  /D             Belirli bir kayıt defteri anahtarını silin.\n\
+  /E             Belirli bir kayıt defteri anahtarının içeriğini bir dosyaya aktarın.\n\
+                 Herhangi bir anahtar belirtilmezse, kayıt defterinin tamamı verilir.\n\
+  /S             Sessiz mod. Hiçbir mesaj görüntülenmeyecek.\n\
+  /V             Grafik arayüzünü gelişmiş modda başlatın. Yok sayıldı.\n\
+  /?             Bu bilgiyi görüntüleyin ve çıkın.\n\
+  [dosya adı]    İçe aktarılacak kayıt bilgilerini içeren dosyanın konumu.\n\
+                 [/E] ile kullanıldığında, bu seçenek, kayıt bilgilerinin\n\
+                 dışa aktarılacağı dosya konumunu belirtir.\n\
+  [reg_key]      Değiştirilecek kayıt defteri anahtarı.\n\
+\n\
+Örnekler:\n\
+  regedit ""import.reg""\n\
+  regedit /E ""export.reg"" ""HKEY_CURRENT_USER\\Console""\n\
+  regedit /D ""HKEY_LOCAL_MACHINE\\Error\\Path""\n"
+    STRING_INVALID_SWITCH "regedit: Geçersiz veya tanınmayan anahtar [%1]\n"
+    STRING_HELP "Yardım için ""regedit /?"" yazın.\n"
+    STRING_NO_FILENAME "regedit: Dosya adı belirtilmedi.\n"
+    STRING_NO_REG_KEY "regedit: Kaldırma için kayıt defteri anahtarı belirtilmedi.\n"
+    STRING_FILE_NOT_FOUND "regedit: '%1' dosyası bulunamadı.\n"
+    STRING_CANNOT_OPEN_FILE "regedit: '%1' dosyası açılamıyor.\n"
+    STRING_UNHANDLED_ACTION "regedit: İşlenmemiş eylem.\n"
+    STRING_OUT_OF_MEMORY "regedit: Bellek yetersiz! (%1!S!, satır %2!u!)\n"
+    STRING_INVALID_HEX "regedit: Geçersiz onaltılık değer.\n"
+    STRING_CSV_HEX_ERROR "regedit: Onaltılık veriler dönüştürülemiyor. '%1' konumunda geçersiz bir değerle karşılaşıldı.\n"
+    STRING_ESCAPE_SEQUENCE "regedit: Tanınmayan kaçış sırası [\\%1!c!]\n"
+    STRING_UNKNOWN_DATA_FORMAT "regedit: Desteklenmeyen kayıt veri türü [0x%1!x!]\n"
+    STRING_UNEXPECTED_EOL "regedit: '%1' içinde beklenmeyen satır sonu.\n"
+    STRING_UNRECOGNIZED_LINE "regedit: '%1' satırı tanınmadı.\n"
+    STRING_SETVALUE_FAILED "regedit: '%1' kayıt defteri değeri '%2'ye eklenemiyor.\n"
+    STRING_OPEN_KEY_FAILED "regedit: '%1' kayıt defteri anahtarı açılamıyor.\n"
+    STRING_UNSUPPORTED_TYPE "regedit: '%2' içinde desteklenmeyen kayıt defteri veri türü [0x%1!x!] ile karşılaşıldı.\n"
+    STRING_EXPORT_AS_BINARY "regedit: '%1' kayıt defteri değeri, ikili veri olarak dışa aktarılacak.\n"
+    STRING_INVALID_SYSTEM_KEY "regedit: Geçersiz sistem anahtarı [%1]\n"
+    STRING_REG_KEY_NOT_FOUND "regedit: '%1' dışa aktarılamıyor. Belirtilen kayıt defteri anahtarı bulunamadı.\n"
+    STRING_DELETE_FAILED "regedit: '%1' kayıt defteri anahtarı silinemiyor.\n"
+    STRING_UNKNOWN_TYPE "Bilinmeyen Tür"
+    STRING_INVALID_LINE_SYNTAX, "regedit: Satır geçersiz sözdizimi içeriyor.\n"
 END
 
 /* Menus */
@@ -60,7 +114,7 @@ BEGIN
         MENUITEM SEPARATOR
         MENUITEM "&İzinler...", ID_EDIT_PERMISSIONS
         MENUITEM SEPARATOR
-        MENUITEM "&Sil\tSil", ID_EDIT_DELETE
+        MENUITEM "&Sil\tDel", ID_EDIT_DELETE
         MENUITEM "&Adını Değiştir", ID_EDIT_RENAME
         MENUITEM SEPARATOR
         MENUITEM "Di&zin Yolunu Çoğalt", ID_EDIT_COPYKEYNAME
@@ -96,7 +150,7 @@ BEGIN
         MENUITEM "&Değiştir...", ID_EDIT_MODIFY
         MENUITEM "&İkili Veriyi Değiştir...", ID_EDIT_MODIFY_BIN
         MENUITEM SEPARATOR
-        MENUITEM "&Sil\tSil", ID_EDIT_DELETE
+        MENUITEM "&Sil\tDel", ID_EDIT_DELETE
         MENUITEM "&Adını Değiştir", ID_EDIT_RENAME
     END
     POPUP ""

@@ -41,7 +41,8 @@ DceCreateDisplayDC(VOID)
 {
   UNICODE_STRING DriverName = RTL_CONSTANT_STRING(L"DISPLAY");
 
-  co_IntGraphicsCheck(TRUE);
+  if (!co_IntGraphicsCheck(TRUE))
+    KeBugCheckEx(VIDEO_DRIVER_INIT_FAILURE, 0, 0, 0, USER_VERSION);
 
   return IntGdiCreateDC(&DriverName, NULL, NULL, NULL, FALSE);
 }
@@ -545,8 +546,8 @@ UserGetDCEx(PWND Wnd OPTIONAL, HANDLE ClipRegion, ULONG Flags)
     * Bump it up! This prevents the random errors in wine dce tests and with
     * proper bits set in DCX_CACHECOMPAREMASK.
     * Reference:
-    *   http://www.reactos.org/archives/public/ros-dev/2008-July/010498.html
-    *   http://www.reactos.org/archives/public/ros-dev/2008-July/010499.html
+    *   https://reactos.org/archives/public/ros-dev/2008-July/010498.html
+    *   https://reactos.org/archives/public/ros-dev/2008-July/010499.html
     */
    RemoveEntryList(&Dce->List);
    InsertHeadList(&LEDce, &Dce->List);
@@ -874,7 +875,7 @@ DceResetActiveDCEs(PWND Window)
             if (NULL != dc->dclevel.prgnClip)
             {
                REGION_bOffsetRgn(dc->dclevel.prgnClip, DeltaX, DeltaY);
-               dc->fs |= DC_FLAG_DIRTY_RAO;
+               dc->fs |= DC_DIRTY_RAO;
             }
             if (NULL != pDCE->hrgnClip)
             {

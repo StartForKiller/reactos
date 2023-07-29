@@ -125,6 +125,7 @@
 #define IDS_STANDARD_TOOLBAR     12624
 #define IDS_ADDRESSBANDLABEL     12902
 #define IDS_FOLDERSLABEL         12919
+#define IDS_ADDRESSMENUTEXT      13137
 #define IDS_HISTORYTEXT          13169
 #define IDS_UP                   58434
 #define IDS_BACK                 58689
@@ -176,6 +177,11 @@
 #define IDS_SEARCH_FOLDER       9234
 #define IDS_SEARCH_RESULTS      30520
 #define IDS_SEARCH_OPEN_FOLDER  40960
+#define IDC_STATUSBAR           40961
 
 #define IDS_PARSE_ADDR_ERR_TITLE 9600
 #define IDS_PARSE_ADDR_ERR_TEXT  9601
+
+#define COL_NAME_INDEX      0
+#define COL_LOCATION_INDEX  1
+#define COL_RELEVANCE_INDEX 2

@@ -237,6 +237,10 @@ IntVideoPortFilterResourceRequirements(
    IN PIO_STACK_LOCATION IrpStack,
    IN PIRP Irp);
 
+VOID
+IntVideoPortReleaseResources(
+    _In_ PVIDEO_PORT_DEVICE_EXTENSION DeviceExtension);
+
 NTSTATUS NTAPI
 IntVideoPortMapPhysicalMemory(
    IN HANDLE Process,
@@ -249,6 +253,7 @@ IntVideoPortMapPhysicalMemory(
 
 extern PKPROCESS CsrProcess;
 extern ULONG VideoPortDeviceNumber;
+extern BOOLEAN VideoPortUseNewKey;
 extern KMUTEX VideoPortInt10Mutex;
 extern KSPIN_LOCK HwResetAdaptersLock;
 extern LIST_ENTRY HwResetAdaptersList;
@@ -278,6 +283,11 @@ PVOID NTAPI
 IntVideoPortGetProcAddress(
    IN PVOID HwDeviceExtension,
    IN PUCHAR FunctionName);
+
+NTSTATUS NTAPI
+IntVideoPortEnumerateChildren(
+    IN PDEVICE_OBJECT DeviceObject,
+    IN PIRP Irp);
 
 /* int10.c */
 

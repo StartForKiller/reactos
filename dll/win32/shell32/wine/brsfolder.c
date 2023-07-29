@@ -40,7 +40,7 @@
 #include "shresdef.h"
 #ifdef __REACTOS__
     #include <shlwapi.h>
-    #include "layout.h" /* Resizable window */
+    #include "ui/layout.h" /* Resizable window */
 #endif
 
 WINE_DEFAULT_DEBUG_CHANNEL(shell);
@@ -116,12 +116,6 @@ static void FillTreeView(browse_info*, LPSHELLFOLDER,
                LPITEMIDLIST, HTREEITEM, IEnumIDList*);
 static HTREEITEM InsertTreeViewItem( browse_info*, IShellFolder *,
                LPCITEMIDLIST, LPCITEMIDLIST, IEnumIDList*, HTREEITEM);
-
-static const WCHAR szBrowseFolderInfo[] = {
-    '_','_','W','I','N','E','_',
-    'B','R','S','F','O','L','D','E','R','D','L','G','_',
-    'I','N','F','O',0
-};
 
 static inline DWORD BrowseFlagsToSHCONTF(UINT ulFlags)
 {
@@ -470,9 +464,17 @@ static void FillTreeView( browse_info *info, IShellFolder * lpsf,
                     IShellFolder_Release(pSFChild);
                 }
 	    }
+#ifdef __REACTOS__
+        if (ulAttrs != (ulAttrs & SFGAO_FOLDER))
+        {
+	        if (!InsertTreeViewItem(info, lpsf, pidlTemp, pidl, pEnumIL, hParent))
+	            goto done;
+	    }
+#else
 
 	    if (!InsertTreeViewItem(info, lpsf, pidlTemp, pidl, pEnumIL, hParent))
 	        goto done;
+#endif
 	    SHFree(pidlTemp);  /* Finally, free the pidl that the shell gave us... */
 	    pidlTemp=NULL;
 	}
@@ -772,7 +774,7 @@ static BOOL BrsFolder_OnCreate( HWND hWnd, browse_info *info )
     LPBROWSEINFOW lpBrowseInfo = info->lpBrowseInfo;
 
     info->hWnd = hWnd;
-    SetPropW( hWnd, szBrowseFolderInfo, info );
+    SetPropW( hWnd, L"__WINE_BRSFOLDERDLG_INFO", info );
 
     if (lpBrowseInfo->ulFlags & BIF_NEWDIALOGSTYLE)
         FIXME("flags BIF_NEWDIALOGSTYLE partially implemented\n");
@@ -1285,7 +1287,7 @@ static INT_PTR CALLBACK BrsFolderDlgProc( HWND hWnd, UINT msg, WPARAM wParam,
     if (msg == WM_INITDIALOG)
         return BrsFolder_OnCreate( hWnd, (browse_info*) lParam );
 
-    info = GetPropW( hWnd, szBrowseFolderInfo );
+    info = GetPropW( hWnd, L"__WINE_BRSFOLDERDLG_INFO" );
 
     switch (msg)
     {
@@ -1347,13 +1349,6 @@ static INT_PTR CALLBACK BrsFolderDlgProc( HWND hWnd, UINT msg, WPARAM wParam,
     }
     return FALSE;
 }
-
-#ifndef __REACTOS__
-static const WCHAR swBrowseTemplateName[] = {
-    'S','H','B','R','S','F','O','R','F','O','L','D','E','R','_','M','S','G','B','O','X',0};
-static const WCHAR swNewBrowseTemplateName[] = {
-    'S','H','N','E','W','B','R','S','F','O','R','F','O','L','D','E','R','_','M','S','G','B','O','X',0};
-#endif
 
 /*************************************************************************
  * SHBrowseForFolderA [SHELL32.@]

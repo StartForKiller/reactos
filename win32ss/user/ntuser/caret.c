@@ -10,11 +10,6 @@
 #include <win32k.h>
 DBG_DEFAULT_CHANNEL(UserCaret);
 
-/* DEFINES *****************************************************************/
-
-#define MIN_CARETBLINKRATE 100
-#define MAX_CARETBLINKRATE 10000
-
 /* FUNCTIONS *****************************************************************/
 
 VOID FASTCALL
@@ -189,13 +184,6 @@ IntSetCaretBlinkTime(UINT uMSeconds)
 {
    /* Don't save the new value to the registry! */
 
-   /* Windows doesn't do this check */
-   if((uMSeconds < MIN_CARETBLINKRATE) || (uMSeconds > MAX_CARETBLINKRATE))
-   {
-      EngSetLastError(ERROR_INVALID_PARAMETER);
-      return FALSE;
-   }
-
    gpsi->dtCaretBlink = uMSeconds;
 
    return TRUE;
@@ -234,6 +222,7 @@ co_IntSetCaretPos(int X, int Y)
    return FALSE;
 }
 
+/* Win: zzzHideCaret */
 BOOL FASTCALL co_UserHideCaret(PWND Window OPTIONAL)
 {
    PTHREADINFO pti;
@@ -269,6 +258,7 @@ BOOL FASTCALL co_UserHideCaret(PWND Window OPTIONAL)
    return TRUE;
 }
 
+/* Win: zzzShowCaret */
 BOOL FASTCALL co_UserShowCaret(PWND Window OPTIONAL)
 {
    PTHREADINFO pti;
@@ -300,7 +290,15 @@ BOOL FASTCALL co_UserShowCaret(PWND Window OPTIONAL)
       {
          IntNotifyWinEvent(EVENT_OBJECT_SHOW, pWnd, OBJID_CARET, OBJID_CARET, 0);
       }
-      IntSetTimer(pWnd, IDCARETTIMER, gpsi->dtCaretBlink, CaretSystemTimerProc, TMRF_SYSTEM);
+      if ((INT)gpsi->dtCaretBlink > 0)
+      {
+          IntSetTimer(pWnd, IDCARETTIMER, gpsi->dtCaretBlink, CaretSystemTimerProc, TMRF_SYSTEM);
+      }
+      else if (ThreadQueue->CaretInfo.Visible)
+      {
+          ThreadQueue->CaretInfo.Showing = 1;
+          co_IntDrawCaret(pWnd, &ThreadQueue->CaretInfo);
+      }
    }
    return TRUE;
 }
@@ -366,7 +364,7 @@ NtUserCreateCaret(
    ThreadQueue->CaretInfo.Visible = 0;
    ThreadQueue->CaretInfo.Showing = 0;
 
-   IntSetTimer( Window, IDCARETTIMER, gpsi->dtCaretBlink, CaretSystemTimerProc, TMRF_SYSTEM );
+   IntSetTimer(Window, IDCARETTIMER, gpsi->dtCaretBlink, CaretSystemTimerProc, TMRF_SYSTEM);
 
    IntNotifyWinEvent(EVENT_OBJECT_CREATE, Window, OBJID_CARET, CHILDID_SELF, 0);
 

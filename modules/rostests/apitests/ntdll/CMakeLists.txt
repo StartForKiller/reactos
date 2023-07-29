@@ -35,7 +35,9 @@ list(APPEND SOURCE
     NtQueryInformationFile.c
     NtQueryInformationProcess.c
     NtQueryInformationThread.c
+    NtQueryInformationToken.c
     NtQueryKey.c
+    NtQueryOpenSubKeys.c
     NtQuerySystemEnvironmentValue.c
     NtQuerySystemInformation.c
     NtQueryValueKey.c
@@ -45,6 +47,7 @@ list(APPEND SOURCE
     NtSetInformationFile.c
     NtSetInformationProcess.c
     NtSetInformationThread.c
+    NtSetInformationToken.c
     NtSetValueKey.c
     NtSetVolumeInformationFile.c
     NtUnloadDriver.c
@@ -83,6 +86,7 @@ list(APPEND SOURCE
     RtlpEnsureBufferSize.c
     RtlQueryTimeZoneInfo.c
     RtlReAllocateHeap.c
+    RtlRemovePrivileges.c
     RtlUnicodeStringToAnsiString.c
     RtlUnicodeStringToCountedOemString.c
     RtlUnicodeToOemN.c
@@ -92,10 +96,13 @@ list(APPEND SOURCE
     RtlxUnicodeStringToOemSize.c
     StackOverflow.c
     SystemInfo.c
+    UserModeException.c
     Timer.c)
 
 if(ARCH STREQUAL "i386")
     add_asm_files(ntdll_apitest_asm i386/NtContinue.S)
+elseif(ARCH STREQUAL "amd64")
+    add_asm_files(ntdll_apitest_asm amd64/NtContinue.S)
 endif()
 
 list(APPEND PCH_SKIP_SOURCE
@@ -133,7 +140,7 @@ add_rostests_file(TARGET ntdll_apitest SUBDIR testdata)
 # These are empty files
 add_rostests_file(FILE "${CMAKE_CURRENT_SOURCE_DIR}/ntdll_apitest.exe.local" SUBDIR testdata)
 add_rostests_file(FILE "${CMAKE_CURRENT_SOURCE_DIR}/shell32.dll" SUBDIR testdata)
-add_rostests_file(FILE "${CMAKE_CURRENT_SOURCE_DIR}/test.dll" SUBDIR testdata)
+# add_rostests_file(FILE "${CMAKE_CURRENT_SOURCE_DIR}/test.dll" SUBDIR testdata)
 add_rostests_file(FILE "${CMAKE_CURRENT_SOURCE_DIR}/ntdlltest.manifest" SUBDIR testdata)
 add_rostests_file(FILE "${CMAKE_CURRENT_SOURCE_DIR}/fil1.txt" SUBDIR testdata)
 

@@ -83,20 +83,23 @@ HKLM,"SYSTEM\CurrentControlSet\Control\CriticalDeviceDatabase\HID_DEVICE_SYSTEM_
 HKLM,"SYSTEM\CurrentControlSet\Control\CriticalDeviceDatabase\HID_DEVICE_SYSTEM_MOUSE","Service",0x00000000,"mouhid"
 HKLM,"SYSTEM\CurrentControlSet\Control\CriticalDeviceDatabase\HID_DEVICE_SYSTEM_MOUSE","ClassGUID",0x00000000,"{4D36E96F-E325-11CE-BFC1-08002BE10318}"
 
-HKLM,"SYSTEM\CurrentControlSet\Control\CriticalDeviceDatabase\PCI#CC_0000","Service",0x00000000,"VBE"
+HKLM,"SYSTEM\CurrentControlSet\Control\CriticalDeviceDatabase\PCI#CC_0000","Service",0x00000000,"vga"
 HKLM,"SYSTEM\CurrentControlSet\Control\CriticalDeviceDatabase\PCI#CC_0000","ClassGUID",0x00000000,"{4D36E968-E325-11CE-BFC1-08002BE10318}"
 
-HKLM,"SYSTEM\CurrentControlSet\Control\CriticalDeviceDatabase\PCI#CC_0001","Service",0x00000000,"VBE"
+HKLM,"SYSTEM\CurrentControlSet\Control\CriticalDeviceDatabase\PCI#CC_0001","Service",0x00000000,"vga"
 HKLM,"SYSTEM\CurrentControlSet\Control\CriticalDeviceDatabase\PCI#CC_0001","ClassGUID",0x00000000,"{4D36E968-E325-11CE-BFC1-08002BE10318}"
 
-HKLM,"SYSTEM\CurrentControlSet\Control\CriticalDeviceDatabase\PCI#CC_0300","Service",0x00000000,"VBE"
+HKLM,"SYSTEM\CurrentControlSet\Control\CriticalDeviceDatabase\PCI#CC_0300","Service",0x00000000,"vga"
 HKLM,"SYSTEM\CurrentControlSet\Control\CriticalDeviceDatabase\PCI#CC_0300","ClassGUID",0x00000000,"{4D36E968-E325-11CE-BFC1-08002BE10318}"
 
-HKLM,"SYSTEM\CurrentControlSet\Control\CriticalDeviceDatabase\PCI#CC_0301","Service",0x00000000,"VBE"
+HKLM,"SYSTEM\CurrentControlSet\Control\CriticalDeviceDatabase\PCI#CC_0301","Service",0x00000000,"vga"
 HKLM,"SYSTEM\CurrentControlSet\Control\CriticalDeviceDatabase\PCI#CC_0301","ClassGUID",0x00000000,"{4D36E968-E325-11CE-BFC1-08002BE10318}"
 
 HKLM,"SYSTEM\CurrentControlSet\Control\CriticalDeviceDatabase\*PNP0303","Service",0x00000000,"i8042prt"
 HKLM,"SYSTEM\CurrentControlSet\Control\CriticalDeviceDatabase\*PNP0303","ClassGUID",0x00000000,"{4D36E96B-E325-11CE-BFC1-08002BE10318}"
+
+HKLM,"SYSTEM\CurrentControlSet\Control\CriticalDeviceDatabase\*PNP030B","Service",0x00000000,"i8042prt"
+HKLM,"SYSTEM\CurrentControlSet\Control\CriticalDeviceDatabase\*PNP030B","ClassGUID",0x00000000,"{4D36E96B-E325-11CE-BFC1-08002BE10318}"
 
 HKLM,"SYSTEM\CurrentControlSet\Control\CriticalDeviceDatabase\*PNP0F0E","Service",0x00000000,"i8042prt"
 HKLM,"SYSTEM\CurrentControlSet\Control\CriticalDeviceDatabase\*PNP0F0E","ClassGUID",0x00000000,"{4D36E96F-E325-11CE-BFC1-08002BE10318}"
@@ -129,7 +132,7 @@ HKLM,"SYSTEM\CurrentControlSet\Control\SafeBoot","AlternateShell",2,"cmd.exe"
 HKLM,"SYSTEM\CurrentControlSet\Control\SafeBoot\Minimal\AppMgmt","",0x00000000,"Service"
 HKLM,"SYSTEM\CurrentControlSet\Control\SafeBoot\Minimal\Base","",0x00000000,"Driver Group"
 HKLM,"SYSTEM\CurrentControlSet\Control\SafeBoot\Minimal\Boot Bus Extender","",0x00000000,"Driver Group"
-HKLM,"SYSTEM\CurrentControlSet\Control\SafeBoot\Minimal\Boot file system","",0x00000000,"Driver Group"
+HKLM,"SYSTEM\CurrentControlSet\Control\SafeBoot\Minimal\Boot File System","",0x00000000,"Driver Group"
 HKLM,"SYSTEM\CurrentControlSet\Control\SafeBoot\Minimal\CryptSvc","",0x00000000,"Service"
 HKLM,"SYSTEM\CurrentControlSet\Control\SafeBoot\Minimal\DcomLaunch","",0x00000000,"Service"
 HKLM,"SYSTEM\CurrentControlSet\Control\SafeBoot\Minimal\dmadmin","",0x00000000,"Service"
@@ -173,7 +176,7 @@ HKLM,"SYSTEM\CurrentControlSet\Control\SafeBoot\Network\AFD","",0x00000000,"Serv
 HKLM,"SYSTEM\CurrentControlSet\Control\SafeBoot\Network\AppMgmt","",0x00000000,"Service"
 HKLM,"SYSTEM\CurrentControlSet\Control\SafeBoot\Network\Base","",0x00000000,"Driver Group"
 HKLM,"SYSTEM\CurrentControlSet\Control\SafeBoot\Network\Boot Bus Extender","",0x00000000,"Driver Group"
-HKLM,"SYSTEM\CurrentControlSet\Control\SafeBoot\Network\Boot file system","",0x00000000,"Driver Group"
+HKLM,"SYSTEM\CurrentControlSet\Control\SafeBoot\Network\Boot File System","",0x00000000,"Driver Group"
 HKLM,"SYSTEM\CurrentControlSet\Control\SafeBoot\Network\Browser","",0x00000000,"Service"
 HKLM,"SYSTEM\CurrentControlSet\Control\SafeBoot\Network\CryptSvc","",0x00000000,"Service"
 HKLM,"SYSTEM\CurrentControlSet\Control\SafeBoot\Network\DcomLaunch","",0x00000000,"Service"
@@ -252,12 +255,8 @@ HKLM,"SYSTEM\CurrentControlSet\Control\SafeBoot\Network\{745A17A0-74D3-11D0-B6FE
 
 ; ReactOS specific - required to load in Safe Mode and for debugging in Safe Mode (until vga.sys and vgasave.sys are implemented)
 HKLM,"SYSTEM\CurrentControlSet\Control\SafeBoot\Minimal\Debug","",0x00000000,"Driver Group"
-HKLM,"SYSTEM\CurrentControlSet\Control\SafeBoot\Minimal\vgamp.sys","",0x00000000,"Driver"
-HKLM,"SYSTEM\CurrentControlSet\Control\SafeBoot\Minimal\vbemp.sys","",0x00000000,"Driver"
 
 HKLM,"SYSTEM\CurrentControlSet\Control\SafeBoot\Network\Debug","",0x00000000,"Driver Group"
-HKLM,"SYSTEM\CurrentControlSet\Control\SafeBoot\Network\vgamp.sys","",0x00000000,"Driver"
-HKLM,"SYSTEM\CurrentControlSet\Control\SafeBoot\Network\vbemp.sys","",0x00000000,"Driver"
 
 ; Other
 HKLM,"SYSTEM\CurrentControlSet\Control\Arbiters",,0x00000012
@@ -496,7 +495,7 @@ HKLM,"SYSTEM\CurrentControlSet\Control\Keyboard Layouts\00020401","Layout File",
 HKLM,"SYSTEM\CurrentControlSet\Control\Keyboard Layouts\00020401","Layout Text",0x00000000,%ARABIC_102_AZERTY%
 HKLM,"SYSTEM\CurrentControlSet\Control\Keyboard Layouts\00020401","Layout Display Name",0x00000000,"@%SystemRoot%\system32\input.dll,-5086"
 
-HKLM,"SYSTEM\CurrentControlSet\Control\Keyboard Layouts\00000402","Layout File",0x00000000,"kbdbgm.dll"
+HKLM,"SYSTEM\CurrentControlSet\Control\Keyboard Layouts\00000402","Layout File",0x00000000,"kbdbu.dll"
 HKLM,"SYSTEM\CurrentControlSet\Control\Keyboard Layouts\00000402","Layout Text",0x00000000,%BULGARIAN_BDS%
 HKLM,"SYSTEM\CurrentControlSet\Control\Keyboard Layouts\00000402","Layout Display Name",0x00000000,"@%SystemRoot%\system32\input.dll,-5136"
 
@@ -513,6 +512,7 @@ HKLM,"SYSTEM\CurrentControlSet\Control\Keyboard Layouts\00000405","Layout Text",
 HKLM,"SYSTEM\CurrentControlSet\Control\Keyboard Layouts\00000405","Layout Display Name",0x00000000,"@%SystemRoot%\system32\input.dll,-5031"
 
 HKLM,"SYSTEM\CurrentControlSet\Control\Keyboard Layouts\00010405","Layout File",0x00000000,"kbdcz1.dll"
+HKLM,"SYSTEM\CurrentControlSet\Control\Keyboard Layouts\00010405","Layout Id",  0x00000000,"0005"
 HKLM,"SYSTEM\CurrentControlSet\Control\Keyboard Layouts\00010405","Layout Text",0x00000000,%CZECH_QWERTY%
 HKLM,"SYSTEM\CurrentControlSet\Control\Keyboard Layouts\00010405","Layout Display Name",0x00000000,"@%SystemRoot%\system32\input.dll,-5032"
 
@@ -528,7 +528,8 @@ HKLM,"SYSTEM\CurrentControlSet\Control\Keyboard Layouts\00020407","Layout File",
 HKLM,"SYSTEM\CurrentControlSet\Control\Keyboard Layouts\00020407","Layout Text",0x00000000,%GERMAN_NEO%
 HKLM,"SYSTEM\CurrentControlSet\Control\Keyboard Layouts\00020407","Layout Display Name",0x00000000,"@%SystemRoot%\system32\input.dll,-5138"
 
-HKLM,"SYSTEM\CurrentControlSet\Control\Keyboard Layouts\00010407","Layout File",0x00000000,"kbdgrist.dll"
+HKLM,"SYSTEM\CurrentControlSet\Control\Keyboard Layouts\00010407","Layout File",0x00000000,"kbdgr1.dll"
+HKLM,"SYSTEM\CurrentControlSet\Control\Keyboard Layouts\00010407","Layout Id",  0x00000000,"0012"
 HKLM,"SYSTEM\CurrentControlSet\Control\Keyboard Layouts\00010407","Layout Text",0x00000000,%GERMAN_RISTOME%
 HKLM,"SYSTEM\CurrentControlSet\Control\Keyboard Layouts\00010407","Layout Display Name",0x00000000,"@%SystemRoot%\system32\input.dll,-5137"
 
@@ -586,7 +587,7 @@ HKLM,"SYSTEM\CurrentControlSet\Control\Keyboard Layouts\00050409","Layout Id",  
 HKLM,"SYSTEM\CurrentControlSet\Control\Keyboard Layouts\00050409","Layout Text",0x00000000,%US_ARABIC%
 HKLM,"SYSTEM\CurrentControlSet\Control\Keyboard Layouts\00050409","Layout Display Name",0x00000000,"@%SystemRoot%\system32\input.dll,-5123"
 
-HKLM,"SYSTEM\CurrentControlSet\Control\Keyboard Layouts\0000040a","Layout File",0x00000000,"kbdes.dll"
+HKLM,"SYSTEM\CurrentControlSet\Control\Keyboard Layouts\0000040a","Layout File",0x00000000,"kbdsp.dll"
 HKLM,"SYSTEM\CurrentControlSet\Control\Keyboard Layouts\0000040a","Layout Text",0x00000000,%SPANISH%
 HKLM,"SYSTEM\CurrentControlSet\Control\Keyboard Layouts\0000040a","Layout Display Name",0x00000000,"@%SystemRoot%\system32\input.dll,-5020"
 
@@ -630,15 +631,13 @@ HKLM,"SYSTEM\CurrentControlSet\Control\Keyboard Layouts\00000410","Layout File",
 HKLM,"SYSTEM\CurrentControlSet\Control\Keyboard Layouts\00000410","Layout Text",0x00000000,%ITALIAN%
 HKLM,"SYSTEM\CurrentControlSet\Control\Keyboard Layouts\00000410","Layout Display Name",0x00000000,"@%SystemRoot%\system32\input.dll,-5015"
 
-HKLM,"SYSTEM\CurrentControlSet\Control\Keyboard Layouts\00000411","Layout File",0x00000000,"kbdja.dll"
+HKLM,"SYSTEM\CurrentControlSet\Control\Keyboard Layouts\00000411","Layout File",0x00000000,"kbdjpn.dll"
 HKLM,"SYSTEM\CurrentControlSet\Control\Keyboard Layouts\00000411","Layout Text",0x00000000,%JAPANESE%
 HKLM,"SYSTEM\CurrentControlSet\Control\Keyboard Layouts\00000411","Layout Display Name",0x00000000,"@%SystemRoot%\system32\input.dll,-5061"
-HKLM,"SYSTEM\CurrentControlSet\Control\Keyboard Layouts\00000411","Layout Id",0x00000000,"0001"
 
-HKLM,"SYSTEM\CurrentControlSet\Control\Keyboard Layouts\00000412","Layout File",0x00000000,"kbdko.dll"
+HKLM,"SYSTEM\CurrentControlSet\Control\Keyboard Layouts\00000412","Layout File",0x00000000,"kbdkor.dll"
 HKLM,"SYSTEM\CurrentControlSet\Control\Keyboard Layouts\00000412","Layout Text",0x00000000,%KOREAN%
 HKLM,"SYSTEM\CurrentControlSet\Control\Keyboard Layouts\00000412","Layout Display Name",0x00000000,"@%SystemRoot%\system32\input.dll,-5063"
-HKLM,"SYSTEM\CurrentControlSet\Control\Keyboard Layouts\00000412","Layout Id",0x00000000,"0001"
 
 HKLM,"SYSTEM\CurrentControlSet\Control\Keyboard Layouts\00000413","Layout File",0x00000000,"kbdne.dll"
 HKLM,"SYSTEM\CurrentControlSet\Control\Keyboard Layouts\00000413","Layout Text",0x00000000,%DUTCH%
@@ -657,10 +656,12 @@ HKLM,"SYSTEM\CurrentControlSet\Control\Keyboard Layouts\00000415","Layout Text",
 HKLM,"SYSTEM\CurrentControlSet\Control\Keyboard Layouts\00000415","Layout Display Name",0x00000000,"@%SystemRoot%\system32\input.dll,-5035"
 
 HKLM,"SYSTEM\CurrentControlSet\Control\Keyboard Layouts\00010415","Layout File",0x00000000,"kbdpl.dll"
+HKLM,"SYSTEM\CurrentControlSet\Control\Keyboard Layouts\00010415","Layout Id",  0x00000000,"0007"
 HKLM,"SYSTEM\CurrentControlSet\Control\Keyboard Layouts\00010415","Layout Text",0x00000000,%POLISH_214%
 HKLM,"SYSTEM\CurrentControlSet\Control\Keyboard Layouts\00010415","Layout Display Name",0x00000000,"@%SystemRoot%\system32\input.dll,-5036"
 
 HKLM,"SYSTEM\CurrentControlSet\Control\Keyboard Layouts\00010416","Layout File",0x00000000,"kbdbr.dll"
+HKLM,"SYSTEM\CurrentControlSet\Control\Keyboard Layouts\00010416","Layout Id",  0x00000000,"001D"
 HKLM,"SYSTEM\CurrentControlSet\Control\Keyboard Layouts\00010416","Layout Text",0x00000000,%PORTUGESE_BRAZILIAN%
 HKLM,"SYSTEM\CurrentControlSet\Control\Keyboard Layouts\00010416","Layout Display Name",0x00000000,"@%SystemRoot%\system32\input.dll,-5126"
 
@@ -681,6 +682,7 @@ HKLM,"SYSTEM\CurrentControlSet\Control\Keyboard Layouts\00000419","Layout Text",
 HKLM,"SYSTEM\CurrentControlSet\Control\Keyboard Layouts\00000419","Layout Display Name",0x00000000,"@%SystemRoot%\system32\input.dll,-5055"
 
 HKLM,"SYSTEM\CurrentControlSet\Control\Keyboard Layouts\00010419","Layout File",0x00000000,"kbdru1.dll"
+HKLM,"SYSTEM\CurrentControlSet\Control\Keyboard Layouts\00010419","Layout Id",  0x00000000,"0008"
 HKLM,"SYSTEM\CurrentControlSet\Control\Keyboard Layouts\00010419","Layout Text",0x00000000,%RUSSIAN_TYPEWRITER%
 HKLM,"SYSTEM\CurrentControlSet\Control\Keyboard Layouts\00010419","Layout Display Name",0x00000000,"@%SystemRoot%\system32\input.dll,-5056"
 
@@ -696,11 +698,12 @@ HKLM,"SYSTEM\CurrentControlSet\Control\Keyboard Layouts\00000c1a","Layout File",
 HKLM,"SYSTEM\CurrentControlSet\Control\Keyboard Layouts\00000c1a","Layout Text",0x00000000,%SERBIAN_CYRILLIC%
 HKLM,"SYSTEM\CurrentControlSet\Control\Keyboard Layouts\00000c1a","Layout Display Name",0x00000000,"@%SystemRoot%\system32\input.dll,-5057"
 
-HKLM,"SYSTEM\CurrentControlSet\Control\Keyboard Layouts\0000041b","Layout File",0x00000000,"kbdsk.dll"
+HKLM,"SYSTEM\CurrentControlSet\Control\Keyboard Layouts\0000041b","Layout File",0x00000000,"kbdsl.dll"
 HKLM,"SYSTEM\CurrentControlSet\Control\Keyboard Layouts\0000041b","Layout Text",0x00000000,%SLOVAK%
 HKLM,"SYSTEM\CurrentControlSet\Control\Keyboard Layouts\0000041b","Layout Display Name",0x00000000,"@%SystemRoot%\system32\input.dll,-5039"
 
-HKLM,"SYSTEM\CurrentControlSet\Control\Keyboard Layouts\0001041b","Layout File",0x00000000,"kbdsk1.dll"
+HKLM,"SYSTEM\CurrentControlSet\Control\Keyboard Layouts\0001041b","Layout File",0x00000000,"kbdsl1.dll"
+HKLM,"SYSTEM\CurrentControlSet\Control\Keyboard Layouts\0001041b","Layout Id",  0x00000000,"0013"
 HKLM,"SYSTEM\CurrentControlSet\Control\Keyboard Layouts\0001041b","Layout Text",0x00000000,%SLOVAK_QWERTY%
 HKLM,"SYSTEM\CurrentControlSet\Control\Keyboard Layouts\0001041b","Layout Display Name",0x00000000,"@%SystemRoot%\system32\input.dll,-5040"
 
@@ -762,6 +765,7 @@ HKLM,"SYSTEM\CurrentControlSet\Control\Keyboard Layouts\00000426","Layout Displa
 ; HKLM,"SYSTEM\CurrentControlSet\Control\Keyboard Layouts\00010426","Layout Display Name",0x00000000,"@%SystemRoot%\system32\input.dll,-5044"
 
 HKLM,"SYSTEM\CurrentControlSet\Control\Keyboard Layouts\00010427","Layout File",0x00000000,"kbdlt1.dll"
+HKLM,"SYSTEM\CurrentControlSet\Control\Keyboard Layouts\00010427","Layout Id",  0x00000000,"0027"
 HKLM,"SYSTEM\CurrentControlSet\Control\Keyboard Layouts\00010427","Layout Text",0x00000000,%LITHUANIAN%
 HKLM,"SYSTEM\CurrentControlSet\Control\Keyboard Layouts\00010427","Layout Display Name",0x00000000,"@%SystemRoot%\system32\input.dll,-5088"
 
@@ -1470,17 +1474,16 @@ HKLM,"SYSTEM\CurrentControlSet\Control\ServiceGroupOrder","List",0x00010000, \
  "SpoolerGroup", \
  "AudioGroup", \
  "SmartCardGroup", \
- "NetworkProvider" \
+ "NetworkProvider", \
  "RemoteValidation", \
  "NetDDEGroup", \
  "Parallel arbitrator", \
- "Extended Base" \
+ "Extended Base", \
  "PCI Configuration", \
  "MS Transactions"
 
 ; Set the timeout for directx/ReactX graphic surface lock see _EDD_DIRECTDRAW_GLOBAL struct for more info
 HKLM,"SYSTEM\CurrentControlSet\Control\GraphicsDrivers\DCI","Timeout",0x00010001,0x00000007
-HKLM,"SYSTEM\CurrentControlSet\Control\GraphicsDrivers\UseNewKey",,0x00000012
 
 ; Group order, the first DWORD is the count of entries,
 ; the following dwords are the tag entries for the load order.
@@ -1584,7 +1587,7 @@ HKLM,"SYSTEM\CurrentControlSet\Services\swenum","Type",0x00010001,0x00000001
 HKLM,"SYSTEM\CurrentControlSet\Services\AudioSrv","DisplayName",0x00000000,%AUDIO_SERVICE%
 HKLM,"SYSTEM\CurrentControlSet\Services\AudioSrv","Description",0x00000000,%AUDIO_SERVICE_DESCRIPTION%
 HKLM,"SYSTEM\CurrentControlSet\Services\AudioSrv","ErrorControl",0x00010001,0x00000000
-HKLM,"SYSTEM\CurrentControlSet\Services\AudioSrv","Group",0x00000000,"Audio"
+HKLM,"SYSTEM\CurrentControlSet\Services\AudioSrv","Group",0x00000000,"AudioGroup"
 HKLM,"SYSTEM\CurrentControlSet\Services\AudioSrv","ImagePath",0x00020000,"%SystemRoot%\system32\audiosrv.exe"
 HKLM,"SYSTEM\CurrentControlSet\Services\AudioSrv","ObjectName",0x00000000,"LocalSystem"
 HKLM,"SYSTEM\CurrentControlSet\Services\AudioSrv","Start",0x00010001,0x00000003
@@ -1660,7 +1663,7 @@ HKLM,"SYSTEM\CurrentControlSet\Services\EventLog\System\Service Control Manager"
 
 ; Filesystem recognizer driver
 HKLM,"SYSTEM\CurrentControlSet\Services\Fs_Rec","ErrorControl",0x00010001,0x00000000
-HKLM,"SYSTEM\CurrentControlSet\Services\Fs_Rec","Group",0x00000000,"Boot file system"
+HKLM,"SYSTEM\CurrentControlSet\Services\Fs_Rec","Group",0x00000000,"Boot File System"
 HKLM,"SYSTEM\CurrentControlSet\Services\Fs_Rec","ImagePath",0x00020000,"system32\drivers\fs_rec.sys"
 HKLM,"SYSTEM\CurrentControlSet\Services\Fs_Rec","Start",0x00010001,0x00000001
 HKLM,"SYSTEM\CurrentControlSet\Services\Fs_Rec","Type",0x00010001,0x00000008
@@ -1679,7 +1682,7 @@ HKLM,"SYSTEM\CurrentControlSet\Services\lanmanserver\Parameters","ServiceDll",0x
 HKLM,"SYSTEM\CurrentControlSet\Services\lanmanworkstation","DisplayName",0x00000000,%WORKSTATION_SERVICE%
 HKLM,"SYSTEM\CurrentControlSet\Services\lanmanworkstation","Description",0x00000000,%WORKSTATION_SERVICE_DESCRIPTION%
 HKLM,"SYSTEM\CurrentControlSet\Services\lanmanworkstation","ErrorControl",0x00010001,0x00000001
-HKLM,"SYSTEM\CurrentControlSet\Services\lanmanworkstation","Group",0x00000000,"Network Provider"
+HKLM,"SYSTEM\CurrentControlSet\Services\lanmanworkstation","Group",0x00000000,"NetworkProvider"
 HKLM,"SYSTEM\CurrentControlSet\Services\lanmanworkstation","ImagePath",0x00020000,"%SystemRoot%\system32\svchost.exe -k netsvcs"
 HKLM,"SYSTEM\CurrentControlSet\Services\lanmanworkstation","ObjectName",0x00000000,"LocalSystem"
 HKLM,"SYSTEM\CurrentControlSet\Services\lanmanworkstation","Start",0x00010001,0x00000002
@@ -1689,14 +1692,14 @@ HKLM,"SYSTEM\CurrentControlSet\Services\lanmanworkstation\Parameters","ServiceDl
 ; Multiple UNC provider driver
 HKLM,"SYSTEM\CurrentControlSet\Services\Mup","Description",0x00000000,"Multiple UNC Provider (MUP)"
 HKLM,"SYSTEM\CurrentControlSet\Services\Mup","ErrorControl",0x00010001,0x00000001
-HKLM,"SYSTEM\CurrentControlSet\Services\Mup","Group",0x00000000,"File System"
+HKLM,"SYSTEM\CurrentControlSet\Services\Mup","Group",0x00000000,"Network"
 HKLM,"SYSTEM\CurrentControlSet\Services\Mup","ImagePath",0x00020000,"system32\drivers\mup.sys"
 HKLM,"SYSTEM\CurrentControlSet\Services\Mup","Start",0x00010001,0x00000000
 HKLM,"SYSTEM\CurrentControlSet\Services\Mup","Type",0x00010001,0x00000002
 
-; NDIS driver - the only boot-start network driver
+; NDIS driver - needs to load before any drivers in the NDIS group
 HKLM,"SYSTEM\CurrentControlSet\Services\Ndis","ErrorControl",0x00010001,0x00000001
-HKLM,"SYSTEM\CurrentControlSet\Services\Ndis","Group",0x00000000,"NDIS"
+HKLM,"SYSTEM\CurrentControlSet\Services\Ndis","Group",0x00000000,"NDIS Wrapper"
 HKLM,"SYSTEM\CurrentControlSet\Services\Ndis","ImagePath",0x00020000,"system32\drivers\ndis.sys"
 HKLM,"SYSTEM\CurrentControlSet\Services\Ndis","Start",0x00010001,0x00000000
 HKLM,"SYSTEM\CurrentControlSet\Services\Ndis","Type",0x00010001,0x00000001
@@ -1710,7 +1713,7 @@ HKLM,"SYSTEM\CurrentControlSet\Services\NetLogon","Start",0x00010001,0x00000003
 HKLM,"SYSTEM\CurrentControlSet\Services\Netlogon","Type",0x00010001,0x00000020
 
 ; NTFS filesystem driver
-HKLM,"SYSTEM\CurrentControlSet\Services\Ntfs","ErrorControl",0x00010001,0x00000000
+HKLM,"SYSTEM\CurrentControlSet\Services\Ntfs","ErrorControl",0x00010001,0x00000001
 HKLM,"SYSTEM\CurrentControlSet\Services\Ntfs","Group",0x00000000,"File System"
 HKLM,"SYSTEM\CurrentControlSet\Services\Ntfs","ImagePath",0x00020000,"system32\drivers\ntfs.sys"
 HKLM,"SYSTEM\CurrentControlSet\Services\Ntfs","Start",0x00010001,0x00000003
@@ -2060,6 +2063,19 @@ HKLM,"SYSTEM\CurrentControlSet\Services\Schedule","Type",0x00010001,0x00000020
 HKLM,"SYSTEM\CurrentControlSet\Services\Schedule\Parameters","ServiceDll",0x00020000,"%SystemRoot%\system32\schedsvc.dll"
 HKLM,"SYSTEM\CurrentControlSet\Services\Schedule\Parameters","ServiceMain",0x00000000,"SchedServiceMain"
 
+; Secondary Logon service
+HKLM,"SYSTEM\CurrentControlSet\Services\Seclogon","DependOnService",0x00010000,"RPCSS"
+HKLM,"SYSTEM\CurrentControlSet\Services\Seclogon","Description",0x00000000,%SECLOGON_SERVICE_DESCRIPTION%
+HKLM,"SYSTEM\CurrentControlSet\Services\Seclogon","DisplayName",0x00000000,%SECLOGON_SERVICE%
+HKLM,"SYSTEM\CurrentControlSet\Services\Seclogon","ErrorControl",0x00010001,0x00000001
+HKLM,"SYSTEM\CurrentControlSet\Services\Seclogon","Group",0x00000000,"SchedulerGroup"
+HKLM,"SYSTEM\CurrentControlSet\Services\Seclogon","ImagePath",0x00020000,"%SystemRoot%\system32\svchost.exe -k netsvcs"
+HKLM,"SYSTEM\CurrentControlSet\Services\Seclogon","ObjectName",0x00000000,"LocalSystem"
+HKLM,"SYSTEM\CurrentControlSet\Services\Seclogon","Start",0x00010001,0x00000002
+HKLM,"SYSTEM\CurrentControlSet\Services\Seclogon","Type",0x00010001,0x00000020
+HKLM,"SYSTEM\CurrentControlSet\Services\Seclogon\Parameters","ServiceDll",0x00020000,"%SystemRoot%\system32\seclogon.dll"
+HKLM,"SYSTEM\CurrentControlSet\Services\Seclogon\Parameters","ServiceMain",0x00000000,"SvcEntry_Seclogon"
+
 ; Spooler service
 HKLM,"SYSTEM\CurrentControlSet\Services\Spooler","DependOnService",0x00010000,"RPCSS"
 HKLM,"SYSTEM\CurrentControlSet\Services\Spooler","Description",0x00000000,%SPOOLER_SERVICE_DESCRIPTION%
@@ -2172,55 +2188,17 @@ HKLM,"SYSTEM\CurrentControlSet\Services\DcomLaunch\Parameters","ServiceDll",0x00
 ;HKLM,"SYSTEM\CurrentControlSet\Services\sndblst","Type",0x00010001,0x00000001
 
 ; Virtual FAT filesystem driver
-HKLM,"SYSTEM\CurrentControlSet\Services\fastfat","ErrorControl",0x00010001,0x00000000
+HKLM,"SYSTEM\CurrentControlSet\Services\fastfat","ErrorControl",0x00010001,0x00000001
 HKLM,"SYSTEM\CurrentControlSet\Services\fastfat","Group",0x00000000,"Boot File System"
 HKLM,"SYSTEM\CurrentControlSet\Services\fastfat","ImagePath",0x00020000,"system32\drivers\fastfat.sys"
 HKLM,"SYSTEM\CurrentControlSet\Services\fastfat","Start",0x00010001,0x00000003
 HKLM,"SYSTEM\CurrentControlSet\Services\fastfat","Type",0x00010001,0x00000002
 
 ; RAM Disk class driver
-HKLM,"SYSTEM\CurrentControlSet\Services\RamDisk","ErrorControl",0x00010001,0x00000000
-HKLM,"SYSTEM\CurrentControlSet\Services\RamDisk","Group",0x00000000,"Boot File System"
+HKLM,"SYSTEM\CurrentControlSet\Services\RamDisk","ErrorControl",0x00010001,0x00000001
 HKLM,"SYSTEM\CurrentControlSet\Services\RamDisk","ImagePath",0x00020000,"system32\drivers\ramdisk.sys"
 HKLM,"SYSTEM\CurrentControlSet\Services\RamDisk","Start",0x00010001,0x00000000
-HKLM,"SYSTEM\CurrentControlSet\Services\RamDisk","Type",0x00010001,0x00000002
-
-; EXT2 Filesystem driver
-HKLM,"SYSTEM\CurrentControlSet\Services\Ext2fs","ErrorControl",0x00010001,0x00000000
-HKLM,"SYSTEM\CurrentControlSet\Services\Ext2fs","Group",0x00000000,"Boot File System"
-HKLM,"SYSTEM\CurrentControlSet\Services\Ext2fs","ImagePath",0x00020000,"system32\drivers\ext2fs.sys"
-HKLM,"SYSTEM\CurrentControlSet\Services\Ext2fs","Start",0x00010001,0x00000003
-HKLM,"SYSTEM\CurrentControlSet\Services\Ext2fs","Type",0x00010001,0x00000002
-HKLM,"SYSTEM\CurrentControlSet\Services\Ext2fs\Parameters","CodePage",0x00000000,"default"
-HKLM,"SYSTEM\CurrentControlSet\Services\Ext2fs\Parameters","WritingSupport",0x00010001,0x00000001
-HKLM,"SYSTEM\CurrentControlSet\Services\Ext2fs\Parameters","CheckingBitmap",0x00010001,0x00000000
-HKLM,"SYSTEM\CurrentControlSet\Services\Ext2fs\Parameters","Ext3ForceWriting",0x00010001,0x00000001
-HKLM,"SYSTEM\CurrentControlSet\Services\Ext2fs\Parameters","AutoMount",0x00010001,0x00000001
-
-; BTRFS Filesystem driver
-HKLM,"SYSTEM\CurrentControlSet\Services\btrfs","ErrorControl",0x00010001,0x00000000
-HKLM,"SYSTEM\CurrentControlSet\Services\btrfs","Group",0x00000000,"Boot File System"
-HKLM,"SYSTEM\CurrentControlSet\Services\btrfs","ImagePath",0x00020000,"system32\drivers\btrfs.sys"
-HKLM,"SYSTEM\CurrentControlSet\Services\btrfs","Start",0x00010001,0x00000003
-HKLM,"SYSTEM\CurrentControlSet\Services\btrfs","Type",0x00010001,0x00000002
-
-; NFS Filesystem driver
-HKLM,"SYSTEM\CurrentControlSet\Services\nfs41_driver","ErrorControl",0x00010001,0x00000000
-HKLM,"SYSTEM\CurrentControlSet\Services\nfs41_driver","Group",0x00000000,"Network"
-HKLM,"SYSTEM\CurrentControlSet\Services\nfs41_driver","ImagePath",0x00020000,"system32\drivers\nfs41_driver.sys"
-HKLM,"SYSTEM\CurrentControlSet\Services\nfs41_driver","Start",0x00010001,0x00000003
-HKLM,"SYSTEM\CurrentControlSet\Services\nfs41_driver","Type",0x00010001,0x00000002
-HKLM,"SYSTEM\CurrentControlSet\Services\nfs41_driver\NetworkProvider","DeviceName",0x00000000,\Device\nfs41_driver
-HKLM,"SYSTEM\CurrentControlSet\Services\nfs41_driver\NetworkProvider","Name",0x00000000,"NFS41 Network"
-HKLM,"SYSTEM\CurrentControlSet\Services\nfs41_driver\NetworkProvider","ProviderPath",0x00000000,System32\nfs41_np.dll
-
-; NFS daemon
-HKLM,"SYSTEM\CurrentControlSet\Services\pnfs","DisplayName",0x00000000,"NFSv4.1 Client"
-HKLM,"SYSTEM\CurrentControlSet\Services\pnfs","ErrorControl",0x00010001,0x00000001
-HKLM,"SYSTEM\CurrentControlSet\Services\pnfs","ImagePath",0x00020000,"%SystemRoot%\system32\nfsd.exe --noldap"
-HKLM,"SYSTEM\CurrentControlSet\Services\pnfs","ObjectName",0x00000000,"LocalSystem"
-HKLM,"SYSTEM\CurrentControlSet\Services\pnfs","Start",0x00010001,0x00000003
-HKLM,"SYSTEM\CurrentControlSet\Services\pnfs","Type",0x00010001,0x00000010
+HKLM,"SYSTEM\CurrentControlSet\Services\RamDisk","Type",0x00010001,0x00000001
 
 ; Filesystem Filter Manager driver
 HKLM,"SYSTEM\CurrentControlSet\Services\fltmgr","ErrorControl",0x00010001,0x00000003
@@ -2257,7 +2235,6 @@ HKLM,"SYSTEM\CurrentControlSet\Services\Disk","ImagePath",0x00020000,"system32\d
 HKLM,"SYSTEM\CurrentControlSet\Services\Disk","Start",0x00010001,0x00000000
 HKLM,"SYSTEM\CurrentControlSet\Services\Disk","Type",0x00010001,0x00000001
 
-HKLM,"SYSTEM\CurrentControlSet\Services\fastfat","Start",0x00010001,0x00000003
 
 [Strings]
 
@@ -2294,6 +2271,9 @@ SAMSS_SERVICE_DESCRIPTION="The startup of this service signals other services th
 
 SCHEDULE_SERVICE="Scheduler service"
 SCHEDULE_SERVICE_DESCRIPTION="Allows starting of programs at specific times."
+
+SECLOGON_SERVICE="Secondary Logon"
+SECLOGON_SERVICE_DESCRIPTION="Allows to start processes under alternative credentials."
 
 SERVER_SERVICE="Server"
 SERVER_SERVICE_DESCRIPTION="Supports sharing for file, printers and resources on the network."
@@ -2448,6 +2428,9 @@ SAMSS_SERVICE_DESCRIPTION="El arranque de este servicio señala a otros servicio
 SCHEDULE_SERVICE="Programador de tareas"
 SCHEDULE_SERVICE_DESCRIPTION="Permite iniciar programas automáticamente en unas horas o instantes específicos."
 
+SECLOGON_SERVICE="Secondary Logon"
+SECLOGON_SERVICE_DESCRIPTION="Allows to start processes under alternative credentials."
+
 SERVER_SERVICE="Servidor"
 SERVER_SERVICE_DESCRIPTION="Ofrece compatibilidad para archivos, impresoras y recursos en la red."
 
@@ -2601,6 +2584,9 @@ SAMSS_SERVICE_DESCRIPTION="Uruchomienie tej usługi informuje inne usługi, że 
 SCHEDULE_SERVICE="Usługa Harmonogram"
 SCHEDULE_SERVICE_DESCRIPTION="Umożliwia uruchamianie programów w określonym czasie."
 
+SECLOGON_SERVICE="Secondary Logon"
+SECLOGON_SERVICE_DESCRIPTION="Allows to start processes under alternative credentials."
+
 SERVER_SERVICE="Serwer"
 SERVER_SERVICE_DESCRIPTION="Oferuje udostępnianie w sieci plików, drukarek i potoków dla tego komputera."
 
@@ -2717,6 +2703,162 @@ US_INTERNATIONAL = "Międzynarodowy (USA)"
 UZBEK_CYRILLIC = "Uzbecki (Cyrylica)"
 VIETNAMESE = "Wietnamski"
 
+; LANG_PORTUGUESE SUBLANG_NEUTRAL
+[Strings.0016]
+
+; Services names and descriptions
+AUDIO_SERVICE="Serviços de Audio do ReactOS"
+AUDIO_SERVICE_DESCRIPTION="Fornece recursos de áudio para aplicações"
+
+BITS_SERVICE="Serviço de transferência inteligente em segundo plano"
+BITS_SERVICE_DESCRIPTION="Transfere dados entre clientes e servidores em segundo plano."
+
+BROWSER_SERVICE="Navegador de computador"
+BROWSER_SERVICE_DESCRIPTION="Mantém uma lista actualizada de computadores na rede e fornece essa lista aos computadores designados como navegadores."
+
+DCOMLAUNCH_SERVICE="DCOM - Lançador de processo de servidor"
+DCOMLAUNCH_SERVICE_DESCRIPTION="Fornece funcionalidades de lançamento para serviços DCOM."
+
+EVENTLOG_SERVICE="Registo de Eventos"
+EVENTLOG_SERVICE_DESCRIPTION="Regista eventos ou mensagens enviadas pelo sistema operativo num banco de dados acessíveis através do visualizador de eventos."
+
+MSISERVER_SERVICE="Instalador do ReactOS"
+MSISERVER_SERVICE_DESCRIPTION="Controla a instalação, manutenção e remoção de software empacotado como um MSI (Instalador do Windows)."
+
+NETLOGON_SERVICE="Inicio de sessão de rede"
+NETLOGON_SERVICE_DESCRIPTION="Suporta a autenticação pass-through dos eventos de início de sessão de conta para os computadores num domínio."
+
+PLUGPLAY_SERVICE="Plug and Play"
+PLUGPLAY_SERVICE_DESCRIPTION="Permite que o computador identifique e se adapte a alterações de hardware com pouca ou nenhuma intervenção do utilizador."
+
+RPCSS_SERVICE="Chamada de procedimento remoto (RPC)"
+RPCSS_SERVICE_DESCRIPTION="Fornece um mapeador de pontos finais e outros serviços RPC."
+
+SAMSS_SERVICE="Gestor de contas de segurança"
+SAMSS_SERVICE_DESCRIPTION="A iniciação deste serviço sinaliza a outros serviços que o Gestor de contas de segurança (SAM) está pronto para aceitar solicitações. A desactivação deste serviço impedirá que outros serviços no sistema sejam notificados quando o SAM estiver pronto, o que provocará a incorrecta iniciação desses serviços. Este serviço não deve ser desactivado."
+
+SCHEDULE_SERVICE="Programador de tarefas"
+SCHEDULE_SERVICE_DESCRIPTION="Permite ao utilizador configurar e agendar tarefas automatizadas neste computador. Se este serviço estiver parado, estas tarefas não serão executadas nas horas agendadas."
+
+SECLOGON_SERVICE="Inicio de sessão secundário"
+SECLOGON_SERVICE_DESCRIPTION="Activa processos de início sob credenciais alternativas."
+
+SERVER_SERVICE="Servidor"
+SERVER_SERVICE_DESCRIPTION="Suporta a partilha de ficheiros, impressoras e recursos de rede."
+
+SPOOLER_SERVICE="Spooler de impressão"
+SPOOLER_SERVICE_DESCRIPTION="Carrega ficheiros na memória para impressão posterior."
+
+TCPSVCS_SERVICE="Serviços TCP/IP simples"
+TCPSVCS_SERVICE_DECRIPTION="Soporta os seguintes serviços TCP/IP: Chargen, Daytime, Discard, Echo, QOTD."
+
+TELNETD_SERVICE="Serviço Telnet do ReactOS"
+TELNETD_SERVICE_DESCRIPTION="Permite que um utilizador remoto inicie sessão e execute programas neste computador."
+
+THEMES_SERVICE="Temas"
+THEMES_SERVICE_DESCRIPTION="Fornece a gestão de temas por parte dos utilizadores.."
+
+WINMGMT_SERVICE="Infra-estrutura de gestão do ReactOS"
+WINMGMT_SERVICE_DESCRIPTION="Fornece interface para informações de gestão do sistema."
+
+WLANSVC_SERVICE="Serviço WLAN"
+WLANSVC_SERVICE_DESCRIPTION="Serviço de redes inalámbricas WLAN."
+
+WORKSTATION_SERVICE="Estação de trabalho"
+WORKSTATION_SERVICE_DESCRIPTION="Cria e mantém cliente de ligações de rede a servidores remotos."
+
+WUAUSERV_SERVICE="Actualizações automáticas"
+WUAUSERV_SERVICE_DESCRIPTION="Permite a transferência e instalação de actualizações do ReactOS."
+
+; Keyboard layouts
+ALBANIAN = "Albanês"
+ARABIC_101 = "Árabe (101)"
+ARABIC_102 = "Árabe (102)"
+ARABIC_102_AZERTY = "Árabe (102) AZERTY"
+ARMENIAN_EASTERN = "Arménio oriental"
+ARMENIAN_WESTERN = "Arménio ocidental"
+ASSAMESE = "Asamês"
+AZERI_CYRILLIC = "Azerí cirílico"
+AZERI_LATIN = "Azerí latino"
+BELARUSIAN = "Bielorrusso"
+BELGIAN_DUTCH = "Belga (Holandês)"
+BELGIAN_FRENCH = "Belga (Francês)"
+BENGALI = "Bengalí"
+BENGALI_INSCRIPT = "Bengalí - INSCRIPT"
+BULGARIAN_BDS = "Búlgaro BDS 5237-1978"
+BULGARIAN_PHONETIC = "Búlgaro fonético clássico"
+BULGARIAN_PHONETIC_BDS = "Búlgaro fonético BDS 5237-2006"
+BURMESE = "Birmano"
+CANADIAN_FRENCH = "Francês canadense (Herdado)"
+CANADIAN_MULTILINGUAL = "Canadense estandarte multilingüe"
+CROATIAN = "Croata"
+CZECH = "Checo"
+CZECH_QWERTY = "Checo (QWERTY)"
+DANISH = "Danês"
+DEVANAGARI = "Devanagari - INSCRIPT"
+DUTCH = "Holandês"
+ESPERANTO = "Esperanto"
+ESTONIAN = "Estonio"
+GERMAN_ERGO = "Alemão (de_ergo)"
+GERMAN_NEO = "Alemão (NEO-1.1)"
+GERMAN_RISTOME = "Alemão (RISTOME)"
+GERMAN = "Alemão"
+GREEK = "Grêgo"
+GUJARATI = "Gujarati"
+IRISH = "Irlandês"
+FAEROESE = "Faeroese"
+FINNISH = "Finês"
+FRENCH = "Francês"
+GEORGIAN = "Georgiano"
+HEBREW = "Hebreu"
+HUNGARIAN = "Húngaro"
+ICELANDIC = "Islandês"
+ITALIAN = "Italiano"
+JAPANESE = "Japonês"
+KAZAKH = "Kazajo"
+KOREAN = "Coreano"
+LATIN_AMERICAN = "Espanhol (America Latina)"
+LATVIAN = "Letão"
+LATVIAN_QWERTY = "Letão (QWERTY)"
+LITHUANIAN = "Lituano"
+MACEDONIAN = "Macedonia (FYRO)"
+MALAYALAM = "Malabari"
+NORWEGIAN = "Norueguês"
+POLISH_214 = "Polaco (214)"
+POLISH_PROGRAMMERS = "Polaco (Programmers)"
+PORTUGESE = "Português (Portugal)"
+PORTUGESE_BRAZILIAN = "Português (Brasil ABNT2)"
+ROMANIAN_LEGACY = "Romano (Legacy)"
+ROMANIAN_STANDARD = "Romano (Standard)"
+RUSSIAN = "Russo"
+RUSSIAN_TYPEWRITER = "Russo (Máquina de escrever)"
+SERBIAN_CYRILLIC = "Sérvio (Cirílico)"
+SERBIAN_LATIN = "Sérvio (Latin)"
+SLOVAK = "Eslovaco"
+SLOVAK_QWERTY = "Eslovaco (QWERTY)"
+SPANISH = "Espanhol"
+SWEDISH = "Sueco"
+SWISS_FRENCH = "Suiço (Francês)"
+SWISS_GERMAN = "Suiço (Alemão)"
+TATAR = "Tártaro"
+THAI_KEDMANEE = "Tailandês Kedmanee"
+THAI_KEDMANEE_NON_SHIFTLOCK = "Tailandês Kedmanee (sin-BloqMayus)"
+THAI_PATTACHOTE = "Tailandês Pattachote"
+THAI_PATTACHOTE_NON_SHIFTLOCK = "Tailandês Pattachote (sin-BloqMayus)"
+TURKISH_Q = "Turco Q"
+TURKISH_F = "Turco F"
+UK = "Reino Unido"
+UKRAINIAN = "Ucraniano"
+UKRAINIAN_STUDENT = "Ucraniano (Estudantil)"
+US = "Estados Unidos"
+US_ARABIC = "Inglês EEUU (IBM Arabic 238_L)"
+US_DVORAK = "EEUU-Dvorak"
+US_DVORAK_LEFT = "EEUU Dvorak para surdos"
+US_DVORAK_RIGHT = "EEUU Dvorak para destros"
+US_INTERNATIONAL = "EEUU Internacional"
+UZBEK_CYRILLIC = "Uzbek (Cyrillic)"
+VIETNAMESE = "Vietnamita"
+
 ; LANG_ROMANIAN SUBLANG_NEUTRAL
 [Strings.0018]
 
@@ -2750,6 +2892,9 @@ SAMSS_SERVICE_DESCRIPTION="The startup of this service signals other services th
 
 SCHEDULE_SERVICE="Serviciu de planificare"
 SCHEDULE_SERVICE_DESCRIPTION="Permite pornirea de programe la o anumită oră."
+
+SECLOGON_SERVICE="Secondary Logon"
+SECLOGON_SERVICE_DESCRIPTION="Allows to start processes under alternative credentials."
 
 SERVER_SERVICE="Server"
 SERVER_SERVICE_DESCRIPTION="Permite partajarea în rețea a fișierelor, imprimantelor și a altor resurse."
@@ -2904,6 +3049,9 @@ SAMSS_SERVICE_DESCRIPTION="The startup of this service signals other services th
 SCHEDULE_SERVICE="Планировщик заданий"
 SCHEDULE_SERVICE_DESCRIPTION="Позволяет запускать программы в определенное время."
 
+SECLOGON_SERVICE="Вторичный вход в систему"
+SECLOGON_SERVICE_DESCRIPTION="Позволяет запускать процессы под другими учётными данными."
+
 SERVER_SERVICE="Сервер"
 SERVER_SERVICE_DESCRIPTION="Поддержка совместного использования файлов, принтеров и ресурсов в сети."
 
@@ -2913,8 +3061,8 @@ SPOOLER_SERVICE_DESCRIPTION="Загружает файлы в память дл�
 TCPSVCS_SERVICE="Простые службы TCP/IP"
 TCPSVCS_SERVICE_DECRIPTION="Поддержка следующих служб TCP/IP: Chargen, Daytime, Discard, Echo, QOTD."
 
-TELNETD_SERVICE="ReactOS Telnet Service"
-TELNETD_SERVICE_DESCRIPTION="ReactOS Telnet Service"
+TELNETD_SERVICE="Служба ReactOS Telnet"
+TELNETD_SERVICE_DESCRIPTION="Служба ReactOS Telnet"
 
 THEMES_SERVICE="Темы"
 THEMES_SERVICE_DESCRIPTION="Поддержка тем оформления."
@@ -2928,8 +3076,8 @@ WLANSVC_SERVICE_DESCRIPTION="Обеспечивает поддержку бес�
 WORKSTATION_SERVICE="Рабочая станция"
 WORKSTATION_SERVICE_DESCRIPTION="Обеспечивает поддержку сетевых подключений и связь."
 
-WUAUSERV_SERVICE="Automatic Updates"
-WUAUSERV_SERVICE_DESCRIPTION="AutoUpdate Service stub."
+WUAUSERV_SERVICE="Автоматическое обновление"
+WUAUSERV_SERVICE_DESCRIPTION="Заглушка для службы автоматического обновления."
 
 ; Keyboard layouts
 ALBANIAN = "Албанская"
@@ -3056,6 +3204,9 @@ SAMSS_SERVICE_DESCRIPTION="Bu hizmetin başlaması, diğer hizmetlere Güvenlik 
 
 SCHEDULE_SERVICE="Zamanlayıcı hizmeti"
 SCHEDULE_SERVICE_DESCRIPTION="Programların belirli zamanlarda başlatılmasını sağlar."
+
+SECLOGON_SERVICE="Secondary Logon"
+SECLOGON_SERVICE_DESCRIPTION="Allows to start processes under alternative credentials."
 
 SERVER_SERVICE="Sunucu"
 SERVER_SERVICE_DESCRIPTION="Ağda dosya, yazıcı ve kaynakların paylaşımını destekler."

@@ -1,73 +1,69 @@
 /*
- * PROJECT:     PAINT for ReactOS
- * LICENSE:     LGPL
- * FILE:        base/applications/mspaint/selectionmodel.h
- * PURPOSE:     Keep track of selection parameters, notify listeners
- * PROGRAMMERS: Benedikt Freisen
- *              Katayama Hirofumi MZ
+ * PROJECT:    PAINT for ReactOS
+ * LICENSE:    LGPL-2.0-or-later (https://spdx.org/licenses/LGPL-2.0-or-later)
+ * PURPOSE:    Keep track of selection parameters, notify listeners
+ * COPYRIGHT:  Copyright 2015 Benedikt Freisen <b.freisen@gmx.net>
+ *             Copyright 2019-2023 Katayama Hirofumi MZ <katayama.hirofumi.mz@gmail.com>
  */
 
 #pragma once
 
-/* DEFINES **********************************************************/
-
-#define ACTION_MOVE                 0
-#define ACTION_RESIZE_TOP_LEFT      1
-#define ACTION_RESIZE_TOP           2
-#define ACTION_RESIZE_TOP_RIGHT     3
-#define ACTION_RESIZE_LEFT          4
-#define ACTION_RESIZE_RIGHT         5
-#define ACTION_RESIZE_BOTTOM_LEFT   6
-#define ACTION_RESIZE_BOTTOM        7
-#define ACTION_RESIZE_BOTTOM_RIGHT  8
-
-/* CLASSES **********************************************************/
-
 class SelectionModel
 {
 private:
-    HDC m_hDC;
-    RECT m_rcSrc;
-    RECT m_rcDest;
-    HBITMAP m_hBm;
-    HBITMAP m_hMask;
+    HBITMAP m_hbmColor;
+    HBITMAP m_hbmMask;
     POINT *m_ptStack;
     int m_iPtSP;
 
-//     void NotifySelectionChanging();
-//     void NotifySelectionChanged();
-    void NotifyRefreshNeeded();
-
 public:
+    COLORREF m_rgbBack;
+    BOOL m_bShow;
+    BOOL m_bContentChanged;
+    CRect m_rc;    // in image pixel coordinates
+    POINT m_ptHit; // in image pixel coordinates
+    CRect m_rcOld; // in image pixel coordinates
+
     SelectionModel();
     ~SelectionModel();
+
     void ResetPtStack();
-    void PushToPtStack(LONG x, LONG y);
-    void CalculateBoundingBoxAndContents(HDC hDCImage);
-    void CalculateContents(HDC hDCImage);
+    void PushToPtStack(POINT pt);
+    int PtStackSize() const;
+    void SetRectFromPoints(const POINT& ptFrom, const POINT& ptTo);
+    void BuildMaskFromPtStack();
+
+    BOOL TakeOff();
+    void Landing();
+    BOOL IsLanded() const;
+    void HideSelection();
+    void DeleteSelection();
+
+    HBITMAP CopyBitmap();
+    void GetSelectionContents(HDC hDCImage);
+    void DrawFramePoly(HDC hDCImage);
+    void DrawBackground(HDC hDCImage);
     void DrawBackgroundPoly(HDC hDCImage, COLORREF crBg);
     void DrawBackgroundRect(HDC hDCImage, COLORREF crBg);
     void DrawSelection(HDC hDCImage, COLORREF crBg = 0, BOOL bBgTransparent = FALSE);
-    void DrawSelectionStretched(HDC hDCImage);
-    void ScaleContentsToFit();
-    void InsertFromHBITMAP(HBITMAP hBm);
+    void InsertFromHBITMAP(HBITMAP hbmColor, INT x = 0, INT y = 0, HBITMAP hbmMask = NULL);
+
+    // operation
     void FlipHorizontally();
     void FlipVertically();
     void RotateNTimes90Degrees(int iN);
-    HBITMAP GetBitmap() const;
-    int PtStackSize() const;
-    void DrawFramePoly(HDC hDCImage);
-    void SetSrcAndDestRectFromPoints(const POINT& ptFrom, const POINT& ptTo);
-    void SetSrcRectSizeToZero();
-    BOOL IsSrcRectSizeNonzero() const;
-    void ModifyDestRect(POINT& ptDelta, int iAction);
-    LONG GetDestRectWidth() const;
-    LONG GetDestRectHeight() const;
-    LONG GetDestRectLeft() const;
-    LONG GetDestRectTop() const;
-    void DrawTextToolText(HDC hDCImage, COLORREF crFg, COLORREF crBg, BOOL bBgTransparent = FALSE);
+    void StretchSkew(int nStretchPercentX, int nStretchPercentY, int nSkewDegX, int nSkewDegY);
+    void InvertSelection();
+
+    void Dragging(HITTEST hit, POINT pt);
+    void ClearMask();
+    void ClearColor();
+    void NotifyContentChanged();
 
 private:
     SelectionModel(const SelectionModel&);
     SelectionModel& operator=(const SelectionModel&);
+
+    void ShiftPtStack(INT dx, INT dy);
+    void SwapWidthAndHeight();
 };

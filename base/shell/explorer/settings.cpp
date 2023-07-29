@@ -25,11 +25,13 @@ TaskbarSettings g_TaskbarSettings;
 BOOL TaskbarSettings::Save()
 {
     SHSetValueW(hkExplorer, NULL, L"EnableAutotray", REG_DWORD, &bHideInactiveIcons, sizeof(bHideInactiveIcons));
+    SHSetValueW(hkExplorer, L"Advanced", L"PreferDateOverWeekday", REG_DWORD, &bPreferDate, sizeof(bPreferDate));
     SHSetValueW(hkExplorer, L"Advanced", L"ShowSeconds", REG_DWORD, &bShowSeconds, sizeof(bShowSeconds));
     SHSetValueW(hkExplorer, L"Advanced", L"TaskbarGlomming", REG_DWORD, &bGroupButtons, sizeof(bGroupButtons));
     BOOL bAllowSizeMove = !bLock;
     SHSetValueW(hkExplorer, L"Advanced", L"TaskbarSizeMove", REG_DWORD, &bAllowSizeMove, sizeof(bAllowSizeMove));
     sr.cbSize = sizeof(sr);
+    SHSetValueW(hkExplorer, L"Advanced", L"TaskbarSmallIcons", REG_DWORD, &bSmallIcons, sizeof(bSmallIcons));
     SHSetValueW(hkExplorer, L"StuckRects2", L"Settings", REG_BINARY, &sr, sizeof(sr));
 
     /* TODO: AutoHide writes something to HKEY_CURRENT_USER\Software\Microsoft\Internet Explorer\Desktop\Components\0 figure out what and why */
@@ -44,6 +46,9 @@ BOOL TaskbarSettings::Load()
     dwRet = SHGetValueW(hkExplorer, L"Advanced", L"TaskbarSizeMove", NULL, &dwValue, &cbSize);
     bLock = (dwRet == ERROR_SUCCESS) ? (dwValue == 0) : TRUE;
 
+    dwRet = SHGetValueW(hkExplorer, L"Advanced", L"PreferDateOverWeekday", NULL, &dwValue, &cbSize);
+    bPreferDate = (dwRet == ERROR_SUCCESS) ? (dwValue != 0) : FALSE; /* This is opt-in setting */
+
     dwRet = SHGetValueW(hkExplorer, L"Advanced", L"ShowSeconds", NULL, &dwValue, &cbSize);
     bShowSeconds = (dwRet == ERROR_SUCCESS) ? (dwValue != 0) : FALSE;
 
@@ -52,6 +57,9 @@ BOOL TaskbarSettings::Load()
 
     dwRet = SHGetValueW(hkExplorer, NULL, L"EnableAutotray", NULL, &dwValue, &cbSize);
     bHideInactiveIcons = (dwRet == ERROR_SUCCESS) ? (dwValue != 0) : FALSE;
+
+    dwRet = SHGetValueW(hkExplorer, L"Advanced", L"TaskbarSmallIcons", NULL, &dwValue, &cbSize);
+    bSmallIcons = (dwRet == ERROR_SUCCESS) ? (dwValue != 0) : TRUE;
 
     cbSize = sizeof(sr);
     dwRet = SHGetValueW(hkExplorer, L"StuckRects2", L"Settings", NULL, &sr, &cbSize);

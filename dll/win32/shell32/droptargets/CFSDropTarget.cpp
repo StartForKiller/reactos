@@ -40,7 +40,8 @@ static WCHAR* BuildPathsList(LPCWSTR wszBasePath, int cidl, LPCITEMIDLIST *pidls
         FileStructW* pDataW = _ILGetFileStructW(pidls[i]);
         if (!pDataW)
         {
-            ERR("Got garbage pidl\n");
+            ERR("Mistreating a pidl:\n");
+            pdump_always(pidls[i]);
             continue;
         }
 
@@ -73,7 +74,7 @@ HRESULT CFSDropTarget::_CopyItems(IShellFolder * pSFFrom, UINT cidl,
 
     STRRET strretFrom;
     hr = pSFFrom->GetDisplayNameOf(NULL, SHGDN_FORPARSING, &strretFrom);
-    if (FAILED_UNEXPECTEDLY(hr))
+    if (hr != S_OK)
         return hr;
 
     pszSrcList = BuildPathsList(strretFrom.pOleStr, cidl, apidl);

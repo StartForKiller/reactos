@@ -80,9 +80,9 @@ IDM_DRAGFILE MENU
 BEGIN
     POPUP ""
     BEGIN
-        MENUITEM "Hierher kopieren", IDM_COPYHERE
-        MENUITEM "Hierher verschieben", IDM_MOVEHERE
-        MENUITEM "Verknüpfung hier erstellen", IDM_LINKHERE
+        MENUITEM "Hierher &kopieren", IDM_COPYHERE
+        MENUITEM "Hierher &verschieben", IDM_MOVEHERE
+        MENUITEM "Verknüpfung hier &erstellen", IDM_LINKHERE
         MENUITEM SEPARATOR
         MENUITEM "Abbrechen", 0
     END
@@ -135,7 +135,7 @@ BEGIN
     ICON "", IDC_ABOUT_ICON, 7, 55, 21, 20
     LTEXT "", IDC_ABOUT_APPNAME, 35, 55, 200, 10, SS_NOPREFIX
     LTEXT "", IDC_ABOUT_VERSION, 35, 65, 250, 10, SS_NOPREFIX
-    LTEXT "Copyright 1998-", IDC_STATIC, 35, 75, 53, 10
+    LTEXT "Copyright 1996-", IDC_STATIC, 35, 75, 53, 10
     LTEXT COPYRIGHT_YEAR, IDC_STATIC, 88, 75, 17, 10
     LTEXT " Das ReactOS Team\0", IDC_STATIC, 105, 75, 70, 10
     LTEXT "", IDC_ABOUT_OTHERSTUFF, 35, 90, 180, 20, SS_NOPREFIX
@@ -239,7 +239,7 @@ BEGIN
     AUTOCHECKBOX "&Schreibgeschützt", 14021, 58, 151, 65, 10
     AUTOCHECKBOX "&Versteckt", 14022, 136, 151, 50, 10
     AUTOCHECKBOX "&Archiv", 14023, 191, 151, 50, 10
-    PUSHBUTTON "Er&weitert...", 14028, 158, 150, 70, 14, WS_CHILD | WS_VISIBLE | WS_TABSTOP
+    PUSHBUTTON "Er&weitert...", 14028, 158, 170, 70, 14, WS_CHILD | WS_VISIBLE | WS_TABSTOP
 END
 
 IDD_FILE_PROPERTIES DIALOGEX 0, 0, 240, 205
@@ -321,12 +321,12 @@ BEGIN
     LTEXT "Speicherkapazität:", -1, 25, 103, 80, 10
     EDITTEXT 14007, 110, 103, 86, 10, ES_LEFT | ES_READONLY | NOT WS_BORDER | NOT WS_TABSTOP | ES_AUTOHSCROLL
     EDITTEXT 14008, 197, 103, 33, 10, ES_LEFT | ES_READONLY | NOT WS_BORDER | NOT WS_TABSTOP | ES_AUTOHSCROLL
-    CONTROL "", 14015, "Static", SS_OWNERDRAW, 70, 116, 100, 30
-    LTEXT "Laufwerk %c", 14009, 100, 150, 70, 10
-    PUSHBUTTON "&Bereinigen", 14010, 160, 154, 70, 15, WS_TABSTOP
-    LTEXT "", -1, 8, 171, 223, 1, SS_ETCHEDHORZ | WS_CHILD | WS_VISIBLE
-    CHECKBOX "Laufwerk komprimieren, um Speicherplatz zu sparen", 14011, 8, 191, 222, 10, WS_DISABLED
-    CHECKBOX "Laufwerk für schnelle Dateisuche indizieren", 14012, 8, 205, 222, 10, WS_DISABLED
+    CONTROL "", 14015, "Static", SS_OWNERDRAW, 70, 116, 100, 40
+    CTEXT "Laufwerk %c", 14009, 95, 162, 50, 10
+    PUSHBUTTON "&Bereinigen", 14010, 160, 159, 70, 15, WS_TABSTOP
+    LTEXT "", -1, 8, 176, 223, 1, SS_ETCHEDHORZ | WS_CHILD | WS_VISIBLE
+    CHECKBOX "Laufwerk komprimieren, um Speicherplatz zu sparen", 14011, 8, 200, 222, 10, WS_DISABLED
+    CHECKBOX "Laufwerk für schnelle Dateisuche indizieren", 14012, 8, 214, 222, 10, WS_DISABLED
 END
 
 IDD_DRIVE_TOOLS DIALOGEX 0, 0, 240, 230
@@ -336,7 +336,7 @@ FONT 8, "MS Shell Dlg", 0, 0, 0x0
 BEGIN
     GROUPBOX "Fehlerüberprüfung", -1, 5, 5, 230, 60
     ICON IDI_SHELL_TOOLS_CHKDSK, IDC_STATIC, 13, 25, 21, 20
-    LTEXT "Bei Wahl dieser Option wird der Datenträger\nauf Fehler überprüft.", -1, 40, 25, 160, 20
+    LTEXT "Bei Wahl dieser Option wird der Datenträger auf Fehler überprüft.", -1, 40, 25, 160, 20
     PUSHBUTTON "Jetzt &prüfen...", 14000, 130, 45, 90, 15, WS_TABSTOP
     GROUPBOX "Defragmentierung", -1, 5, 65, 230, 60
     ICON IDI_SHELL_TOOLS_DEFRAG, IDC_STATIC, 13, 85, 21, 20
@@ -434,7 +434,7 @@ FONT 8, "MS Shell Dlg", 0, 0, 0x0
 BEGIN
     GROUPBOX "Ordneransicht", -1, 7, 10, 249, 60
     ICON IDI_SHELL_PROGRAMS_FOLDER2, IDC_STATIC, 20, 20, 21, 20
-    LTEXT "Sie können die Ansicht (Details oder Kacheln), die Sie für\ndiesen Ordner verwenden, auf alle Ordner anwenden.", -1, 60, 20, 180, 20
+    LTEXT "Sie können die Ansicht (Details oder Kacheln), die Sie für diesen Ordner verwenden, auf alle Ordner anwenden.", -1, 60, 20, 180, 20
     PUSHBUTTON "Auf a&lle Ordner anwenden", IDC_VIEW_APPLY_TO_ALL, 60, 50, 90, 14, WS_TABSTOP
     PUSHBUTTON "&Alle Ordner zurücksetzen", IDC_VIEW_RESET_ALL, 160, 50, 90, 14, WS_TABSTOP
     LTEXT "Erweiterte Einstellungen:", -1, 7, 80, 100, 10
@@ -498,11 +498,11 @@ FONT 8, "MS Shell Dlg"
 BEGIN
     CONTROL IDB_DLG_BG, IDC_STATIC, "STATIC", SS_BITMAP | SS_REALSIZECONTROL, 0, 0, 208, 122
     CONTROL IDB_REACTOS_FLAG, IDC_STATIC, "STATIC", SS_BITMAP, 176, 1, 32, 26
-    PUSHBUTTON "&Switch User", IDC_SWITCH_USER_BUTTON, 55, 46, 22, 20, BS_OWNERDRAW | WS_DISABLED | WS_GROUP
+    PUSHBUTTON "&Benutzer wechseln", IDC_SWITCH_USER_BUTTON, 55, 46, 22, 20, BS_OWNERDRAW | WS_DISABLED | WS_GROUP
     PUSHBUTTON "&Abmelden", IDC_LOG_OFF_BUTTON, 132, 46, 22, 20, BS_OWNERDRAW
     PUSHBUTTON "Abbrechen", IDCANCEL, 162, 103, 40, 12, WS_GROUP | BS_FLAT
     LTEXT "Abmelden", IDC_LOG_OFF_TEXT_STATIC, 4, 7, 130, 19
-    CTEXT "Switch User", IDC_SWITCH_USER_STATIC, 41, 70, 51, 11
+    CTEXT "Benutzer wechseln", IDC_SWITCH_USER_STATIC, 41, 70, 51, 11
     CTEXT "Abmelden", IDC_LOG_OFF_STATIC, 118, 70, 51, 11
 END
 
@@ -806,9 +806,11 @@ BEGIN
     IDS_COPYERRORSAME "'%s' kann nicht kopiert werden: Quell- und Zieldatei sind identisch."
     IDS_MOVEERRORSUBFOLDER "'%s' kann nicht verschoben werden: Der Zielorder ist ein Unterordner des Quellordners."
     IDS_COPYERRORSUBFOLDER "'%s' kann nicht kopiert werden: Der Zielorder ist ein Unterordner des Quellordners."
-    IDS_MOVEERROR "Cannot move '%s': %s"
-    IDS_COPYERROR "Cannot copy '%s': %s"
+    IDS_MOVEERROR "'%s' kann nicht verschoben werden: %s"
+    IDS_COPYERROR "'%s' kann nicht kopiert werden: %s"
 
+    IDS_CREATEFILE_DENIED "Could not create file %1"
+    IDS_CREATEFILE_CAPTION "Error creating file"
     IDS_CREATEFOLDER_DENIED " Der Ordner kann nicht erstellt werden '%1'"
     IDS_CREATEFOLDER_CAPTION " Der Ordner kann nicht erstellt werden."
     IDS_DELETEITEM_CAPTION "Bestätigung: Objekt löschen"
@@ -829,7 +831,7 @@ BEGIN
     IDS_FILEOOP_DELETING "Löschen"
     IDS_FILEOOP_FROM_TO "von %1 nach %2"
     IDS_FILEOOP_FROM "von %1"
-    IDS_FILEOOP_PREFLIGHT "Preflight"
+    IDS_FILEOOP_PREFLIGHT "Vorbereiten"
 
     /* message box strings */
     IDS_RESTART_TITLE "Neu starten"
@@ -843,8 +845,8 @@ BEGIN
     IDS_FORMAT_COMPLETE "Formatieren abgeschlossen."
 
     /* Warning format system drive dialog strings */
-    IDS_NO_FORMAT_TITLE "Cannot format this volume"
-    IDS_NO_FORMAT "This volume cannot be formatted! It contains important system files in order for ReactOS to run."
+    IDS_NO_FORMAT_TITLE "Formatieren des Laufwerks nicht möglich"
+    IDS_NO_FORMAT "Dieses Laufwerk kann nicht formatiert werden!\nEs enthält wichtige Systemdateien, welche zur Ausführung von ReactOS benötigt werden."
 
     /* Run File dialog */
     IDS_RUNDLG_ERROR "Anzeigen der Datei Ausführen Dialogbox nicht möglich (interner Fehler)"
@@ -883,6 +885,7 @@ BEGIN
     IDS_NETWORKPLACE "Netzwerkumgebung"
 
     IDS_NEWFOLDER "Neuer Ordner"
+    IDS_NEWITEMFORMAT "New %s"
 
     IDS_DRIVE_FIXED "Lokaler Datenträger"
     IDS_DRIVE_CDROM "CD-Laufwerk"
@@ -899,7 +902,7 @@ BEGIN
 
     IDS_SHELL_ABOUT_AUTHORS "&Autoren"
     IDS_SHELL_ABOUT_BACK "< &Zurück"
-    FCIDM_SHVIEW_NEW "Neu"
+    FCIDM_SHVIEW_NEW "Ne&w" /* A menu item with an ampersand */
     FCIDM_SHVIEW_NEWFOLDER "Neues Ver&zeichnis"
     FCIDM_SHVIEW_NEWLINK "Neuer Ver&weis"
     IDS_FOLDER_OPTIONS "Ordneroptionen"
@@ -952,7 +955,7 @@ BEGIN
     IDS_EDIT_VERB "Bearbeiten"
     IDS_FIND_VERB "Finden"
     IDS_PRINT_VERB "Drucken"
-    IDS_CMD_VERB "Command Prompt hier"
+    IDS_CMD_VERB "Cmd hier"
 
     IDS_FILE_FOLDER "%u Dateien, %u Ordner"
     IDS_PRINTERS "Drucker"
@@ -980,6 +983,11 @@ BEGIN
     IDS_MENU_EMPTY "(Leer)"
     IDS_OBJECTS "%d Objekte"
     IDS_OBJECTS_SELECTED "%d Objekte ausgewählt"
+
+    IDS_TITLE_MYCOMP "Arbeitsplatz"
+    IDS_TITLE_MYNET "Netzwerkumgebung"
+    IDS_TITLE_BIN_1 "Papierkorb (voll)"
+    IDS_TITLE_BIN_0 "Papierkorb (leer)"
 
     IDS_ADVANCED_FOLDER "Dateien und Ordner"
     IDS_ADVANCED_NET_CRAWLER "Automatisch nach Netzwerkordnern und Druckern suchen"
@@ -1030,8 +1038,8 @@ BEGIN
     IDS_SYSTEMFOLDER "Systemordner"
 
     /* For IDD_LOG_OFF_FANCY */
-    IDS_LOG_OFF_DESC "Closes your programs and ends your ReactOS session."
-    IDS_SWITCH_USER_DESC "Lets another user log on while your programs and files remain open.\r\n\r\n(You can also switch users by pressing the Windows logo key + L.)"
+    IDS_LOG_OFF_DESC "Schließt Ihre Programme und beendet Ihre ReactOS-Sitzung."
+    IDS_SWITCH_USER_DESC "Ermöglicht es einem anderen Benutzer sich anzumelden, während Ihre Programme und Dateien geöffnet bleiben.\r\n\r\n(Sie können Benutzer auch mittels des Drückens von Windows + L wechseln.)"
     IDS_LOG_OFF_TITLE "Abmelden"
-    IDS_SWITCH_USER_TITLE "Switch User"
+    IDS_SWITCH_USER_TITLE "Benutzer wechseln"
 END

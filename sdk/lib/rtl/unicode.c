@@ -101,7 +101,7 @@ RtlAnsiStringToUnicodeString(
 
     if (NlsMbCodePageTag == FALSE)
     {
-        Length = AnsiSource->Length * 2 + sizeof(WCHAR);
+        Length = (AnsiSource->Length + 1) * sizeof(WCHAR);
     }
     else
     {
@@ -1356,7 +1356,7 @@ RtlIsTextUnicode(CONST VOID* buf, INT len, INT* pf)
         }
     }
 
-    if (NlsMbCodePageTag)
+    if (NlsMbCodePageTag && pf && (*pf & IS_TEXT_UNICODE_DBCS_LEADBYTE))
     {
         for (i = 0; i < len; i++)
         {
@@ -1378,8 +1378,7 @@ RtlIsTextUnicode(CONST VOID* buf, INT len, INT* pf)
             else
                 weight = 1;
 
-            if (pf && (*pf & IS_TEXT_UNICODE_DBCS_LEADBYTE))
-                out_flags |= IS_TEXT_UNICODE_DBCS_LEADBYTE;
+            out_flags |= IS_TEXT_UNICODE_DBCS_LEADBYTE;
         }
     }
 
@@ -2236,7 +2235,7 @@ RtlCopyString(
     PCHAR p1, p2;
 
     /* Check if there was no source given */
-    if(!SourceString)
+    if (!SourceString)
     {
         /* Simply return an empty string */
         DestinationString->Length = 0;
@@ -2275,7 +2274,7 @@ RtlCopyUnicodeString(
 {
     ULONG SourceLength;
 
-    if(SourceString == NULL)
+    if (!SourceString)
     {
         DestinationString->Length = 0;
     }
@@ -2431,7 +2430,7 @@ RtlAppendUnicodeToString(IN OUT PUNICODE_STRING Destination,
         Destination->Length += Length;
 
         /* append terminating '\0' if enough space */
-        if(Destination->MaximumLength > Destination->Length)
+        if (Destination->MaximumLength > Destination->Length)
         {
             DestBuffer[Length / sizeof(WCHAR)] = UNICODE_NULL;
         }

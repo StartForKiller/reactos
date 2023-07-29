@@ -10,6 +10,7 @@
  */
 
 #include <user32.h>
+#include <ddk/immdev.h>
 
 WINE_DEFAULT_DEBUG_CHANNEL(user32);
 
@@ -389,11 +390,11 @@ User32DefWindowProc(HWND hWnd,
             {
                 if (bUnicode)
                 {
-                    SendMessageW(GetParent(hWnd), Msg, wParam, lParam);
+                    SendMessageW(GetParent(hWnd), Msg, (WPARAM)hWnd, lParam);
                 }
                 else
                 {
-                    SendMessageA(GetParent(hWnd), WM_CONTEXTMENU, wParam, lParam);
+                    SendMessageA(GetParent(hWnd), Msg, (WPARAM)hWnd, lParam);
                 }
             }
             else
@@ -560,7 +561,7 @@ User32DefWindowProc(HWND hWnd,
             else if(wParam & INPUTLANGCHANGE_FORWARD) NewHkl = (HKL) HKL_NEXT;
             else NewHkl = (HKL) lParam;
 
-            NtUserActivateKeyboardLayout(NewHkl, 0);
+            NtUserActivateKeyboardLayout(NewHkl, KLF_SETFORPROCESS);
 
             return TRUE;
         }
@@ -951,16 +952,16 @@ RealDefWindowProcA(HWND hWnd,
             LONG size, i;
             unsigned char lead = 0;
             char *buf = NULL;
-            HIMC himc = ImmGetContext( hWnd );
+            HIMC himc = IMM_FN(ImmGetContext)( hWnd );
 
             if (himc)
             {
-                if ((size = ImmGetCompositionStringA( himc, GCS_RESULTSTR, NULL, 0 )))
+                if ((size = IMM_FN(ImmGetCompositionStringA)( himc, GCS_RESULTSTR, NULL, 0 )))
                 {
                     if (!(buf = HeapAlloc( GetProcessHeap(), 0, size ))) size = 0;
-                    else size = ImmGetCompositionStringA( himc, GCS_RESULTSTR, buf, size );
+                    else size = IMM_FN(ImmGetCompositionStringA)( himc, GCS_RESULTSTR, buf, size );
                 }
-                ImmReleaseContext( hWnd, himc );
+                IMM_FN(ImmReleaseContext)( hWnd, himc );
 
                 for (i = 0; i < size; i++)
                 {
@@ -987,26 +988,42 @@ RealDefWindowProcA(HWND hWnd,
         case WM_IME_SELECT:
         case WM_IME_NOTIFY:
         case WM_IME_CONTROL:
-        {
-            HWND hwndIME;
-
-            hwndIME = ImmGetDefaultIMEWnd(hWnd);
-            if (hwndIME)
-                Result = SendMessageA(hwndIME, Msg, wParam, lParam);
-            break;
-        }
-
         case WM_IME_SETCONTEXT:
+NormalImeMsgHandling:
         {
             HWND hwndIME;
 
-            hwndIME = ImmGetDefaultIMEWnd(hWnd);
-            if (hwndIME)
-                Result = ImmIsUIMessageA(hwndIME, Msg, wParam, lParam);
+            if (GetWin32ClientInfo()->dwTIFlags & TIF_DISABLEIME)
+            {
+                TRACE("This thread's IME is disabled\n");
+                break;
+            }
+
+            hwndIME = IMM_FN(ImmGetDefaultIMEWnd)(hWnd);
+            if (!hwndIME)
+            {
+                ERR("hwndIME was NULL\n");
+                break;
+            }
+
+            if (hwndIME == hWnd)
+            {
+                ImeWndProc_common(hwndIME, Msg, wParam, lParam, FALSE);
+                break;
+            }
+
+            Result = SendMessageA(hwndIME, Msg, wParam, lParam);
             break;
         }
 
-        /* fall through */
+        case WM_IME_SYSTEM:
+        {
+            if (wParam == 4)
+                break;
+
+            goto NormalImeMsgHandling;
+        }
+
         default:
             Result = User32DefWindowProc(hWnd, Msg, wParam, lParam, FALSE);
     }
@@ -1150,16 +1167,16 @@ RealDefWindowProcW(HWND hWnd,
         {
             LONG size, i;
             WCHAR *buf = NULL;
-            HIMC himc = ImmGetContext( hWnd );
+            HIMC himc = IMM_FN(ImmGetContext)( hWnd );
 
             if (himc)
             {
-                if ((size = ImmGetCompositionStringW( himc, GCS_RESULTSTR, NULL, 0 )))
+                if ((size = IMM_FN(ImmGetCompositionStringW)( himc, GCS_RESULTSTR, NULL, 0 )))
                 {
                     if (!(buf = HeapAlloc( GetProcessHeap(), 0, size * sizeof(WCHAR) ))) size = 0;
-                    else size = ImmGetCompositionStringW( himc, GCS_RESULTSTR, buf, size * sizeof(WCHAR) );
+                    else size = IMM_FN(ImmGetCompositionStringW)( himc, GCS_RESULTSTR, buf, size * sizeof(WCHAR) );
                 }
-                ImmReleaseContext( hWnd, himc );
+                IMM_FN(ImmReleaseContext)( hWnd, himc );
 
                 for (i = 0; i < size / sizeof(WCHAR); i++)
                     SendMessageW( hWnd, WM_IME_CHAR, buf[i], 1 );
@@ -1172,23 +1189,40 @@ RealDefWindowProcW(HWND hWnd,
         case WM_IME_SELECT:
         case WM_IME_NOTIFY:
         case WM_IME_CONTROL:
+        case WM_IME_SETCONTEXT:
+NormalImeMsgHandling:
         {
             HWND hwndIME;
 
-            hwndIME = ImmGetDefaultIMEWnd(hWnd);
-            if (hwndIME)
-                Result = SendMessageW(hwndIME, Msg, wParam, lParam);
+            if (GetWin32ClientInfo()->dwTIFlags & TIF_DISABLEIME)
+            {
+                TRACE("This thread's IME is disabled\n");
+                break;
+            }
+
+            hwndIME = IMM_FN(ImmGetDefaultIMEWnd)(hWnd);
+            if (!hwndIME)
+            {
+                ERR("hwndIME was NULL\n");
+                break;
+            }
+
+            if (hwndIME == hWnd)
+            {
+                ImeWndProc_common(hwndIME, Msg, wParam, lParam, TRUE);
+                break;
+            }
+
+            Result = SendMessageW(hwndIME, Msg, wParam, lParam);
             break;
         }
 
-        case WM_IME_SETCONTEXT:
+        case WM_IME_SYSTEM:
         {
-            HWND hwndIME;
+            if (wParam == 4)
+                break;
 
-            hwndIME = ImmGetDefaultIMEWnd(hWnd);
-            if (hwndIME)
-                Result = ImmIsUIMessageW(hwndIME, Msg, wParam, lParam);
-            break;
+            goto NormalImeMsgHandling;
         }
 
         default:

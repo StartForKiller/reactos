@@ -1,5 +1,5 @@
 #pragma once
-#include "internal/kd.h"
+#include "../kd/kd.h"
 
 /* TYPES *********************************************************************/
 
@@ -51,12 +51,6 @@ typedef enum _KDB_ENTER_CONDITION
    KdbEnterFromUmode
 } KDB_ENTER_CONDITION;
 
-/* These values MUST be nonzero.  They're used as bit masks. */
-typedef enum _KDB_OUTPUT_SETTINGS
-{
-   KD_DEBUG_KDSERIAL = 1,
-   KD_DEBUG_KDNOECHO = 2
-} KDB_OUTPUT_SETTINGS;
 
 /* FUNCTIONS *****************************************************************/
 
@@ -64,12 +58,12 @@ typedef enum _KDB_OUTPUT_SETTINGS
 
 LONG
 KdbpDisassemble(
-   IN ULONG Address,
+   IN ULONG_PTR Address,
    IN ULONG IntelSyntax);
 
 LONG
 KdbpGetInstLength(
-   IN ULONG Address);
+   IN ULONG_PTR Address);
 
 /* from i386/kdb_help.S */
 
@@ -82,13 +76,19 @@ KdbpStackSwitchAndCall(
 
 extern PCHAR KdbInitFileBuffer;
 
+NTSTATUS
+NTAPI
+KdbInitialize(
+    _In_ PKD_DISPATCH_TABLE DispatchTable,
+    _In_ ULONG BootPhase);
+
 BOOLEAN
 NTAPI
 KdbRegisterCliCallback(
     PVOID Callback,
     BOOLEAN Deregister);
 
-VOID
+NTSTATUS
 KdbpCliInit(VOID);
 
 VOID
@@ -96,16 +96,30 @@ KdbpCliMainLoop(
    IN BOOLEAN EnteredOnSingleStep);
 
 VOID
-KdbpCliModuleLoaded(
-   IN PUNICODE_STRING Name);
-
-VOID
 KdbpCliInterpretInitFile(VOID);
 
 VOID
+KdbpCommandHistoryAppend(
+    _In_ PCSTR Command);
+
+PCSTR
+KdbGetHistoryEntry(
+    _Inout_ PLONG NextIndex,
+    _In_ BOOLEAN Next);
+
+VOID
+KdbpPager(
+    _In_ PCHAR Buffer,
+    _In_ ULONG BufLength);
+
+VOID
 KdbpPrint(
-   IN PCHAR Format,
-   IN ...  OPTIONAL);
+    _In_ PSTR Format,
+    _In_ ...);
+
+VOID
+KdbpPrintUnicodeString(
+    _In_ PCUNICODE_STRING String);
 
 BOOLEAN
 NTAPI
@@ -148,13 +162,16 @@ KdbpSymFindModule(
 BOOLEAN
 KdbSymPrintAddress(
     IN PVOID Address,
-    IN PCONTEXT Context
-);
+    IN PCONTEXT Context);
 
 VOID
 KdbSymProcessSymbols(
     _Inout_ PLDR_DATA_TABLE_ENTRY LdrEntry,
     _In_ BOOLEAN Load);
+
+BOOLEAN
+KdbSymInit(
+    _In_ ULONG BootPhase);
 
 /* from kdb.c */
 
@@ -164,7 +181,6 @@ extern LONG KdbLastBreakPointNr;
 extern ULONG KdbNumSingleSteps;
 extern BOOLEAN KdbSingleStepOver;
 extern PKDB_KTRAP_FRAME KdbCurrentTrapFrame;
-extern ULONG KdbDebugState;
 
 LONG
 KdbpGetNextBreakPointNr(
@@ -229,8 +245,8 @@ KdbpAttachToProcess(
    PVOID ProcessId);
 
 VOID
-NTAPI
-KdbpGetCommandLineSettings(PCHAR p1);
+KdbpGetCommandLineSettings(
+    _In_ PCSTR p1);
 
 KD_CONTINUE_TYPE
 KdbEnterDebuggerException(IN PEXCEPTION_RECORD64 ExceptionRecord,
@@ -238,11 +254,23 @@ KdbEnterDebuggerException(IN PEXCEPTION_RECORD64 ExceptionRecord,
                           IN OUT PCONTEXT Context,
                           IN BOOLEAN FirstChance);
 
-KD_CONTINUE_TYPE
-KdbEnterDebuggerFirstChanceException(
-    IN OUT PKTRAP_FRAME TrapFrame);
-
 /* other functions */
+
+BOOLEAN
+NTAPI
+KdpSafeReadMemory(
+    IN ULONG_PTR Addr,
+    IN LONG Len,
+    OUT PVOID Value
+);
+
+BOOLEAN
+NTAPI
+KdpSafeWriteMemory(
+    IN ULONG_PTR Addr,
+    IN LONG Len,
+    IN ULONGLONG Value
+);
 
 NTSTATUS
 KdbpSafeReadMemory(OUT PVOID Dest,
@@ -254,25 +282,41 @@ KdbpSafeWriteMemory(OUT PVOID Dest,
                     IN PVOID Src,
                     IN ULONG Bytes);
 
-#define KdbpGetCharKeyboard(ScanCode) KdbpTryGetCharKeyboard(ScanCode, 0)
-CHAR
-KdbpTryGetCharKeyboard(PULONG ScanCode, ULONG Retry);
-
-#define KdbpGetCharSerial()  KdbpTryGetCharSerial(0)
-CHAR
-KdbpTryGetCharSerial(ULONG Retry);
-
-VOID
-KdbEnter(VOID);
-VOID
-DbgRDebugInit(VOID);
-VOID
-DbgShowFiles(VOID);
-VOID
-DbgEnableFile(PCH Filename);
-VOID
-DbgDisableFile(PCH Filename);
 VOID
 KbdDisableMouse(VOID);
+
 VOID
 KbdEnableMouse(VOID);
+
+
+/* From kdb_print.c */
+
+VOID
+KdbPrintString(
+    _In_ const CSTRING* Output);
+
+USHORT
+KdbPromptString(
+    _In_ const CSTRING* PromptString,
+    _Inout_ PSTRING ResponseString);
+
+VOID
+KdbPutsN(
+    _In_ PCCH String,
+    _In_ USHORT Length);
+
+VOID
+KdbPuts(
+    _In_ PCSTR String);
+
+VOID
+__cdecl
+KdbPrintf(
+    _In_ PCSTR Format,
+    ...);
+
+SIZE_T
+KdbPrompt(
+    _In_ PCSTR Prompt,
+    _Out_ PCHAR Buffer,
+    _In_ SIZE_T Size);

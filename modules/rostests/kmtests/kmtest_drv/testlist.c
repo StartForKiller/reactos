@@ -39,6 +39,7 @@ KMT_TESTFUNC Test_KeApc;
 KMT_TESTFUNC Test_KeDeviceQueue;
 KMT_TESTFUNC Test_KeDpc;
 KMT_TESTFUNC Test_KeEvent;
+KMT_TESTFUNC Test_KeFloatPointState;
 KMT_TESTFUNC Test_KeGuardedMutex;
 KMT_TESTFUNC Test_KeIrql;
 KMT_TESTFUNC Test_KeMutex;
@@ -55,6 +56,7 @@ KMT_TESTFUNC Test_NpfsFileInfo;
 KMT_TESTFUNC Test_NpfsReadWrite;
 KMT_TESTFUNC Test_NpfsVolumeInfo;
 KMT_TESTFUNC Test_ObHandle;
+KMT_TESTFUNC Test_ObQuery;
 KMT_TESTFUNC Test_ObReference;
 KMT_TESTFUNC Test_ObSecurity;
 KMT_TESTFUNC Test_ObSymbolicLink;
@@ -63,6 +65,7 @@ KMT_TESTFUNC Test_ObTypeClean;
 KMT_TESTFUNC Test_ObTypeNoClean;
 KMT_TESTFUNC Test_ObTypes;
 KMT_TESTFUNC Test_PsNotify;
+KMT_TESTFUNC Test_PsQuota;
 KMT_TESTFUNC Test_SeInheritance;
 KMT_TESTFUNC Test_SeLogonSession;
 KMT_TESTFUNC Test_SeQueryInfoToken;
@@ -118,6 +121,7 @@ const KMT_TEST TestList[] =
     { "KeDeviceQueue",                      Test_KeDeviceQueue },
     { "KeDpc",                              Test_KeDpc },
     { "KeEvent",                            Test_KeEvent },
+    { "KeFloatPointState",                  Test_KeFloatPointState },
     { "KeGuardedMutex",                     Test_KeGuardedMutex },
     { "KeIrql",                             Test_KeIrql },
     { "KeMutex",                            Test_KeMutex },
@@ -134,6 +138,7 @@ const KMT_TEST TestList[] =
     { "NpfsReadWrite",                      Test_NpfsReadWrite },
     { "NpfsVolumeInfo",                     Test_NpfsVolumeInfo },
     { "ObHandle",                           Test_ObHandle },
+    { "ObQuery",                            Test_ObQuery },
     { "ObReference",                        Test_ObReference },
     { "ObSecurity",                         Test_ObSecurity },
     { "ObSymbolicLink",                     Test_ObSymbolicLink },
@@ -142,6 +147,7 @@ const KMT_TEST TestList[] =
     { "-ObTypeNoClean",                     Test_ObTypeNoClean },
     { "ObTypes",                            Test_ObTypes },
     { "PsNotify",                           Test_PsNotify },
+    { "PsQuota",                            Test_PsQuota },
     { "RtlAvlTreeKM",                       Test_RtlAvlTree },
     { "RtlExceptionKM",                     Test_RtlException },
     { "RtlIntSafeKM",                       Test_RtlIntSafe },

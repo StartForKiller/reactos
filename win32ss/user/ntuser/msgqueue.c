@@ -766,7 +766,7 @@ AllocateUserMessage(BOOL KEvent)
 
    if(!(Message = ExAllocateFromPagedLookasideList(pgSendMsgLookasideList)))
    {
-       ERR("AllocateUserMessage(): Not enough memory to allocate a message");
+       ERR("AllocateUserMessage(): Not enough memory to allocate a message\n");
        return NULL;
    }
    RtlZeroMemory(Message, sizeof(USER_SENT_MESSAGE));
@@ -1021,13 +1021,12 @@ co_MsqSendMessageAsync(PTHREADINFO ptiReceiver,
                        BOOL HasPackedLParam,
                        INT HookMessage)
 {
-
     PTHREADINFO ptiSender;
     PUSER_SENT_MESSAGE Message;
 
     if(!(Message = AllocateUserMessage(FALSE)))
     {
-        ERR("MsqSendMessageAsync(): Not enough memory to allocate a message");
+        ERR("MsqSendMessageAsync(): Not enough memory to allocate a message\n");
         return FALSE;
     }
 
@@ -1345,18 +1344,25 @@ MsqPostMessage(PTHREADINFO pti,
    PUSER_MESSAGE Message;
    PUSER_MESSAGE_QUEUE MessageQueue;
 
-   if ( pti->TIF_flags & TIF_INCLEANUP || pti->MessageQueue->QF_flags & QF_INDESTROY )
+   MessageQueue = pti->MessageQueue;
+
+   if ((pti->TIF_flags & TIF_INCLEANUP) || (MessageQueue->QF_flags & QF_INDESTROY))
    {
       ERR("Post Msg; Thread or Q is Dead!\n");
       return;
    }
 
-   if(!(Message = MsqCreateMessage(Msg)))
-   {
+   Message = MsqCreateMessage(Msg);
+   if (!Message)
       return;
-   }
 
-   MessageQueue = pti->MessageQueue;
+   if (Msg->message == WM_HOTKEY)
+      MessageBits |= QS_HOTKEY;
+
+   Message->dwQEvent = dwQEvent;
+   Message->ExtraInfo = ExtraInfo;
+   Message->QS_Flags = MessageBits;
+   Message->pti = pti;
 
    if (!HardwareMessage)
    {
@@ -1367,13 +1373,8 @@ MsqPostMessage(PTHREADINFO pti,
        InsertTailList(&MessageQueue->HardwareMessagesListHead, &Message->ListEntry);
    }
 
-   if (Msg->message == WM_HOTKEY) MessageBits |= QS_HOTKEY; // Justin Case, just set it.
-   Message->dwQEvent = dwQEvent;
-   Message->ExtraInfo = ExtraInfo;
-   Message->QS_Flags = MessageBits;
-   Message->pti = pti;
    MsqWakeQueue(pti, MessageBits, TRUE);
-   TRACE("Post Message %d\n",PostMsgCount);
+   TRACE("Post Message %d\n", PostMsgCount);
 }
 
 VOID FASTCALL

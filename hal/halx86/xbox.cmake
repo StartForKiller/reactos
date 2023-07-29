@@ -12,6 +12,7 @@ list(APPEND HAL_XBOX_SOURCE
     generic/dma.c
     generic/drive.c
     generic/halinit.c
+    generic/kdpci.c
     generic/memory.c
     generic/misc.c
     generic/nmi.c
@@ -20,6 +21,7 @@ list(APPEND HAL_XBOX_SOURCE
     generic/usage.c
     generic/bios.c
     generic/portio.c
+    generic/x86bios.c
     legacy/bus/bushndlr.c
     legacy/bus/cmosbus.c
     legacy/bus/isabus.c

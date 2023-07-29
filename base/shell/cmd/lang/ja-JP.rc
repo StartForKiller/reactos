@@ -177,10 +177,10 @@ DIR [ドライブ:][パス][ファイル名] [/A[[:]属性]] [/B] [/C] [/D] [/L]
     STRING_DIR_HELP2 " ドライブ %c のボリューム ラベルは %s です\n"
     STRING_DIR_HELP3 " ドライブ %c にはボリューム ラベルがありません。\n"
     STRING_DIR_HELP4 " ボリューム シリアル番号は %04X-%04X です\n"
-    STRING_DIR_HELP5 "\n     ファイルの総数:\n%16i 個のファイル% 14s バイト\n"
-    STRING_DIR_HELP6 "%16i 個のディレクトリ% 15s バイト\n"
+    STRING_DIR_HELP5 "\n     ファイルの総数:\n%16i 個のファイル     %14s バイト\n"
+    STRING_DIR_HELP6 "%16i 個のディレクトリ %14s バイト\n"
     STRING_DIR_HELP7 "\n %s のディレクトリ\n\n"
-    STRING_DIR_HELP8 "%16i 個のファイル% 14s バイト\n"
+    STRING_DIR_HELP8 "%16i 個のファイル     %14s バイト\n"
     STRING_DIRSTACK_HELP1 "POPD コマンドで使用するために現在のディレクトリを保存し、\n\
 指定したディレクトリに変更します。\n\n\
 PUSHD [パス | ..]\n\n\
@@ -447,7 +447,7 @@ VER [/C][/R][/W]\n\n\
  希望によってはそれ以降のバージョンのうちどれか) の定める条件の下で再頒\n\
  布または改変することができます。\n"
     STRING_VERSION_HELP5 "\nバグ報告は <ros-dev@reactos.org> へ送ってください。\n\
-最新のバージョンは次のページから入手できます: http://www.reactos.org"
+最新のバージョンは次のページから入手できます: https://reactos.org"
     STRING_VERSION_HELP6 "\nFreeDOS version written by:\n"
     STRING_VERSION_HELP7 "\nReactOS version written by:\n"
     STRING_VOL_HELP1 " ドライブ %c: のボリューム ラベルは %s です。\n"

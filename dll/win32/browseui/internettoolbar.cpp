@@ -607,15 +607,17 @@ HRESULT STDMETHODCALLTYPE CMenuCallback::CallbackSM(LPSMDATA psmd, UINT uMsg, WP
 
 CInternetToolbar::CInternetToolbar()
 {
+    fLocked = SHRegGetBoolUSValueW(L"Software\\Microsoft\\Internet Explorer\\Toolbar",
+                                   L"Locked",
+                                   FALSE,
+                                   TRUE);
+
     fMainReBar = NULL;
-    fLocked = false;
     fMenuBandWindow = NULL;
     fNavigationWindow = NULL;
     fMenuCallback = new CComObject<CMenuCallback>();
     fToolbarWindow = NULL;
     fAdviseCookie = 0;
-
-    fMenuCallback->AddRef();
 }
 
 CInternetToolbar::~CInternetToolbar()
@@ -720,7 +722,15 @@ HRESULT CInternetToolbar::LockUnlockToolbars(bool locked)
 
     if (locked != fLocked)
     {
+        DWORD dwLocked = locked ? 1 : 0;
+        SHRegSetUSValueW(L"Software\\Microsoft\\Internet Explorer\\Toolbar",
+                         L"Locked",
+                         REG_DWORD,
+                         &dwLocked,
+                         sizeof(dwLocked),
+                         SHREGSET_FORCE_HKCU);
         fLocked = locked;
+
         rebarBandInfo.cbSize = sizeof(rebarBandInfo);
         rebarBandInfo.fMask = RBBIM_STYLE | RBBIM_LPARAM;
         bandCount = (int)SendMessage(fMainReBar, RB_GETBANDCOUNT, 0, 0);
@@ -1037,7 +1047,7 @@ HRESULT STDMETHODCALLTYPE CInternetToolbar::InitNew()
     hResult = IUnknown_GetWindow(menuBar, &fMenuBandWindow);
     fMenuBar.Attach(menuBar.Detach());                  // transfer the ref count
 
-    // FIXME: The ros Rebar does not properly support fixed-size items such as the brandband,
+    // FIXME: The ROS Rebar does not properly support fixed-size items such as the brandband,
     // and it will put them in their own row, sized to take up the whole row.
 #if 0
     /* Create and attach the brand/logo to the rebar */

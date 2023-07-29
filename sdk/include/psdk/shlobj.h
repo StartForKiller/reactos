@@ -222,11 +222,11 @@ HRESULT      WINAPI SHLoadOLE(LPARAM);
 HRESULT
 WINAPI
 SHParseDisplayName(
-  _In_ PCWSTR,
-  _In_opt_ IBindCtx*,
-  _Outptr_ PIDLIST_ABSOLUTE*,
-  _In_ SFGAOF,
-  _Out_opt_ SFGAOF*);
+  _In_ PCWSTR pszName,
+  _In_opt_ IBindCtx* pbc,
+  _Outptr_ PIDLIST_ABSOLUTE* ppidl,
+  _In_ SFGAOF sfgaoIn,
+  _Out_opt_ SFGAOF* psfgaoOut);
 
 HRESULT
 WINAPI
@@ -1539,6 +1539,19 @@ VOID WINAPI SHGetSettings(_Out_ LPSHELLFLAGSTATE lpsfs, DWORD dwMask);
 #define SSF_HIDEICONS			0x4000
 #define SSF_SHOWSUPERHIDDEN		0x00040000
 #define SSF_SEPPROCESS			0x00080000
+#if (NTDDI_VERSION >= NTDDI_WINXP)
+#define SSF_NONETCRAWLING		0x00100000
+#define SSF_STARTPANELON		0x00200000
+#define SSF_SHOWSTARTPAGE		0x00400000
+#endif
+#if (NTDDI_VERSION >= NTDDI_VISTA)
+#define SSF_AUTOCHECKSELECT		0x00800000
+#define SSF_ICONSONLY			0x01000000
+#define SSF_SHOWTYPEOVERLAY		0x02000000
+#endif
+#if (NTDDI_VERSION >= NTDDI_WIN8)
+#define SSF_SHOWSTATUSBAR		0x04000000
+#endif
 
 /****************************************************************************
 * SHRestricted API
@@ -2660,11 +2673,13 @@ DECLARE_INTERFACE_(IShellFolderBand, IUnknown)
 };
 #undef INTERFACE
 
-
+#if (NTDDI_VERSION >= NTDDI_WIN2K) && (NTDDI_VERSION <= NTDDI_WINXPSP2)
 /*****************************************************************************
  * Control Panel functions
  */
-LRESULT WINAPI CallCPLEntry16(HINSTANCE hMod, FARPROC pFunc, HWND dw3, UINT dw4, LPARAM dw5, LPARAM dw6);
+DECLARE_HANDLE(FARPROC16);
+LRESULT WINAPI CallCPLEntry16(HINSTANCE hMod, FARPROC16 pFunc, HWND dw3, UINT dw4, LPARAM dw5, LPARAM dw6);
+#endif
 
 #ifdef __cplusplus
 } /* extern "C" */

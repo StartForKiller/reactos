@@ -39,14 +39,14 @@ typedef struct
 
 static const columninfo RecycleBinColumns[] =
 {
-    {IDS_SHV_COLUMN_NAME,        &FMTID_Storage,   PID_STG_NAME,       SHCOLSTATE_TYPE_STR | SHCOLSTATE_ONBYDEFAULT,  LVCFMT_LEFT,  30},
-    {IDS_SHV_COLUMN_DELFROM, &FMTID_Displaced, PID_DISPLACED_FROM, SHCOLSTATE_TYPE_STR | SHCOLSTATE_ONBYDEFAULT,  LVCFMT_LEFT,  30},
-    {IDS_SHV_COLUMN_DELDATE, &FMTID_Displaced, PID_DISPLACED_DATE, SHCOLSTATE_TYPE_DATE | SHCOLSTATE_ONBYDEFAULT, LVCFMT_LEFT,  20},
-    {IDS_SHV_COLUMN_SIZE,        &FMTID_Storage,   PID_STG_SIZE,       SHCOLSTATE_TYPE_INT | SHCOLSTATE_ONBYDEFAULT,  LVCFMT_RIGHT, 20},
-    {IDS_SHV_COLUMN_TYPE,        &FMTID_Storage,   PID_STG_STORAGETYPE, SHCOLSTATE_TYPE_INT | SHCOLSTATE_ONBYDEFAULT,  LVCFMT_LEFT,  20},
-    {IDS_SHV_COLUMN_MODIFIED,        &FMTID_Storage,   PID_STG_WRITETIME,  SHCOLSTATE_TYPE_DATE | SHCOLSTATE_ONBYDEFAULT, LVCFMT_LEFT,  20},
-    /*    {"creation time",  &FMTID_Storage,   PID_STG_CREATETIME, SHCOLSTATE_TYPE_DATE,                        LVCFMT_LEFT,  20}, */
-    /*    {"attribs",        &FMTID_Storage,   PID_STG_ATTRIBUTES, SHCOLSTATE_TYPE_STR,                         LVCFMT_LEFT,  20},       */
+    {IDS_SHV_COLUMN_NAME,     &FMTID_Storage,   PID_STG_NAME,        SHCOLSTATE_TYPE_STR | SHCOLSTATE_ONBYDEFAULT,  LVCFMT_LEFT,  25},
+    {IDS_SHV_COLUMN_DELFROM,  &FMTID_Displaced, PID_DISPLACED_FROM,  SHCOLSTATE_TYPE_STR | SHCOLSTATE_ONBYDEFAULT,  LVCFMT_LEFT,  35},
+    {IDS_SHV_COLUMN_DELDATE,  &FMTID_Displaced, PID_DISPLACED_DATE,  SHCOLSTATE_TYPE_DATE | SHCOLSTATE_ONBYDEFAULT, LVCFMT_LEFT,  15},
+    {IDS_SHV_COLUMN_SIZE,     &FMTID_Storage,   PID_STG_SIZE,        SHCOLSTATE_TYPE_INT | SHCOLSTATE_ONBYDEFAULT,  LVCFMT_RIGHT, 10},
+    {IDS_SHV_COLUMN_TYPE,     &FMTID_Storage,   PID_STG_STORAGETYPE, SHCOLSTATE_TYPE_INT | SHCOLSTATE_ONBYDEFAULT,  LVCFMT_LEFT,  15},
+    {IDS_SHV_COLUMN_MODIFIED, &FMTID_Storage,   PID_STG_WRITETIME,   SHCOLSTATE_TYPE_DATE | SHCOLSTATE_ONBYDEFAULT, LVCFMT_LEFT,  15},
+    /* {"creation time",  &FMTID_Storage,   PID_STG_CREATETIME, SHCOLSTATE_TYPE_DATE, LVCFMT_LEFT,  20}, */
+    /* {"attribs",        &FMTID_Storage,   PID_STG_ATTRIBUTES, SHCOLSTATE_TYPE_STR,  LVCFMT_LEFT,  20}, */
 };
 
 #define COLUMN_NAME    0
@@ -62,14 +62,53 @@ static const columninfo RecycleBinColumns[] =
  * Recycle Bin folder
  */
 
-HRESULT CRecyclerExtractIcon_CreateInstance(LPCITEMIDLIST pidl, REFIID riid, LPVOID * ppvOut)
+BOOL WINAPI CBSearchRecycleBin(IN PVOID Context, IN HANDLE hDeletedFile);
+
+static PIDLRecycleStruct * _ILGetRecycleStruct(LPCITEMIDLIST pidl);
+
+typedef struct _SEARCH_CONTEXT
 {
+    PIDLRecycleStruct *pFileDetails;
+    HANDLE hDeletedFile;
+    BOOL bFound;
+} SEARCH_CONTEXT, *PSEARCH_CONTEXT;
+
+HRESULT CRecyclerExtractIcon_CreateInstance(
+    LPCITEMIDLIST pidl, REFIID riid, LPVOID * ppvOut)
+{
+    PIDLRecycleStruct *pFileDetails = _ILGetRecycleStruct(pidl);
+    if (pFileDetails == NULL)
+        goto fallback;
+
+    // Try to obtain the file
+    SEARCH_CONTEXT Context;
+    Context.pFileDetails = pFileDetails;
+    Context.bFound = FALSE;
+
+    EnumerateRecycleBinW(NULL, CBSearchRecycleBin, &Context);
+    if (Context.bFound)
+    {
+        // This should be executed any time, if not, there are some errors in the implementation
+        IRecycleBinFile* pRecycleFile = (IRecycleBinFile*)Context.hDeletedFile;
+
+        // Query the interface from the private interface
+        HRESULT hr = pRecycleFile->QueryInterface(riid, ppvOut);
+
+        // Close the file handle as we don't need it anymore
+        CloseRecycleBinHandle(Context.hDeletedFile);
+
+        return hr;
+    }
+
+fallback:
+    // In case the search fails we use a default icon
+    ERR("Recycler could not retrieve the icon, this shouldn't happen\n");
+
     CComPtr<IDefaultExtractIconInit> initIcon;
     HRESULT hr = SHCreateDefaultExtractIcon(IID_PPV_ARG(IDefaultExtractIconInit, &initIcon));
     if (FAILED_UNEXPECTEDLY(hr))
         return hr;
 
-    /* FIXME: This is completely unimplemented */
     initIcon->SetNormalIcon(swShell32Name, 0);
 
     return initIcon->QueryInterface(riid, ppvOut);
@@ -115,13 +154,6 @@ class CRecycleBinItemContextMenu :
         COM_INTERFACE_ENTRY_IID(IID_IContextMenu2, IContextMenu2)
         END_COM_MAP()
 };
-
-typedef struct
-{
-    PIDLRecycleStruct *pFileDetails;
-    HANDLE hDeletedFile;
-    BOOL bFound;
-} SEARCH_CONTEXT, *PSEARCH_CONTEXT;
 
 BOOL WINAPI CBSearchRecycleBin(IN PVOID Context, IN HANDLE hDeletedFile)
 {
@@ -380,19 +412,18 @@ HRESULT WINAPI CRecycleBinItemContextMenu::InvokeCommand(LPCMINVOKECOMMANDINFO l
         if (!Context.bFound)
             return E_FAIL;
 
+        BOOL ret = TRUE;
+
+        /* restore file */
         if (lpcmi->lpVerb == MAKEINTRESOURCEA(1))
-        {
-            /* restore file */
-            if (RestoreFile(Context.hDeletedFile))
-                return S_OK;
-            else
-                return E_FAIL;
-        }
+            ret = RestoreFile(Context.hDeletedFile);
+        /* delete file */
         else
-        {
             DeleteFileHandleToRecycleBin(Context.hDeletedFile);
-            return E_NOTIMPL;
-        }
+
+        CloseRecycleBinHandle(Context.hDeletedFile);
+
+        return (ret ? S_OK : E_FAIL);
     }
     else if (lpcmi->lpVerb == MAKEINTRESOURCEA(3))
     {
@@ -746,21 +777,26 @@ HRESULT WINAPI CRecycleBin::GetDetailsOf(PCUITEMID_CHILD pidl, UINT iColumn, LPS
             FormatDateTime(buffer, MAX_PATH, &pFileDetails->LastModification);
             break;
         case COLUMN_TYPE:
-            // FIXME: We should in fact use a UNICODE version of _ILGetFileType
-            szTypeName[0] = L'\0';
-            wcscpy(buffer, PathFindExtensionW(pFileDetails->szName));
-            if (!( HCR_MapTypeToValueW(buffer, buffer, _countof(buffer), TRUE) &&
-                    HCR_MapTypeToValueW(buffer, szTypeName, _countof(szTypeName), FALSE )))
             {
-                /* load localized file string */
-                szTypeName[0] = '\0';
-                if(LoadStringW(shell32_hInstance, IDS_ANY_FILE, szTypeName, _countof(szTypeName)))
+                SEARCH_CONTEXT Context;
+                Context.pFileDetails = pFileDetails;
+                Context.bFound = FALSE;
+                EnumerateRecycleBinW(NULL, CBSearchRecycleBin, (PVOID)&Context);
+
+                if (Context.bFound)
                 {
-                    szTypeName[63] = '\0';
+                    GetDeletedFileTypeNameW(Context.hDeletedFile, buffer, _countof(buffer), NULL);
+
+                    CloseRecycleBinHandle(Context.hDeletedFile);
+                }
+                /* load localized file string */
+                else if (LoadStringW(shell32_hInstance, IDS_ANY_FILE, szTypeName, _countof(szTypeName)))
+                {
                     StringCchPrintfW(buffer, _countof(buffer), szTypeName, PathFindExtensionW(pFileDetails->szName));
                 }
+
+                return SHSetStrRet(&pDetails->str, buffer);
             }
-            return SHSetStrRet(&pDetails->str, szTypeName);
         default:
             return E_FAIL;
     }
@@ -982,6 +1018,57 @@ TRASH_TrashFile(LPCWSTR wszPath)
     return DeleteFileToRecycleBin(wszPath);
 }
 
+static void TRASH_PlayEmptyRecycleBinSound()
+{
+    CRegKey regKey;
+    CHeapPtr<WCHAR> pszValue;
+    CHeapPtr<WCHAR> pszSndPath;
+    DWORD dwType, dwSize;
+    LONG lError;
+
+    lError = regKey.Open(HKEY_CURRENT_USER,
+                         L"AppEvents\\Schemes\\Apps\\Explorer\\EmptyRecycleBin\\.Current",
+                         KEY_READ);
+    if (lError != ERROR_SUCCESS)
+        return;
+
+    lError = regKey.QueryValue(NULL, &dwType, NULL, &dwSize);
+    if (lError != ERROR_SUCCESS)
+        return;
+
+    if (!pszValue.AllocateBytes(dwSize))
+        return;
+
+    lError = regKey.QueryValue(NULL, &dwType, pszValue, &dwSize);
+    if (lError != ERROR_SUCCESS)
+        return;
+
+    if (dwType == REG_EXPAND_SZ)
+    {
+        dwSize = ExpandEnvironmentStringsW(pszValue, NULL, 0);
+        if (dwSize == 0)
+            return;
+
+        if (!pszSndPath.Allocate(dwSize))
+            return;
+
+        if (ExpandEnvironmentStringsW(pszValue, pszSndPath, dwSize) == 0)
+            return;
+    }
+    else if (dwType == REG_SZ)
+    {
+        /* The type is REG_SZ, no need to expand */
+        pszSndPath.Attach(pszValue.Detach());
+    }
+    else
+    {
+        /* Invalid type */
+        return;
+    }
+
+    PlaySoundW(pszSndPath, NULL, SND_FILENAME | SND_ASYNC | SND_NODEFAULT);
+}
+
 /*************************************************************************
  * SHUpdateCRecycleBinIcon                                [SHELL32.@]
  *
@@ -1028,8 +1115,8 @@ HRESULT WINAPI SHEmptyRecycleBinA(HWND hwnd, LPCSTR pszRootPath, DWORD dwFlags)
 
 HRESULT WINAPI SHEmptyRecycleBinW(HWND hwnd, LPCWSTR pszRootPath, DWORD dwFlags)
 {
-    WCHAR szPath[MAX_PATH] = {0}, szBuffer[MAX_PATH];
-    DWORD dwSize, dwType, count;
+    WCHAR szBuffer[MAX_PATH];
+    DWORD count;
     LONG ret;
     IShellFolder *pDesktop, *pRecycleBin;
     PIDLIST_ABSOLUTE pidlRecycleBin;
@@ -1121,22 +1208,7 @@ HRESULT WINAPI SHEmptyRecycleBinW(HWND hwnd, LPCWSTR pszRootPath, DWORD dwFlags)
 
     if (!(dwFlags & SHERB_NOSOUND))
     {
-        dwSize = sizeof(szPath);
-        ret = RegGetValueW(HKEY_CURRENT_USER,
-                           L"AppEvents\\Schemes\\Apps\\Explorer\\EmptyRecycleBin\\.Current",
-                           NULL,
-                           RRF_RT_REG_SZ,
-                           &dwType,
-                           (PVOID)szPath,
-                           &dwSize);
-        if (ret != ERROR_SUCCESS)
-            return S_OK;
-
-        if (dwType != REG_EXPAND_SZ) /* type dismatch */
-            return S_OK;
-
-        szPath[_countof(szPath)-1] = L'\0';
-        PlaySoundW(szPath, NULL, SND_FILENAME);
+        TRASH_PlayEmptyRecycleBinSound();
     }
     return S_OK;
 }
@@ -1172,16 +1244,44 @@ HRESULT WINAPI SHQueryRecycleBinA(LPCSTR pszRootPath, LPSHQUERYRBINFO pSHQueryRB
 
 HRESULT WINAPI SHQueryRecycleBinW(LPCWSTR pszRootPath, LPSHQUERYRBINFO pSHQueryRBInfo)
 {
-    FIXME("%s, %p - stub\n", debugstr_w(pszRootPath), pSHQueryRBInfo);
+    TRACE("%s, %p\n", debugstr_w(pszRootPath), pSHQueryRBInfo);
 
-    if (!(pszRootPath) || (pszRootPath[0] == 0) ||
-        !(pSHQueryRBInfo) || (pSHQueryRBInfo->cbSize < sizeof(SHQUERYRBINFO)))
+    if (!pszRootPath || (pszRootPath[0] == 0) ||
+        !pSHQueryRBInfo || (pSHQueryRBInfo->cbSize < sizeof(SHQUERYRBINFO)))
     {
         return E_INVALIDARG;
     }
 
     pSHQueryRBInfo->i64Size = 0;
     pSHQueryRBInfo->i64NumItems = 0;
+
+    CComPtr<IRecycleBin> spRecycleBin;
+    HRESULT hr;
+    if (FAILED_UNEXPECTEDLY((hr = GetDefaultRecycleBin(pszRootPath, &spRecycleBin))))
+        return hr;
+
+    CComPtr<IRecycleBinEnumList> spEnumList;
+    hr = spRecycleBin->EnumObjects(&spEnumList);
+    if (!SUCCEEDED(hr))
+        return hr;
+
+    while (TRUE)
+    {
+        CComPtr<IRecycleBinFile> spFile;
+        hr = spEnumList->Next(1, &spFile, NULL);
+        if (hr == S_FALSE)
+            return S_OK;
+
+        if (FAILED_UNEXPECTEDLY(hr))
+            return hr;
+
+        ULARGE_INTEGER Size = {};
+        if (FAILED_UNEXPECTEDLY((hr = spFile->GetFileSize(&Size))))
+            return hr;
+
+        pSHQueryRBInfo->i64Size += Size.QuadPart;
+        pSHQueryRBInfo->i64NumItems++;
+    }
 
     return S_OK;
 }

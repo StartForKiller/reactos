@@ -20,7 +20,12 @@
 
 #include "regedit.h"
 
-BOOL ProcessCmdLine(LPWSTR lpCmdLine);
+BOOL ProcessCmdLine(WCHAR *cmdline);
+
+const WCHAR *reg_class_namesW[] = {L"HKEY_LOCAL_MACHINE", L"HKEY_USERS",
+                                   L"HKEY_CLASSES_ROOT", L"HKEY_CURRENT_CONFIG",
+                                   L"HKEY_CURRENT_USER", L"HKEY_DYN_DATA"
+                                  };
 
 /*******************************************************************************
  * Global Variables:
@@ -186,11 +191,11 @@ BOOL TranslateChildTabMessage(PMSG msg)
 
     if (msg->wParam != VK_TAB) return FALSE;
     if (GetParent(msg->hwnd) != g_pChildWnd->hWnd) return FALSE;
-    PostMessageW(g_pChildWnd->hWnd, WM_COMMAND, ID_SWITCH_PANELS, 0);
+    PostMessageW(hFrameWnd, WM_COMMAND, ID_SWITCH_PANELS, 0);
     return TRUE;
 }
 
-int APIENTRY wWinMain(HINSTANCE hInstance,
+int WINAPI wWinMain(HINSTANCE hInstance,
                       HINSTANCE hPrevInstance,
                       LPWSTR    lpCmdLine,
                       int       nCmdShow)
@@ -200,12 +205,17 @@ int APIENTRY wWinMain(HINSTANCE hInstance,
 
     UNREFERENCED_PARAMETER(hPrevInstance);
 
-    /* Initialize global strings */
-    LoadStringW(hInstance, IDS_APP_TITLE, szTitle, COUNT_OF(szTitle));
-    LoadStringW(hInstance, IDC_REGEDIT_FRAME, szFrameClass, COUNT_OF(szFrameClass));
-    LoadStringW(hInstance, IDC_REGEDIT, szChildClass, COUNT_OF(szChildClass));
+#ifdef _DEBUG
+    /* Report any memory leaks on exit */
+    _CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
+#endif
 
-    if (ProcessCmdLine(lpCmdLine))
+    /* Initialize global strings */
+    LoadStringW(hInstance, IDS_APP_TITLE, szTitle, ARRAY_SIZE(szTitle));
+    LoadStringW(hInstance, IDC_REGEDIT_FRAME, szFrameClass, ARRAY_SIZE(szFrameClass));
+    LoadStringW(hInstance, IDC_REGEDIT, szChildClass, ARRAY_SIZE(szChildClass));
+
+    if (ProcessCmdLine(GetCommandLineW()))
     {
         return 0;
     }
