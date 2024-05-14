@@ -1,3 +1,4 @@
+add_subdirectory(makeimg)
 
 list(APPEND SOURCE
     AttachThreadInput.c
@@ -25,10 +26,12 @@ list(APPEND SOURCE
     GetSystemMetrics.c
     GetUserObjectInformation.c
     GetWindowPlacement.c
+    GW_ENABLEDPOPUP.c
     InitializeLpkHooks.c
     KbdLayout.c
     keybd_event.c
     LoadImage.c
+    LoadImageGCC.c
     LookupIconIdFromDirectoryEx.c
     MessageStateAnalyzer.c
     NextDlgItem.c
@@ -50,6 +53,7 @@ list(APPEND SOURCE
     SetScrollRange.c
     ShowWindow.c
     SwitchToThisWindow.c
+    SystemMenu.c
     SystemParametersInfo.c
     TrackMouseEvent.c
     VirtualKey.c

@@ -159,7 +159,7 @@ BEGIN
     IDS_AINFO_DESCRIPTION "\nОписание: "
     IDS_AINFO_SIZE "\nРазмер: "
     IDS_AINFO_URLSITE "\nДомашна страница: "
-    IDS_AINFO_LICENSE "\nРазрешително: "
+    IDS_AINFO_LICENSE "\nЛицензна информация: "
     IDS_AINFO_URLDOWNLOAD "\nИзтегляне: "
     IDS_AINFO_LANGUAGES "\nLanguages: "
 END
@@ -267,4 +267,9 @@ BEGIN
     IDS_CMD_FIND_RESULT_FOR "Find result for %1:\n"
     IDS_CMD_PACKAGE_NOT_FOUND "Failed to find package %1.\n"
     IDS_CMD_PACKAGE_INFO "Information about package %1:\n"
+END
+
+STRINGTABLE
+BEGIN
+    IDS_INSTGEN_CONFIRMUNINST "Are you sure you want to uninstall %s?"
 END

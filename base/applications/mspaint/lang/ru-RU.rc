@@ -11,7 +11,7 @@
 
 LANGUAGE LANG_RUSSIAN, SUBLANG_DEFAULT
 
-//IDB_FONTSTOOLBAR BITMAP "icons/fontstoolbar-ru-RU.bmp"
+//IDB_FONTSTOOLBAR BITMAP "img/fontstoolbar-ru-RU.bmp"
 
 ID_MENU MENU
 BEGIN
@@ -46,6 +46,8 @@ BEGIN
         MENUITEM "&Вырезать\tCtrl+X", IDM_EDITCUT
         MENUITEM "&Копировать\tCtrl+C", IDM_EDITCOPY
         MENUITEM "Вст&авить\tCtrl+V", IDM_EDITPASTE
+        MENUITEM SEPARATOR
+        MENUITEM "Обре&зать выделенное", IDM_CROPSELECTION
         MENUITEM "О&чистить выделение\tDel", IDM_EDITDELETESELECTION
         MENUITEM "Обратить в&ыделение", IDM_EDITINVERTSELECTION
         MENUITEM "Выделить в&се\tCtrl+A", IDM_EDITSELECTALL
@@ -110,6 +112,8 @@ BEGIN
         MENUITEM "&Вырезать\tCtrl+X", IDM_EDITCUT
         MENUITEM "&Копировать\tCtrl+C", IDM_EDITCOPY
         MENUITEM "Вст&авить\tCtrl+V", IDM_EDITPASTE
+        MENUITEM SEPARATOR
+        MENUITEM "Обре&зать выделенное", IDM_CROPSELECTION
         MENUITEM "О&чистить выделение\tDel", IDM_EDITDELETESELECTION
         MENUITEM "Выделить в&се\tCtrl+A", IDM_EDITSELECTALL
         MENUITEM SEPARATOR
@@ -143,6 +147,10 @@ BEGIN
     "^I", IDM_IMAGEINVERTCOLORS
     "^E", IDM_IMAGEATTRIBUTES
     "N", IDM_IMAGEDELETEIMAGE, CONTROL, SHIFT, VIRTKEY
+    VK_ADD, IDM_CTRL_PLUS, CONTROL, VIRTKEY
+    VK_SUBTRACT, IDM_CTRL_MINUS, CONTROL, VIRTKEY
+    VK_OEM_PLUS, IDM_CTRL_PLUS, CONTROL, VIRTKEY
+    VK_OEM_MINUS, IDM_CTRL_MINUS, CONTROL, VIRTKEY
 END
 
 IDD_MIRRORROTATE DIALOGEX 100, 100, 180, 100
@@ -266,4 +274,6 @@ BEGIN
     IDS_PRINTRES "%d x %d точек/см"
     IDS_CANTPASTE "Не удалось вставить из буфера обмена. Формат данных либо некорректный, либо не поддерживается."
     IDS_SAVEERROR "Не удалось сохранить точечный рисунок в файл:\n\n%s"
+    IDS_CANTSENDMAIL "Не удалось отправить письмо."
+    IDS_LOSECOLOR "В результате этой операции сведения о цвете будут потеряны. Продолжить?"
 END

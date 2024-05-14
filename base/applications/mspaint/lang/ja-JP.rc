@@ -9,7 +9,7 @@
 
 LANGUAGE LANG_JAPANESE, SUBLANG_DEFAULT
 
-//IDB_FONTSTOOLBAR BITMAP "icons/fontstoolbar-ja-JP.bmp"
+//IDB_FONTSTOOLBAR BITMAP "img/fontstoolbar-ja-JP.bmp"
 
 ID_MENU MENU
 BEGIN
@@ -44,6 +44,8 @@ BEGIN
         MENUITEM "切り取り(&T)\tCtrl+X", IDM_EDITCUT
         MENUITEM "コピー(&C)\tCtrl+C", IDM_EDITCOPY
         MENUITEM "貼り付け(&P)\tCtrl+V", IDM_EDITPASTE
+        MENUITEM SEPARATOR
+        MENUITEM "選択範囲でトリミング(&S)", IDM_CROPSELECTION
         MENUITEM "選択範囲の削除(&L)\tDel", IDM_EDITDELETESELECTION
         MENUITEM "選択範囲の反転(&I)", IDM_EDITINVERTSELECTION
         MENUITEM "すべて選択(&A)\tCtrl+A", IDM_EDITSELECTALL
@@ -80,10 +82,10 @@ BEGIN
     BEGIN
         MENUITEM "回転と反転(&M)\tCtrl+R", IDM_IMAGEROTATEMIRROR
         MENUITEM "伸縮と傾斜(&S)\tCtrl+W", IDM_IMAGESTRETCHSKEW
-        MENUITEM "切り取り(&C)", IDM_IMAGECROP
+        MENUITEM "切り取り(&R)", IDM_IMAGECROP
         MENUITEM "色の反転(&I)\tCtrl+I", IDM_IMAGEINVERTCOLORS
         MENUITEM "画像の属性(&A)\tCtrl+E", IDM_IMAGEATTRIBUTES
-        MENUITEM "画像の削除\tCtrl+Shft+N", IDM_IMAGEDELETEIMAGE
+        MENUITEM "画像の削除(&C)\tCtrl+Shft+N", IDM_IMAGEDELETEIMAGE
         MENUITEM "不透明色を描画する(&D)", IDM_IMAGEDRAWOPAQUE
     END
     POPUP "色(&C)"
@@ -108,6 +110,8 @@ BEGIN
         MENUITEM "切り取り(&T)\tCtrl+X", IDM_EDITCUT
         MENUITEM "コピー(&C)\tCtrl+C", IDM_EDITCOPY
         MENUITEM "貼り付け(&P)\tCtrl+V", IDM_EDITPASTE
+        MENUITEM SEPARATOR
+        MENUITEM "選択範囲でトリミング(&S)", IDM_CROPSELECTION
         MENUITEM "選択範囲の削除(&L)\tDel", IDM_EDITDELETESELECTION
         MENUITEM "すべて選択(&A)\tCtrl+A", IDM_EDITSELECTALL
         MENUITEM SEPARATOR
@@ -141,6 +145,10 @@ BEGIN
     "^I", IDM_IMAGEINVERTCOLORS
     "^E", IDM_IMAGEATTRIBUTES
     "N", IDM_IMAGEDELETEIMAGE, CONTROL, SHIFT, VIRTKEY
+    VK_ADD, IDM_CTRL_PLUS, CONTROL, VIRTKEY
+    VK_SUBTRACT, IDM_CTRL_MINUS, CONTROL, VIRTKEY
+    VK_OEM_PLUS, IDM_CTRL_PLUS, CONTROL, VIRTKEY
+    VK_OEM_MINUS, IDM_CTRL_MINUS, CONTROL, VIRTKEY
 END
 
 IDD_MIRRORROTATE DIALOGEX 100, 100, 180, 100
@@ -264,4 +272,6 @@ BEGIN
     IDS_PRINTRES "%d x %d ピクセル/cm"
     IDS_CANTPASTE "クリップボードからの貼り付けに失敗しました。データ形式が間違っているか、未対応です。"
     IDS_SAVEERROR "次のファイルとして画像を保存するのに失敗しました:\n\n%s"
+    IDS_CANTSENDMAIL "メール送信に失敗しました。"
+    IDS_LOSECOLOR "この操作を行うと色情報が失われます。続行しますか？"
 END

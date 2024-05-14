@@ -1,14 +1,12 @@
 /*
  * PROJECT:     ReactOS Task Manager
  * LICENSE:     LGPL-2.1-or-later (https://spdx.org/licenses/LGPL-2.1-or-later)
- * PURPOSE:     Performance Page.
+ * PURPOSE:     Performance Page
  * COPYRIGHT:   Copyright 1999-2001 Brian Palmer <brianp@reactos.org>
  */
 
 #include "precomp.h"
 #include <shlwapi.h>
-
-extern BOOL bInMenuLoop;        /* Tells us if we are in the menu loop - from taskmgr.c */
 
 TM_GRAPH_CONTROL PerformancePageCpuUsageHistoryGraph;
 TM_GRAPH_CONTROL PerformancePageMemUsageHistoryGraph;
@@ -322,12 +320,14 @@ DWORD WINAPI PerformancePageRefreshThread(PVOID Parameter)
     WCHAR Text[260];
     WCHAR szMemUsage[256], szCpuUsage[256], szProcesses[256];
 
-    LoadStringW(hInst, IDS_STATUS_CPUUSAGE, szCpuUsage, ARRAYSIZE(szCpuUsage));
-    LoadStringW(hInst, IDS_STATUS_MEMUSAGE, szMemUsage, ARRAYSIZE(szMemUsage));
-    LoadStringW(hInst, IDS_STATUS_PROCESSES, szProcesses, ARRAYSIZE(szProcesses));
+    LoadStringW(hInst, IDS_STATUS_CPUUSAGE, szCpuUsage, _countof(szCpuUsage));
+    LoadStringW(hInst, IDS_STATUS_MEMUSAGE, szMemUsage, _countof(szMemUsage));
+    LoadStringW(hInst, IDS_STATUS_PROCESSES, szProcesses, _countof(szProcesses));
 
     while (1)
     {
+        extern BOOL bTrackMenu; // From taskmgr.c
+
         int nBarsUsed1;
         int nBarsUsed2;
 
@@ -355,13 +355,13 @@ DWORD WINAPI PerformancePageRefreshThread(PVOID Parameter)
 
             StrFormatByteSizeW(CommitChargeTotal * 1024,
                                szChargeTotalFormat,
-                               ARRAYSIZE(szChargeTotalFormat));
+                               _countof(szChargeTotalFormat));
 
             StrFormatByteSizeW(CommitChargeLimit * 1024,
                                szChargeLimitFormat,
-                               ARRAYSIZE(szChargeLimitFormat));
+                               _countof(szChargeLimitFormat));
 
-            if (!bInMenuLoop)
+            if (!bTrackMenu)
             {
                 wsprintfW(Text, szMemUsage, szChargeTotalFormat, szChargeLimitFormat,
                     (CommitChargeLimit ? ((CommitChargeTotal * 100) / CommitChargeLimit) : 0));
@@ -406,7 +406,7 @@ DWORD WINAPI PerformancePageRefreshThread(PVOID Parameter)
             SetWindowTextW(hTotalsThreadCountEdit, Text);
             _ultow(TotalProcesses, Text, 10);
             SetWindowTextW(hTotalsProcessCountEdit, Text);
-            if (!bInMenuLoop)
+            if (!bTrackMenu)
             {
                 wsprintfW(Text, szProcesses, TotalProcesses);
                 SendMessageW(hStatusWnd, SB_SETTEXT, 0, (LPARAM)Text);
@@ -424,7 +424,7 @@ DWORD WINAPI PerformancePageRefreshThread(PVOID Parameter)
             CpuUsage = PerfDataGetProcessorUsage();
             CpuKernelUsage = PerfDataGetProcessorSystemUsage();
 
-            if (!bInMenuLoop)
+            if (!bTrackMenu)
             {
                 wsprintfW(Text, szCpuUsage, CpuUsage);
                 SendMessageW(hStatusWnd, SB_SETTEXT, 1, (LPARAM)Text);

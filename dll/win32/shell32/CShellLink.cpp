@@ -2572,7 +2572,7 @@ HRESULT STDMETHODCALLTYPE CShellLink::InvokeCommand(LPCMINVOKECOMMANDINFO lpici)
     HRESULT hr = Resolve(lpici->hwnd, 0);
     if (FAILED(hr))
     {
-        TRACE("failed to resolve component with error 0x%08x\n", hr);
+        TRACE("failed to resolve component error 0x%08x\n", hr);
         return hr;
     }
 
@@ -2595,9 +2595,10 @@ HRESULT CShellLink::DoOpen(LPCMINVOKECOMMANDINFO lpici)
     HRESULT hr;
     LPWSTR args = NULL;
     LPWSTR path = strdupW(m_sPath);
+    BOOL unicode = lpici->cbSize >= FIELD_OFFSET(CMINVOKECOMMANDINFOEX, ptInvoke) &&
+                   (lpici->fMask & CMIC_MASK_UNICODE);
 
-    if ( lpici->cbSize == sizeof(CMINVOKECOMMANDINFOEX) &&
-        (lpici->fMask & CMIC_MASK_UNICODE) )
+    if (unicode)
     {
         LPCMINVOKECOMMANDINFOEX iciex = (LPCMINVOKECOMMANDINFOEX)lpici;
         SIZE_T len = 2;
@@ -2627,11 +2628,19 @@ HRESULT CShellLink::DoOpen(LPCMINVOKECOMMANDINFO lpici)
     sei.cbSize = sizeof(sei);
     sei.fMask = SEE_MASK_HASLINKNAME | SEE_MASK_UNICODE |
                (lpici->fMask & (SEE_MASK_NOASYNC | SEE_MASK_ASYNCOK | SEE_MASK_FLAG_NO_UI));
-    sei.lpFile = path;
+    if (m_pPidl)
+    {
+        sei.lpIDList = m_pPidl;
+        sei.fMask |= SEE_MASK_IDLIST;
+    }
+    else
+    {
+        sei.lpFile = path;
+    }
+    sei.lpParameters = args;
     sei.lpClass = m_sLinkPath;
     sei.nShow = m_Header.nShowCommand;
     sei.lpDirectory = m_sWorkDir;
-    sei.lpParameters = args;
     sei.lpVerb = L"open";
 
     // HACK for ShellExecuteExW
@@ -2802,6 +2811,27 @@ BOOL CShellLink::OnInitDialog(HWND hwndDlg, HWND hwndFocus, LPARAM lParam)
     if (m_sDescription)
         SetDlgItemTextW(hwndDlg, IDC_SHORTCUT_COMMENT_EDIT, m_sDescription);
 
+    /* Hot key */
+    SendDlgItemMessageW(hwndDlg, IDC_SHORTCUT_KEY_HOTKEY, HKM_SETHOTKEY, m_Header.wHotKey, 0);
+
+    /* Run */
+    const WORD runstrings[] = { IDS_SHORTCUT_RUN_NORMAL, IDS_SHORTCUT_RUN_MIN, IDS_SHORTCUT_RUN_MAX };
+    const DWORD runshowcmd[] = { SW_SHOWNORMAL, SW_SHOWMINNOACTIVE, SW_SHOWMAXIMIZED };
+    HWND hRunCombo = GetDlgItem(hwndDlg, IDC_SHORTCUT_RUN_COMBO);
+    for (UINT i = 0; i < _countof(runstrings); ++i)
+    {
+        WCHAR buf[MAX_PATH];
+        if (!LoadStringW(shell32_hInstance, runstrings[i], buf, _countof(buf)))
+            break;
+
+        int index = SendMessageW(hRunCombo, CB_ADDSTRING, 0, (LPARAM)buf);
+        if (index < 0)
+            continue;
+        SendMessageW(hRunCombo, CB_SETITEMDATA, index, runshowcmd[i]);
+        if (!i || m_Header.nShowCommand == runshowcmd[i])
+            SendMessageW(hRunCombo, CB_SETCURSEL, index, 0);
+    }
+
     /* auto-completion */
     SHAutoComplete(GetDlgItem(hwndDlg, IDC_SHORTCUT_TARGET_TEXT), SHACF_DEFAULT);
     SHAutoComplete(GetDlgItem(hwndDlg, IDC_SHORTCUT_START_IN_EDIT), SHACF_DEFAULT);
@@ -2865,7 +2895,7 @@ void CShellLink::OnCommand(HWND hwndDlg, int id, HWND hwndCtl, UINT codeNotify)
             return;
         }
     }
-    if (codeNotify == EN_CHANGE)
+    if (codeNotify == EN_CHANGE || codeNotify == CBN_SELCHANGE)
     {
         if (!m_bInInit)
             PropSheet_Changed(GetParent(hwndDlg), hwndDlg);
@@ -2922,6 +2952,14 @@ LRESULT CShellLink::OnNotify(HWND hwndDlg, int idFrom, LPNMHDR pnmhdr)
             SetArguments(L"\0");
 
         HeapFree(GetProcessHeap(), 0, unquoted);
+
+        m_Header.wHotKey = (WORD)SendDlgItemMessageW(hwndDlg, IDC_SHORTCUT_KEY_HOTKEY, HKM_GETHOTKEY, 0, 0);
+
+        int index = (int)SendDlgItemMessageW(hwndDlg, IDC_SHORTCUT_RUN_COMBO, CB_GETCURSEL, 0, 0);
+        if (index != CB_ERR)
+        {
+            m_Header.nShowCommand = (UINT)SendDlgItemMessageW(hwndDlg, IDC_SHORTCUT_RUN_COMBO, CB_GETITEMDATA, index, 0);
+        }
 
         TRACE("This %p m_sLinkPath %S\n", this, m_sLinkPath);
         Save(m_sLinkPath, TRUE);
@@ -3118,11 +3156,21 @@ HICON CShellLink::CreateShortcutIcon(LPCWSTR wszIconPath, INT IconIndex)
 {
     const INT cx = GetSystemMetrics(SM_CXICON), cy = GetSystemMetrics(SM_CYICON);
     const COLORREF crMask = GetSysColor(COLOR_3DFACE);
+    WCHAR wszLnkIcon[MAX_PATH];
+    int lnk_idx;
     HDC hDC;
     HIMAGELIST himl = ImageList_Create(cx, cy, ILC_COLOR32 | ILC_MASK, 1, 1);
-    HICON hIcon = NULL, hNewIcon = NULL;
-    HICON hShortcut = (HICON)LoadImageW(shell32_hInstance, MAKEINTRESOURCE(IDI_SHELL_SHORTCUT),
-                                        IMAGE_ICON, cx, cy, 0);
+    HICON hIcon = NULL, hNewIcon = NULL, hShortcut;
+
+    if (HLM_GetIconW(IDI_SHELL_SHORTCUT - 1, wszLnkIcon, _countof(wszLnkIcon), &lnk_idx))
+    {
+        ::ExtractIconExW(wszLnkIcon, lnk_idx, &hShortcut, NULL, 1);
+    }
+    else
+    {
+        hShortcut = (HICON)LoadImageW(shell32_hInstance, MAKEINTRESOURCE(IDI_SHELL_SHORTCUT),
+                                      IMAGE_ICON, cx, cy, 0);
+    }
 
     ::ExtractIconExW(wszIconPath, IconIndex, &hIcon, NULL, 1);
     if (!hIcon || !hShortcut || !himl)

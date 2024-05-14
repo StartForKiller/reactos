@@ -27,10 +27,12 @@ extern void func_GetSetWindowInt(void);
 extern void func_GetSystemMetrics(void);
 extern void func_GetUserObjectInformation(void);
 extern void func_GetWindowPlacement(void);
+extern void func_GW_ENABLEDPOPUP(void);
 extern void func_InitializeLpkHooks(void);
 extern void func_KbdLayout(void);
 extern void func_keybd_event(void);
 extern void func_LoadImage(void);
+extern void func_LoadImageGCC(void);
 extern void func_LookupIconIdFromDirectoryEx(void);
 extern void func_MessageStateAnalyzer(void);
 extern void func_NextDlgItem(void);
@@ -53,6 +55,7 @@ extern void func_SetScrollRange(void);
 extern void func_ShowWindow(void);
 extern void func_SwitchToThisWindow(void);
 extern void func_SystemParametersInfo(void);
+extern void func_SystemMenu(void);
 extern void func_TrackMouseEvent(void);
 extern void func_VirtualKey(void);
 extern void func_WndProc(void);
@@ -84,10 +87,12 @@ const struct test winetest_testlist[] =
     { "GetSystemMetrics", func_GetSystemMetrics },
     { "GetUserObjectInformation", func_GetUserObjectInformation },
     { "GetWindowPlacement", func_GetWindowPlacement },
+    { "GW_ENABLEDPOPUP", func_GW_ENABLEDPOPUP },
     { "InitializeLpkHooks", func_InitializeLpkHooks },
     { "KbdLayout", func_KbdLayout },
     { "keybd_event", func_keybd_event },
     { "LoadImage", func_LoadImage },
+    { "LoadImageGCC", func_LoadImageGCC },
     { "LookupIconIdFromDirectoryEx", func_LookupIconIdFromDirectoryEx },
     { "MessageStateAnalyzer", func_MessageStateAnalyzer },
     { "NextDlgItem", func_NextDlgItem },
@@ -109,6 +114,7 @@ const struct test winetest_testlist[] =
     { "SetScrollRange", func_SetScrollRange },
     { "ShowWindow", func_ShowWindow },
     { "SwitchToThisWindow", func_SwitchToThisWindow },
+    { "SystemMenu", func_SystemMenu },
     { "SystemParametersInfo", func_SystemParametersInfo },
     { "TrackMouseEvent", func_TrackMouseEvent },
     { "VirtualKey", func_VirtualKey },

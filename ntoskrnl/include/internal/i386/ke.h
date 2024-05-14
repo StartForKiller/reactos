@@ -399,6 +399,17 @@ KiRundownThread(IN PKTHREAD Thread)
 #endif
 }
 
+CODE_SEG("INIT")
+VOID
+NTAPI
+KiInitializePcr(IN ULONG ProcessorNumber,
+                IN PKIPCR Pcr,
+                IN PKIDTENTRY Idt,
+                IN PKGDTENTRY Gdt,
+                IN PKTSS Tss,
+                IN PKTHREAD IdleThread,
+                IN PVOID DpcStack);
+
 FORCEINLINE
 VOID
 Ke386SetGdtEntryBase(PKGDTENTRY GdtEntry, PVOID BaseAddress)
@@ -656,6 +667,31 @@ NTAPI
 KiConvertToGuiThread(
     VOID
 );
+
+DECLSPEC_NORETURN
+VOID
+FASTCALL
+KiServiceExit(
+    IN PKTRAP_FRAME TrapFrame,
+    IN NTSTATUS Status
+);
+
+DECLSPEC_NORETURN
+VOID
+FASTCALL
+KiServiceExit2(
+    IN PKTRAP_FRAME TrapFrame
+);
+
+FORCEINLINE
+DECLSPEC_NORETURN
+VOID
+KiExceptionExit(
+    _In_ PKTRAP_FRAME TrapFrame,
+    _In_ PKEXCEPTION_FRAME ExceptionFrame)
+{
+    KiServiceExit2(TrapFrame);
+}
 
 //
 // Global x86 only Kernel data

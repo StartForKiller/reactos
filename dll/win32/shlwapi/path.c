@@ -2249,7 +2249,7 @@ BOOL WINAPI PathIsUNCA(LPCSTR lpszPath)
  * considered UNC, while on Windows Vista+ this is not the case anymore.
  */
 // #ifdef __REACTOS__
-#if (WINVER >= _WIN32_WINNT_VISTA)
+#if (_WIN32_WINNT >= _WIN32_WINNT_VISTA)
   if (lpszPath && (lpszPath[0]=='\\') && (lpszPath[1]=='\\') && (lpszPath[2]!='?'))
 #else
   if (lpszPath && (lpszPath[0]=='\\') && (lpszPath[1]=='\\'))
@@ -2272,7 +2272,7 @@ BOOL WINAPI PathIsUNCW(LPCWSTR lpszPath)
  * considered UNC, while on Windows Vista+ this is not the case anymore.
  */
 // #ifdef __REACTOS__
-#if (WINVER >= _WIN32_WINNT_VISTA)
+#if (_WIN32_WINNT >= _WIN32_WINNT_VISTA)
   if (lpszPath && (lpszPath[0]=='\\') && (lpszPath[1]=='\\') && (lpszPath[2]!='?'))
 #else
   if (lpszPath && (lpszPath[0]=='\\') && (lpszPath[1]=='\\'))
@@ -4314,6 +4314,7 @@ HRESULT WINAPI SHGetWebFolderFilePathW(LPCWSTR lpszFile, LPWSTR lpszPath, DWORD 
   return E_FAIL;
 }
 
+#ifndef __REACTOS__ /* Defined in <shlwapi_undoc.h> */
 #define PATH_CHAR_CLASS_LETTER      0x00000001
 #define PATH_CHAR_CLASS_ASTERIX     0x00000002
 #define PATH_CHAR_CLASS_DOT         0x00000004
@@ -4327,6 +4328,7 @@ HRESULT WINAPI SHGetWebFolderFilePathW(LPCWSTR lpszFile, LPWSTR lpszPath, DWORD 
 
 #define PATH_CHAR_CLASS_INVALID     0x00000000
 #define PATH_CHAR_CLASS_ANY         0xffffffff
+#endif
 
 static const DWORD SHELL_charclass[] =
 {

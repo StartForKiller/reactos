@@ -455,6 +455,8 @@ DWORD WINAPI CFindFolder::SearchThreadProc(LPVOID lpParameter)
 {
     _SearchData *data = static_cast<_SearchData*>(lpParameter);
 
+    HRESULT hrCoInit = CoInitializeEx(NULL, COINIT_MULTITHREADED);
+
     data->pFindFolder->NotifyConnections(DISPID_SEARCHSTART);
 
     UINT uTotalFound = RecursiveFind(data->szPath, data);
@@ -468,6 +470,9 @@ DWORD WINAPI CFindFolder::SearchThreadProc(LPVOID lpParameter)
 
     CloseHandle(data->hStopEvent);
     delete data;
+
+    if (SUCCEEDED(hrCoInit))
+        CoUninitialize();
 
     return 0;
 }
@@ -804,11 +809,10 @@ class CFindFolderContextMenu :
                 CComHeapPtr<ITEMIDLIST> folderPidl(ILCreateFromPathW(_ILGetPath(apidl[i])));
                 if (!folderPidl)
                     return E_OUTOFMEMORY;
-                CComHeapPtr<ITEMIDLIST> filePidl(ILCombine(folderPidl, _ILGetFSPidl(apidl[i])));
-                if (!filePidl)
-                    return E_OUTOFMEMORY;
-                SHOpenFolderAndSelectItems(folderPidl, 1, &filePidl, 0);
+                LPCITEMIDLIST child = _ILGetFSPidl(apidl[i]);
+                SHOpenFolderAndSelectItems(folderPidl, 1, &child, 0);
             }
+            LocalFree(apidl); // Yes, LocalFree
             return S_OK;
         }
 

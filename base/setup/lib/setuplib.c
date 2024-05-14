@@ -232,7 +232,7 @@ InstallSetupInfFile(
     IO_STATUS_BLOCK IoStatusBlock;
 #endif
 
-    PINICACHESECTION IniSection;
+    PINI_SECTION IniSection;
     WCHAR PathBuffer[MAX_PATH];
     WCHAR UnattendInfPath[MAX_PATH];
 
@@ -241,35 +241,31 @@ InstallSetupInfFile(
     if (!IniCache)
         return;
 
-    IniSection = IniCacheAppendSection(IniCache, L"SetupParams");
+    IniSection = IniAddSection(IniCache, L"SetupParams");
     if (IniSection)
     {
         /* Key "skipmissingfiles" */
         // RtlStringCchPrintfW(PathBuffer, ARRAYSIZE(PathBuffer),
                             // L"\"%s\"", L"WinNt5.2");
-        // IniCacheInsertKey(IniSection, NULL, INSERT_LAST,
-                          // L"Version", PathBuffer);
+        // IniAddKey(IniSection, L"Version", PathBuffer);
     }
 
-    IniSection = IniCacheAppendSection(IniCache, L"Data");
+    IniSection = IniAddSection(IniCache, L"Data");
     if (IniSection)
     {
         RtlStringCchPrintfW(PathBuffer, ARRAYSIZE(PathBuffer),
                             L"\"%s\"", IsUnattendedSetup ? L"yes" : L"no");
-        IniCacheInsertKey(IniSection, NULL, INSERT_LAST,
-                          L"UnattendedInstall", PathBuffer);
+        IniAddKey(IniSection, L"UnattendedInstall", PathBuffer);
 
         // "floppylessbootpath" (yes/no)
 
         RtlStringCchPrintfW(PathBuffer, ARRAYSIZE(PathBuffer),
                             L"\"%s\"", L"winnt");
-        IniCacheInsertKey(IniSection, NULL, INSERT_LAST,
-                          L"ProductType", PathBuffer);
+        IniAddKey(IniSection, L"ProductType", PathBuffer);
 
         RtlStringCchPrintfW(PathBuffer, ARRAYSIZE(PathBuffer),
                             L"\"%s\\\"", pSetupData->SourceRootPath.Buffer);
-        IniCacheInsertKey(IniSection, NULL, INSERT_LAST,
-                          L"SourcePath", PathBuffer);
+        IniAddKey(IniSection, L"SourcePath", PathBuffer);
 
         // "floppyless" ("0")
     }
@@ -349,9 +345,9 @@ Quit:
     Status = OpenAndMapFile(NULL,
                             UnattendInfPath,
                             &UnattendFileHandle,
+                            &FileSize,
                             &SectionHandle,
                             &ViewBase,
-                            &FileSize,
                             FALSE);
     if (!NT_SUCCESS(Status))
     {
@@ -789,12 +785,6 @@ InitializeSetup(
     {
         RtlZeroMemory(pSetupData, sizeof(*pSetupData));
 
-        // pSetupData->ComputerList = NULL;
-        // pSetupData->DisplayList  = NULL;
-        // pSetupData->KeyboardList = NULL;
-        // pSetupData->LayoutList   = NULL;
-        // pSetupData->LanguageList = NULL;
-
         /* Initialize error handling */
         pSetupData->LastErrorNumber = ERROR_SUCCESS;
         pSetupData->ErrorRoutine = NULL;
@@ -833,7 +823,7 @@ InitializeSetup(
                                 &pSetupData->SourceRootDir);
         if (!NT_SUCCESS(Status))
         {
-            DPRINT1("GetSourcePaths() failed (Status 0x%08lx)", Status);
+            DPRINT1("GetSourcePaths() failed (Status 0x%08lx)\n", Status);
             return ERROR_NO_SOURCE_DRIVE;
         }
         /*
@@ -850,7 +840,7 @@ InitializeSetup(
         Error = LoadSetupInf(pSetupData);
         if (Error != ERROR_SUCCESS)
         {
-            DPRINT1("LoadSetupInf() failed (Error 0x%lx)", Error);
+            DPRINT1("LoadSetupInf() failed (Error 0x%lx)\n", Error);
             return Error;
         }
         DPRINT1("SourcePath (2): '%wZ'\n", &pSetupData->SourcePath);
@@ -1059,23 +1049,36 @@ DoUpdate:
     {
         /* See the explanation for this test above */
 
+        PGENERIC_LIST_ENTRY Entry;
+        PCWSTR LanguageId; // LocaleID;
+
+        Entry = GetCurrentListEntry(pSetupData->DisplayList);
+        ASSERT(Entry);
+        pSetupData->DisplayType = ((PGENENTRY)GetListEntryData(Entry))->Id;
+        ASSERT(pSetupData->DisplayType);
+
         /* Update display registry settings */
         if (StatusRoutine) StatusRoutine(DisplaySettingsUpdate);
-        if (!ProcessDisplayRegistry(pSetupData->SetupInf, pSetupData->DisplayList))
+        if (!ProcessDisplayRegistry(pSetupData->SetupInf, pSetupData->DisplayType))
         {
             ErrorNumber = ERROR_UPDATE_DISPLAY_SETTINGS;
             goto Cleanup;
         }
 
+        Entry = GetCurrentListEntry(pSetupData->LanguageList);
+        ASSERT(Entry);
+        LanguageId = ((PGENENTRY)GetListEntryData(Entry))->Id;
+        ASSERT(LanguageId);
+
         /* Set the locale */
         if (StatusRoutine) StatusRoutine(LocaleSettingsUpdate);
-        if (!ProcessLocaleRegistry(pSetupData->LanguageList))
+        if (!ProcessLocaleRegistry(/*pSetupData->*/LanguageId))
         {
             ErrorNumber = ERROR_UPDATE_LOCALESETTINGS;
             goto Cleanup;
         }
 
-        /* Add keyboard layouts */
+        /* Add the keyboard layouts for the given language (without user override) */
         if (StatusRoutine) StatusRoutine(KeybLayouts);
         if (!AddKeyboardLayouts(SelectedLanguageId))
         {
@@ -1083,22 +1086,29 @@ DoUpdate:
             goto Cleanup;
         }
 
+        if (!IsUnattendedSetup)
+        {
+            Entry = GetCurrentListEntry(pSetupData->LayoutList);
+            ASSERT(Entry);
+            pSetupData->LayoutId = ((PGENENTRY)GetListEntryData(Entry))->Id;
+            ASSERT(pSetupData->LayoutId);
+
+            /* Update keyboard layout settings with user-overridden values */
+            // FIXME: Wouldn't it be better to do it all at once
+            // with the AddKeyboardLayouts() step?
+            if (StatusRoutine) StatusRoutine(KeybSettingsUpdate);
+            if (!ProcessKeyboardLayoutRegistry(pSetupData->LayoutId, SelectedLanguageId))
+            {
+                ErrorNumber = ERROR_UPDATE_KBSETTINGS;
+                goto Cleanup;
+            }
+        }
+
         /* Set GeoID */
         if (!SetGeoID(MUIGetGeoID(SelectedLanguageId)))
         {
             ErrorNumber = ERROR_UPDATE_GEOID;
             goto Cleanup;
-        }
-
-        if (!IsUnattendedSetup)
-        {
-            /* Update keyboard layout settings */
-            if (StatusRoutine) StatusRoutine(KeybSettingsUpdate);
-            if (!ProcessKeyboardLayoutRegistry(pSetupData->LayoutList, SelectedLanguageId))
-            {
-                ErrorNumber = ERROR_UPDATE_KBSETTINGS;
-                goto Cleanup;
-            }
         }
 
         /* Add codepage information to registry */

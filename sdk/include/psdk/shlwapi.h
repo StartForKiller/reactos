@@ -2003,8 +2003,8 @@ HRESULT
 WINAPI
 SHGetViewStatePropertyBag(
   _In_opt_ PCIDLIST_ABSOLUTE pidl,
-  _In_opt_ LPWSTR bag_name,
-  DWORD flags,
+  _In_opt_ LPCWSTR bag_name,
+  _In_ DWORD flags,
   _In_ REFIID riid,
   _Outptr_ void **ppv);
 
@@ -2089,6 +2089,9 @@ QISearch(
 
 #define OFFSETOFCLASS(base, derived) \
     ((DWORD)(DWORD_PTR)(static_cast<base*>((derived*)8))-8)
+
+#define QITABENTMULTI(Cthis, Ifoo, Iimpl) { &IID_##Ifoo, OFFSETOFCLASS(Iimpl, Cthis) }
+#define QITABENT(Cthis, Ifoo) QITABENTMULTI(Cthis, Ifoo, Ifoo)
 
 #include <poppack.h>
 

@@ -8,7 +8,7 @@
 
 LANGUAGE LANG_PORTUGUESE, SUBLANG_PORTUGUESE
 
-//IDB_FONTSTOOLBAR BITMAP "icons/fontstoolbar-pt-PT.bmp"
+//IDB_FONTSTOOLBAR BITMAP "img/fontstoolbar-pt-PT.bmp"
 
 ID_MENU MENU
 BEGIN
@@ -43,6 +43,8 @@ BEGIN
         MENUITEM "Cor&tar\tCtrl+X", IDM_EDITCUT
         MENUITEM "&Copiar\tCtrl+C", IDM_EDITCOPY
         MENUITEM "Co&lar\tCtrl+V", IDM_EDITPASTE
+        MENUITEM SEPARATOR
+        MENUITEM "Crop &selection", IDM_CROPSELECTION
         MENUITEM "Limpar &selecção\tDel", IDM_EDITDELETESELECTION
         MENUITEM "&Inverter selecção", IDM_EDITINVERTSELECTION
         MENUITEM "Seleccionar &tudo\tCtrl+A", IDM_EDITSELECTALL
@@ -104,18 +106,20 @@ ID_POPUPMENU MENU
 BEGIN
     POPUP "Popup #0"
     BEGIN
-        MENUITEM "C&ut\tCtrl+X", IDM_EDITCUT
-        MENUITEM "Copy\tCtrl+C", IDM_EDITCOPY
-        MENUITEM "&Paste\tCtrl+V", IDM_EDITPASTE
-        MENUITEM "De&lete selection\tDel", IDM_EDITDELETESELECTION
-        MENUITEM "Select &All\tCtrl+A", IDM_EDITSELECTALL
+        MENUITEM "Cor&tar\tCtrl+X", IDM_EDITCUT
+        MENUITEM "&Copiar\tCtrl+C", IDM_EDITCOPY
+        MENUITEM "Co&lar\tCtrl+V", IDM_EDITPASTE
         MENUITEM SEPARATOR
-        MENUITEM "C&opy to...", IDM_EDITCOPYTO
-        MENUITEM "Paste &from...", IDM_EDITPASTEFROM
+        MENUITEM "Crop &selection", IDM_CROPSELECTION
+        MENUITEM "Limpar &selecção\tDel", IDM_EDITDELETESELECTION
+        MENUITEM "Seleccionar &tudo\tCtrl+A", IDM_EDITSELECTALL
         MENUITEM SEPARATOR
-        MENUITEM "Rotate/&Mirror...\tCtrl+R", IDM_IMAGEROTATEMIRROR
-        MENUITEM "&Stretch/Skew...\tCtrl+W", IDM_IMAGESTRETCHSKEW
-        MENUITEM "&Invert colors\tCtrl+I", IDM_IMAGEINVERTCOLORS
+        MENUITEM "C&opiar para...", IDM_EDITCOPYTO
+        MENUITEM "Colar &de...", IDM_EDITPASTEFROM
+        MENUITEM SEPARATOR
+        MENUITEM "I&nverter/rodar...\tCtrl+R", IDM_IMAGEROTATEMIRROR
+        MENUITEM "&Redimensionar/Torcer...\tCtrl+W", IDM_IMAGESTRETCHSKEW
+        MENUITEM "&Inverter cores\tCtrl+I", IDM_IMAGEINVERTCOLORS
     END
 END
 
@@ -140,6 +144,10 @@ BEGIN
     "^I", IDM_IMAGEINVERTCOLORS
     "^E", IDM_IMAGEATTRIBUTES
     "N", IDM_IMAGEDELETEIMAGE, CONTROL, SHIFT, VIRTKEY
+    VK_ADD, IDM_CTRL_PLUS, CONTROL, VIRTKEY
+    VK_SUBTRACT, IDM_CTRL_MINUS, CONTROL, VIRTKEY
+    VK_OEM_PLUS, IDM_CTRL_PLUS, CONTROL, VIRTKEY
+    VK_OEM_MINUS, IDM_CTRL_MINUS, CONTROL, VIRTKEY
 END
 
 IDD_MIRRORROTATE DIALOGEX 100, 100, 180, 100
@@ -263,4 +271,6 @@ BEGIN
     IDS_PRINTRES "%d x %d pixel/cm"
     IDS_CANTPASTE "Failed to paste from the clipboard. The data format is either incorrect or not supported."
     IDS_SAVEERROR "Failed to save the bitmap to file:\n\n%s"
+    IDS_CANTSENDMAIL "Failed to send a mail."
+    IDS_LOSECOLOR "The color information will be lost in this operation. Are you sure to proceed?"
 END

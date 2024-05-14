@@ -2531,15 +2531,6 @@ ChangePos:
         return m_ContextMenu->GetCommandString(idCmd, uType, pwReserved, pszName, cchMax);
     }
 
-    BOOL IsShowDesktopButtonNeeded() // Read the registry value
-    {
-        return SHRegGetBoolUSValueW(
-            L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced",
-            L"TaskbarSd",
-            FALSE,
-            TRUE);
-    }
-
     /**********************************************************
      *    ##### message handling #####
      */
@@ -2556,7 +2547,7 @@ ChangePos:
         m_StartButton.Create(m_hWnd);
 
         /* Create the 'Show Desktop' button if necessary */
-        if (IsShowDesktopButtonNeeded())
+        if (g_TaskbarSettings.bShowDesktopButton)
             m_ShowDesktopButton.DoCreate(m_hWnd);
 
         /* Load the saved tray window settings */
@@ -2564,7 +2555,8 @@ ChangePos:
 
         /* Create and initialize the start menu */
         HBITMAP hbmBanner = LoadBitmapW(hExplorerInstance, MAKEINTRESOURCEW(IDB_STARTMENU));
-        m_StartMenuPopup = CreateStartMenu(this, &m_StartMenuBand, hbmBanner, 0);
+        m_StartMenuPopup = CreateStartMenu(this, &m_StartMenuBand, hbmBanner,
+                                           g_TaskbarSettings.sr.SmSmallIcons);
 
         /* Create the task band */
         hRet = CTaskBand_CreateInstance(this, m_StartButton.m_hWnd, IID_PPV_ARG(IDeskBand, &m_TaskBand));
@@ -2665,6 +2657,23 @@ ChangePos:
             UpdateFonts();
             AlignControls(NULL);
             CheckTrayWndPosition();
+        }
+
+        if (m_StartMenuPopup && lstrcmpiW((LPCWSTR)lParam, L"TraySettings") == 0)
+        {
+            HideStartMenu();
+
+            HBITMAP hbmBanner = LoadBitmapW(hExplorerInstance, MAKEINTRESOURCEW(IDB_STARTMENU));
+#if 1 // FIXME: Please re-use the start menu
+            /* Re-create the start menu */
+            m_StartMenuBand.Release();
+            m_StartMenuPopup = CreateStartMenu(this, &m_StartMenuBand, hbmBanner,
+                                               g_TaskbarSettings.sr.SmSmallIcons);
+            FIXME("Use UpdateStartMenu\n");
+#else
+            // Update the start menu
+            UpdateStartMenu(m_StartMenuPopup, hbmBanner, g_TaskbarSettings.sr.SmSmallIcons, TRUE);
+#endif
         }
 
         return 0;
@@ -3138,7 +3147,7 @@ HandleTrayContextMenu:
 
     LRESULT OnNcLButtonDblClick(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled)
     {
-        /* Let the clock handle the double click */
+        /* Let the clock handle the double-click */
         ::SendMessageW(m_TrayNotify, uMsg, wParam, lParam);
 
         /* We "handle" this message so users can't cause a weird maximize/restore
@@ -3524,6 +3533,20 @@ HandleTrayContextMenu:
             HWND hWndInsertAfter = newSettings->sr.AlwaysOnTop ? HWND_TOPMOST : HWND_BOTTOM;
             SetWindowPos(hWndInsertAfter, 0, 0, 0, 0, SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOSIZE | SWP_SHOWWINDOW);
         }
+
+        /* Toggle show desktop button */
+        if (newSettings->bShowDesktopButton != g_TaskbarSettings.bShowDesktopButton)
+        {
+            g_TaskbarSettings.bShowDesktopButton = newSettings->bShowDesktopButton;
+            if (!g_TaskbarSettings.bShowDesktopButton)
+                ::DestroyWindow(m_ShowDesktopButton.m_hWnd);
+            else if (!m_ShowDesktopButton.IsWindow())
+                m_ShowDesktopButton.DoCreate(m_hWnd);
+            AlignControls(NULL);
+        }
+
+        /* Adjust taskbar size */
+        CheckTrayWndPosition();
 
         g_TaskbarSettings.Save();
         return 0;

@@ -54,11 +54,14 @@ UNICODE_STRING CmSymbolicLinkValueName =
 
 UNICODE_STRING CmpLoadOptions;
 
+/* TRUE if the system hives must be loaded in shared mode */
 BOOLEAN CmpShareSystemHives;
+/* TRUE when the registry is in PE mode */
+BOOLEAN CmpMiniNTBoot;
+
+ULONG CmpBootType;
 BOOLEAN CmSelfHeal = TRUE;
 BOOLEAN CmpSelfHeal = TRUE;
-BOOLEAN CmpMiniNTBoot;
-ULONG CmpBootType;
 
 USHORT CmpUnknownBusCount;
 ULONG CmpTypeCount[MaximumType + 1];
@@ -561,7 +564,7 @@ DATA_SEG("INITDATA") CM_SYSTEM_CONTROL_VECTOR CmControlVector[] =
     {
         L"Session Manager",
         L"ResourceTimeoutCount",
-        &DummyData,
+        &ExpResourceTimeoutCount,
         NULL,
         NULL
     },

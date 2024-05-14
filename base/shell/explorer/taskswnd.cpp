@@ -787,6 +787,8 @@ public:
     HICON GetWndIcon(HWND hwnd)
     {
         HICON hIcon = NULL;
+
+        /* Retrieve icon by sending a message */
 #define GET_ICON(type) \
     SendMessageTimeout(hwnd, WM_GETICON, (type), 0, SMTO_NOTIMEOUTIFNOTHUNG, 100, (PDWORD_PTR)&hIcon)
 
@@ -809,11 +811,12 @@ public:
         }
 #undef GET_ICON
 
-        hIcon = (HICON)GetClassLongPtr(hwnd, GCLP_HICONSM);
+        /* If we failed, retrieve icon from the window class */
+        hIcon = (HICON)GetClassLongPtr(hwnd, g_TaskbarSettings.bSmallIcons ? GCLP_HICONSM : GCLP_HICON);
         if (hIcon)
             return hIcon;
 
-        return (HICON)GetClassLongPtr(hwnd, GCLP_HICON);
+        return (HICON)GetClassLongPtr(hwnd, g_TaskbarSettings.bSmallIcons ? GCLP_HICON : GCLP_HICONSM);
     }
 
     INT UpdateTaskItemButton(IN PTASK_ITEM TaskItem)
@@ -2745,15 +2748,26 @@ public:
 
     LRESULT OnTaskbarSettingsChanged(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled)
     {
+        BOOL bSettingsChanged = FALSE;
         TaskbarSettings* newSettings = (TaskbarSettings*)lParam;
+
         if (newSettings->bGroupButtons != g_TaskbarSettings.bGroupButtons)
         {
+            bSettingsChanged = TRUE;
             g_TaskbarSettings.bGroupButtons = newSettings->bGroupButtons;
             m_IsGroupingEnabled = g_TaskbarSettings.bGroupButtons;
+        }
 
+        if (newSettings->bSmallIcons != g_TaskbarSettings.bSmallIcons)
+        {
+            bSettingsChanged = TRUE;
+            g_TaskbarSettings.bSmallIcons = newSettings->bSmallIcons;
+        }
+
+        if (bSettingsChanged)
+        {
             /* Collapse or expand groups if necessary */
             CollapseOrExpand(FALSE);
-
             RefreshWindowList();
             UpdateButtonsSize(FALSE);
         }

@@ -263,8 +263,8 @@ CheckForValidPEAndVendor(
     VendorName->Length = 0;
 
     Status = OpenAndMapFile(RootDirectory, PathNameToFile,
-                            &FileHandle, &SectionHandle, &ViewBase,
-                            NULL, FALSE);
+                            &FileHandle, NULL,
+                            &SectionHandle, &ViewBase, FALSE);
     if (!NT_SUCCESS(Status))
     {
         DPRINT1("Failed to open and map file '%S', Status 0x%08lx\n", PathNameToFile, Status);
@@ -743,7 +743,8 @@ FindNTOSInstallations(
         DPRINT("Analyze the OS installations for loader type '%d' in disk #%d, partition #%d\n",
                Type, DiskNumber, PartitionNumber);
 
-        Status = OpenBootStoreByHandle(&BootStoreHandle, PartitionDirectoryHandle, Type, FALSE);
+        Status = OpenBootStoreByHandle(&BootStoreHandle, PartitionDirectoryHandle, Type,
+                                       BS_OpenExisting, BS_ReadAccess);
         if (!NT_SUCCESS(Status))
         {
             DPRINT1("Could not open the NTOS boot store of type '%d' (Status 0x%08lx), continue with another one...\n",
@@ -806,12 +807,11 @@ CreateNTOSInstallationsList(
 
             ASSERT(PartEntry->DiskEntry == DiskEntry);
 
-            DPRINT("   Primary Partition #%d, index %d - Type 0x%02x, IsLogical = %s, IsPartitioned = %s, IsNew = %s, AutoCreate = %s, FormatState = %lu -- Should I check it? %s\n",
+            DPRINT("   Primary Partition #%d, index %d - Type 0x%02x, IsLogical = %s, IsPartitioned = %s, IsNew = %s, FormatState = %lu -- Should I check it? %s\n",
                    PartEntry->PartitionNumber, PartEntry->PartitionIndex,
                    PartEntry->PartitionType, PartEntry->LogicalPartition ? "TRUE" : "FALSE",
                    PartEntry->IsPartitioned ? "TRUE" : "FALSE",
                    PartEntry->New ? "Yes" : "No",
-                   PartEntry->AutoCreate ? "Yes" : "No",
                    PartEntry->FormatState,
                    ShouldICheckThisPartition(PartEntry) ? "YES!" : "NO!");
 
@@ -828,12 +828,11 @@ CreateNTOSInstallationsList(
 
             ASSERT(PartEntry->DiskEntry == DiskEntry);
 
-            DPRINT("   Logical Partition #%d, index %d - Type 0x%02x, IsLogical = %s, IsPartitioned = %s, IsNew = %s, AutoCreate = %s, FormatState = %lu -- Should I check it? %s\n",
+            DPRINT("   Logical Partition #%d, index %d - Type 0x%02x, IsLogical = %s, IsPartitioned = %s, IsNew = %s, FormatState = %lu -- Should I check it? %s\n",
                    PartEntry->PartitionNumber, PartEntry->PartitionIndex,
                    PartEntry->PartitionType, PartEntry->LogicalPartition ? "TRUE" : "FALSE",
                    PartEntry->IsPartitioned ? "TRUE" : "FALSE",
                    PartEntry->New ? "Yes" : "No",
-                   PartEntry->AutoCreate ? "Yes" : "No",
                    PartEntry->FormatState,
                    ShouldICheckThisPartition(PartEntry) ? "YES!" : "NO!");
 
