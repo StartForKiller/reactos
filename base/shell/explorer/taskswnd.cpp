@@ -385,7 +385,6 @@ class CTaskSwitchWnd :
     INT TaskGroupOpened = -1;
     BOOL m_IsGroupingEnabled;
     CComPtr<IMenuPopup> menuPopup;
-
     CComPtr<IShellMenu2> shellMenu;
     CComPtr<IBandSite> bandSite;
 
@@ -402,10 +401,10 @@ public:
         m_ButtonCount(0),
         m_DefaultButtonCount(0),
         m_ImageList(NULL),
-        m_IsGroupingEnabled(FALSE),
         m_IsDestroying(FALSE),
         m_CloseTaskGroupOpen(FALSE),
-        m_TaskGroupImageList(NULL)
+        m_TaskGroupImageList(NULL),
+        m_IsGroupingEnabled(FALSE)
     {
         ZeroMemory(&m_ButtonSize, sizeof(m_ButtonSize));
         m_uHardErrorMsg = RegisterWindowMessageW(L"HardError");
